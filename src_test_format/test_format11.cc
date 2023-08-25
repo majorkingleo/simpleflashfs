@@ -3,17 +3,20 @@
 #include <string.h>
 #include <stdio.h>
 #include <format2.h>
+#include <ColoredOutput.h>
 
 using namespace Tools;
+
+static ColoredOutput colored_output;
 
 #define TEST( a, b ) \
  aa = a; b; \
  bb = buffer; \
  std::cout << aa << "\t==\t" << bb << "\t: "; \
  if( aa == bb ) \
-   std::cout << "true"; \
+	 std::cout << colored_output.color_output( colored_output.GREEN, "true" ); \
  else \
-   std::cout <<  " <<<<<<<<<<<<<< false"; \
+	 std::cout <<  colored_output.color_output( colored_output.RED, "false" ); \
  std::cout << std::endl;
 
 
