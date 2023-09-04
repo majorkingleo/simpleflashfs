@@ -1,8 +1,6 @@
-/*
- * TestUtils.h
- *
- *  Created on: 26.01.2023
- *      Author: martin
+/**
+ * Test class
+ * @author Copyright (c) 2023 Martin Oberzalek
  */
 
 #ifndef TEST_TESTUTILS_H_

@@ -2,7 +2,8 @@ bin_PROGRAMS=\
 	test_format \
 	test_format11 \
 	test_format98 \
-	test_wformat
+	test_wformat \
+	test_cpputilsshared
 	
 test_format_SOURCES=\
 		src_test_format/test_format.cc \
@@ -18,6 +19,12 @@ test_format98_SOURCES=\
 		
 test_wformat_SOURCES=\
 		src_test_format/test_wformat.cc \
+		tools_config.h
+
+test_cpputilsshared_SOURCES=\
+		src_test_cpputilsshared/test_string_utils.cc \
+		src_test_cpputilsshared/test_string_utils.h \
+		src_test_cpputilsshared/test_cpputilsshared.cc \
 		tools_config.h
 		
 
@@ -94,7 +101,9 @@ cpputils_cpputilsshared_cpputilsformat_libcpputilsformat_a_SOURCES= \
 	
 	
 common_libcommon_a_SOURCES=\
-	common/TestUtils.h
+	common/TestUtils.h \
+	common/ColBuilder.h \
+	common/ColBuilder.cc
 
 test_format_LDADD = cpputils/cpputilsshared/cpputilsformat/libcpputilsformat.a \
 	cpputils/io/libcpputilsio.a
@@ -108,6 +117,11 @@ test_format98_LDADD = cpputils/cpputilsshared/cpputilsformat/libcpputilsformat.a
 test_wformat_LDADD = cpputils/cpputilsshared/cpputilsformat/libcpputilsformat.a \
 	cpputils/io/libcpputilsio.a \
 	cpputils/cpputilsshared/libcpputilsshared.a
+
+test_cpputilsshared_LDADD = cpputils/cpputilsshared/cpputilsformat/libcpputilsformat.a \
+	cpputils/io/libcpputilsio.a \
+	cpputils/cpputilsshared/libcpputilsshared.a \
+	common/libcommon.a
 				 
 LIBS=
     
