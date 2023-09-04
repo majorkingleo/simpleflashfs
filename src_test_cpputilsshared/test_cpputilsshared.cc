@@ -60,6 +60,12 @@ int main( int argc, char **argv )
 		test_cases.push_back( test_case_toupper3() );
 		test_cases.push_back( test_case_toupper4() );
 
+		test_cases.push_back( test_case_tolower1() );
+		test_cases.push_back( test_case_tolower2() );
+		test_cases.push_back( test_case_tolower3() );
+		test_cases.push_back( test_case_tolower4() );
+
+
 		ColBuilder col;
 
 		const int COL_IDX 		= col.addCol( "Idx" );
