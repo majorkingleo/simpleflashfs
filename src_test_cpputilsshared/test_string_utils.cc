@@ -7,82 +7,40 @@
 
 using namespace Tools;
 
-template<class t_std_string>
-class TestToUpper : public TestCaseBase<bool>
-{
-	t_std_string input;
-	t_std_string output;
+auto test_upper_equal = []( const auto & a, const auto & b) { return toupper(a) == b; };
 
-public:
-	TestToUpper( const t_std_string & input,
-			     const t_std_string & output )
-	: TestCaseBase<bool>( "Tools::toupper", true ),
-	  input( input ),
-	  output( output )
-	{}
-
-	bool run() override {
-		return Tools::toupper(input) == output;
-	}
-};
-
-std::shared_ptr<TestCaseBase<bool>> test_case_toupper1()
-{
-	return std::make_shared<TestToUpper<std::string>>("hello","HELLO");
+std::shared_ptr<TestCaseBase<bool>> test_case_toupper1() {
+	return std::make_shared<TestCaseFuncEqual<std::string>>(__FUNCTION__,"hello","HELLO",test_upper_equal);
 }
 
-std::shared_ptr<TestCaseBase<bool>> test_case_toupper2()
-{
-	return std::make_shared<TestToUpper<std::wstring>>(L"hello",L"HELLO");
+std::shared_ptr<TestCaseBase<bool>> test_case_toupper2() {
+	return std::make_shared<TestCaseFuncEqual<std::wstring>>(__FUNCTION__,L"hello",L"HELLO",test_upper_equal);
 }
 
-std::shared_ptr<TestCaseBase<bool>> test_case_toupper3()
-{
-	return std::make_shared<TestToUpper<std::string>>("","");
+std::shared_ptr<TestCaseBase<bool>> test_case_toupper3() {
+	return std::make_shared<TestCaseFuncEqual<std::string>>(__FUNCTION__,"","",test_upper_equal);
 }
 
-std::shared_ptr<TestCaseBase<bool>> test_case_toupper4()
-{
-	return std::make_shared<TestToUpper<std::wstring>>(L"",L"");
+std::shared_ptr<TestCaseBase<bool>> test_case_toupper4() {
+	return std::make_shared<TestCaseFuncEqual<std::wstring>>(__FUNCTION__,L"",L"",test_upper_equal);
 }
 
-template<class t_std_string>
-class TestToLower : public TestCaseBase<bool>
-{
-	t_std_string input;
-	t_std_string output;
+auto test_lower_equal = []( const auto & a, const auto & b) { return tolower(a) == b; };
 
-public:
-	TestToLower( const t_std_string & input,
-			     const t_std_string & output )
-	: TestCaseBase<bool>( "Tools::tolower", true ),
-	  input( input ),
-	  output( output )
-	{}
-
-	bool run() override {
-		return Tools::tolower(input) == output;
-	}
-};
-
-std::shared_ptr<TestCaseBase<bool>> test_case_tolower1()
-{
-	return std::make_shared<TestToLower<std::string>>("HELLO","hello");
+std::shared_ptr<TestCaseBase<bool>> test_case_tolower1() {
+	return std::make_shared<TestCaseFuncEqual<std::string>>(__FUNCTION__,"HELLO","hello",test_lower_equal);
 }
 
-std::shared_ptr<TestCaseBase<bool>> test_case_tolower2()
-{
-	return std::make_shared<TestToLower<std::wstring>>(L"HELLO",L"hello");
+std::shared_ptr<TestCaseBase<bool>> test_case_tolower2() {
+	return std::make_shared<TestCaseFuncEqual<std::wstring>>(__FUNCTION__,L"HELLO",L"hello",test_lower_equal);
 }
 
-std::shared_ptr<TestCaseBase<bool>> test_case_tolower3()
-{
-	return std::make_shared<TestToLower<std::string>>("","");
+std::shared_ptr<TestCaseBase<bool>> test_case_tolower3() {
+	return std::make_shared<TestCaseFuncEqual<std::string>>(__FUNCTION__,"","",test_lower_equal);
 }
 
-std::shared_ptr<TestCaseBase<bool>> test_case_tolower4()
-{
-	return std::make_shared<TestToLower<std::wstring>>(L"",L"");
+std::shared_ptr<TestCaseBase<bool>> test_case_tolower4() {
+	return std::make_shared<TestCaseFuncEqual<std::wstring>>(__FUNCTION__,L"HELLO",L"hello",test_lower_equal);
 }
 
 

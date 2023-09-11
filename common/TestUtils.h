@@ -7,6 +7,7 @@
 #define TEST_TESTUTILS_H_
 
 #include <string>
+#include <functional>
 
 template<class RESULT> class TestCaseBase
 {
@@ -41,6 +42,29 @@ public:
     }
 };
 
+template<class t_std_string=std::string>
+class TestCaseFuncEqual : public TestCaseBase<bool>
+{
+	typedef std::function<bool(const t_std_string & a, const t_std_string & b)> Func;
+	Func func;
+	const t_std_string input;
+	const t_std_string output;
+
+public:
+	TestCaseFuncEqual( const std::string & name,
+			const t_std_string & input_,
+			const t_std_string & output_,
+			Func func_ )
+	: TestCaseBase<bool>( name, true ),
+	  input( input_ ),
+	  output( output_ ),
+	  func( func_ )
+	  {}
+
+	bool run() override {
+		return func( input, output );
+	}
+};
 
 
 #endif /* TEST_TESTUTILS_H_ */

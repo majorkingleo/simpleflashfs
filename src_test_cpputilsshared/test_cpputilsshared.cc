@@ -55,6 +55,7 @@ int main( int argc, char **argv )
 	try {
 		std::vector<std::shared_ptr<TestCaseBase<bool>>> test_cases;
 
+
 		test_cases.push_back( test_case_toupper1() );
 		test_cases.push_back( test_case_toupper2() );
 		test_cases.push_back( test_case_toupper3() );
@@ -64,7 +65,6 @@ int main( int argc, char **argv )
 		test_cases.push_back( test_case_tolower2() );
 		test_cases.push_back( test_case_tolower3() );
 		test_cases.push_back( test_case_tolower4() );
-
 
 		ColBuilder col;
 
