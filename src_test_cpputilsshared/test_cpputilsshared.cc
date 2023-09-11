@@ -66,6 +66,51 @@ int main( int argc, char **argv )
 		test_cases.push_back( test_case_tolower3() );
 		test_cases.push_back( test_case_tolower4() );
 
+		test_cases.push_back( test_case_strip1() );
+		test_cases.push_back( test_case_strip2() );
+		test_cases.push_back( test_case_strip3() );
+		test_cases.push_back( test_case_strip4() );
+		test_cases.push_back( test_case_strip5() );
+		test_cases.push_back( test_case_strip6() );
+		test_cases.push_back( test_case_strip7() );
+		test_cases.push_back( test_case_strip8() );
+		test_cases.push_back( test_case_strip9() );
+		test_cases.push_back( test_case_strip10() );
+		test_cases.push_back( test_case_strip11() );
+		test_cases.push_back( test_case_strip12() );
+		test_cases.push_back( test_case_strip13() );
+		test_cases.push_back( test_case_strip14() );
+
+		test_cases.push_back( test_case_strip_view1() );
+		test_cases.push_back( test_case_strip_view2() );
+		test_cases.push_back( test_case_strip_view3() );
+		test_cases.push_back( test_case_strip_view4() );
+		test_cases.push_back( test_case_strip_view5() );
+		test_cases.push_back( test_case_strip_view6() );
+		test_cases.push_back( test_case_strip_view7() );
+		test_cases.push_back( test_case_strip_view8() );
+		test_cases.push_back( test_case_strip_view9() );
+		test_cases.push_back( test_case_strip_view10() );
+		test_cases.push_back( test_case_strip_view11() );
+		test_cases.push_back( test_case_strip_view12() );
+		test_cases.push_back( test_case_strip_view13() );
+		test_cases.push_back( test_case_strip_view14() );
+
+		test_cases.push_back( test_case_strip_leading1() );
+		test_cases.push_back( test_case_strip_leading2() );
+		test_cases.push_back( test_case_strip_leading3() );
+		test_cases.push_back( test_case_strip_leading4() );
+		test_cases.push_back( test_case_strip_leading5() );
+		test_cases.push_back( test_case_strip_leading6() );
+		test_cases.push_back( test_case_strip_leading7() );
+		test_cases.push_back( test_case_strip_leading8() );
+		test_cases.push_back( test_case_strip_leading9() );
+		test_cases.push_back( test_case_strip_leading10() );
+		test_cases.push_back( test_case_strip_leading11() );
+		test_cases.push_back( test_case_strip_leading12() );
+		test_cases.push_back( test_case_strip_leading13() );
+		test_cases.push_back( test_case_strip_leading14() );
+
 		ColBuilder col;
 
 		const int COL_IDX 		= col.addCol( "Idx" );
