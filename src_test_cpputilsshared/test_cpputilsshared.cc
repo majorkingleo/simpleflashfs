@@ -111,6 +111,21 @@ int main( int argc, char **argv )
 		test_cases.push_back( test_case_strip_leading13() );
 		test_cases.push_back( test_case_strip_leading14() );
 
+		test_cases.push_back( test_case_strip_trailing1() );
+		test_cases.push_back( test_case_strip_trailing2() );
+		test_cases.push_back( test_case_strip_trailing3() );
+		test_cases.push_back( test_case_strip_trailing4() );
+		test_cases.push_back( test_case_strip_trailing5() );
+		test_cases.push_back( test_case_strip_trailing6() );
+		test_cases.push_back( test_case_strip_trailing7() );
+		test_cases.push_back( test_case_strip_trailing8() );
+		test_cases.push_back( test_case_strip_trailing9() );
+		test_cases.push_back( test_case_strip_trailing10() );
+		test_cases.push_back( test_case_strip_trailing11() );
+		test_cases.push_back( test_case_strip_trailing12() );
+		test_cases.push_back( test_case_strip_trailing13() );
+		test_cases.push_back( test_case_strip_trailing14() );
+
 		ColBuilder col;
 
 		const int COL_IDX 		= col.addCol( "Idx" );

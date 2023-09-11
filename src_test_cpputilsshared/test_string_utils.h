@@ -67,4 +67,20 @@ std::shared_ptr<TestCaseBase<bool>> test_case_strip_leading12();
 std::shared_ptr<TestCaseBase<bool>> test_case_strip_leading13();
 std::shared_ptr<TestCaseBase<bool>> test_case_strip_leading14();
 
+std::shared_ptr<TestCaseBase<bool>> test_case_strip_trailing1();
+std::shared_ptr<TestCaseBase<bool>> test_case_strip_trailing2();
+std::shared_ptr<TestCaseBase<bool>> test_case_strip_trailing3();
+std::shared_ptr<TestCaseBase<bool>> test_case_strip_trailing4();
+std::shared_ptr<TestCaseBase<bool>> test_case_strip_trailing5();
+std::shared_ptr<TestCaseBase<bool>> test_case_strip_trailing5();
+std::shared_ptr<TestCaseBase<bool>> test_case_strip_trailing6();
+std::shared_ptr<TestCaseBase<bool>> test_case_strip_trailing7();
+std::shared_ptr<TestCaseBase<bool>> test_case_strip_trailing8();
+std::shared_ptr<TestCaseBase<bool>> test_case_strip_trailing9();
+std::shared_ptr<TestCaseBase<bool>> test_case_strip_trailing10();
+std::shared_ptr<TestCaseBase<bool>> test_case_strip_trailing11();
+std::shared_ptr<TestCaseBase<bool>> test_case_strip_trailing12();
+std::shared_ptr<TestCaseBase<bool>> test_case_strip_trailing13();
+std::shared_ptr<TestCaseBase<bool>> test_case_strip_trailing14();
+
 #endif /* SRC_TEST_CPPUSTILSSHARED_TEST_STRING_UTILS_H_ */

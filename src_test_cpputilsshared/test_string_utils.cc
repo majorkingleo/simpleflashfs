@@ -227,3 +227,62 @@ std::shared_ptr<TestCaseBase<bool>> test_case_strip_leading14() {
 
 
 
+auto test_strip_trailing_equal = []( const auto & a, const auto & b) { return strip_trailing(a) == b; };
+
+std::shared_ptr<TestCaseBase<bool>> test_case_strip_trailing1() {
+	return std::make_shared<TestCaseFuncEqual<std::string>>(__FUNCTION__," ","",test_strip_trailing_equal);
+}
+
+std::shared_ptr<TestCaseBase<bool>> test_case_strip_trailing2() {
+	return std::make_shared<TestCaseFuncEqual<std::string>>(__FUNCTION__,"","",test_strip_trailing_equal);
+}
+
+std::shared_ptr<TestCaseBase<bool>> test_case_strip_trailing3() {
+	return std::make_shared<TestCaseFuncEqual<std::string>>(__FUNCTION__," hello"," hello",test_strip_trailing_equal);
+}
+
+std::shared_ptr<TestCaseBase<bool>> test_case_strip_trailing4() {
+	return std::make_shared<TestCaseFuncEqual<std::string>>(__FUNCTION__," hello "," hello",test_strip_trailing_equal);
+}
+
+std::shared_ptr<TestCaseBase<bool>> test_case_strip_trailing5() {
+	return std::make_shared<TestCaseFuncEqual<std::wstring>>(__FUNCTION__,L" ",L"",test_strip_trailing_equal);
+}
+
+std::shared_ptr<TestCaseBase<bool>> test_case_strip_trailing6() {
+	return std::make_shared<TestCaseFuncEqual<std::wstring>>(__FUNCTION__,L"",L"",test_strip_trailing_equal);
+}
+
+std::shared_ptr<TestCaseBase<bool>> test_case_strip_trailing7() {
+	return std::make_shared<TestCaseFuncEqual<std::wstring>>(__FUNCTION__,L" hello",L" hello",test_strip_trailing_equal);
+}
+
+std::shared_ptr<TestCaseBase<bool>> test_case_strip_trailing8() {
+	return std::make_shared<TestCaseFuncEqual<std::wstring>>(__FUNCTION__,L" hello ",L" hello",test_strip_trailing_equal);
+}
+
+std::shared_ptr<TestCaseBase<bool>> test_case_strip_trailing9() {
+	return std::make_shared<TestCaseFuncEqual<std::wstring>>(__FUNCTION__,L" hello hello ",L" hello hello",test_strip_trailing_equal);
+}
+
+std::shared_ptr<TestCaseBase<bool>> test_case_strip_trailing10() {
+	return std::make_shared<TestCaseFuncEqual<std::string>>(__FUNCTION__," hello hello "," hello hello",test_strip_trailing_equal);
+}
+
+std::shared_ptr<TestCaseBase<bool>> test_case_strip_trailing11() {
+	return std::make_shared<TestCaseFuncEqual<std::wstring>>(__FUNCTION__,L" \thello hello ",L" \thello hello",test_strip_trailing_equal);
+}
+
+std::shared_ptr<TestCaseBase<bool>> test_case_strip_trailing12() {
+	return std::make_shared<TestCaseFuncEqual<std::string>>(__FUNCTION__," \thello hello "," \thello hello",test_strip_trailing_equal);
+}
+
+std::shared_ptr<TestCaseBase<bool>> test_case_strip_trailing13() {
+	return std::make_shared<TestCaseFuncEqual<std::wstring>>(__FUNCTION__,L" \thello hello \n",L" \thello hello",test_strip_trailing_equal);
+}
+
+std::shared_ptr<TestCaseBase<bool>> test_case_strip_trailing14() {
+	return std::make_shared<TestCaseFuncEqual<std::string>>(__FUNCTION__," \thello hello \n"," \thello hello",test_strip_trailing_equal);
+}
+
+
