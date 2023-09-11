@@ -83,4 +83,11 @@ std::shared_ptr<TestCaseBase<bool>> test_case_strip_trailing12();
 std::shared_ptr<TestCaseBase<bool>> test_case_strip_trailing13();
 std::shared_ptr<TestCaseBase<bool>> test_case_strip_trailing14();
 
+std::shared_ptr<TestCaseBase<bool>> test_case_is_int1();
+std::shared_ptr<TestCaseBase<bool>> test_case_is_int2();
+std::shared_ptr<TestCaseBase<bool>> test_case_is_int3();
+std::shared_ptr<TestCaseBase<bool>> test_case_is_int4();
+std::shared_ptr<TestCaseBase<bool>> test_case_is_int5();
+std::shared_ptr<TestCaseBase<bool>> test_case_is_int6();
+
 #endif /* SRC_TEST_CPPUSTILSSHARED_TEST_STRING_UTILS_H_ */

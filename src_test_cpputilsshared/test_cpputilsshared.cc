@@ -126,6 +126,13 @@ int main( int argc, char **argv )
 		test_cases.push_back( test_case_strip_trailing13() );
 		test_cases.push_back( test_case_strip_trailing14() );
 
+		test_cases.push_back( test_case_is_int1() );
+		test_cases.push_back( test_case_is_int2() );
+		test_cases.push_back( test_case_is_int3() );
+		test_cases.push_back( test_case_is_int4() );
+		test_cases.push_back( test_case_is_int5() );
+		test_cases.push_back( test_case_is_int6() );
+
 		ColBuilder col;
 
 		const int COL_IDX 		= col.addCol( "Idx" );
@@ -147,6 +154,11 @@ int main( int argc, char **argv )
 
 			std::string result;
 			std::string expected_result = "true";
+
+			if( !test->getExpectedResult() ) {
+				expected_result = "false";
+			}
+
 			std::string test_result;
 
 			try {

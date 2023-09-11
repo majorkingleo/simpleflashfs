@@ -66,5 +66,25 @@ public:
 	}
 };
 
+template<class t_std_string=std::string>
+class TestCaseFuncBool : public TestCaseBase<bool>
+{
+	typedef std::function<bool(const t_std_string & a)> Func;
+	Func func;
+	const t_std_string input;
 
+public:
+	TestCaseFuncBool( const std::string & name,
+			const t_std_string & input_,
+			bool expected_result_,
+			Func func_ )
+	: TestCaseBase<bool>( name, expected_result_ ),
+	  input( input_ ),
+	  func( func_ )
+	  {}
+
+	bool run() override {
+		return func( input );
+	}
+};
 #endif /* TEST_TESTUTILS_H_ */

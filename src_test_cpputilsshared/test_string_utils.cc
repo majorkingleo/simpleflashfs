@@ -286,3 +286,28 @@ std::shared_ptr<TestCaseBase<bool>> test_case_strip_trailing14() {
 }
 
 
+auto test_is_int_equal = []( const auto & a ) { return is_int(a); };
+
+std::shared_ptr<TestCaseBase<bool>> test_case_is_int1() {
+	return std::make_shared<TestCaseFuncBool<std::string>>(__FUNCTION__,"1",true,test_is_int_equal);
+}
+
+std::shared_ptr<TestCaseBase<bool>> test_case_is_int2() {
+	return std::make_shared<TestCaseFuncBool<std::string>>(__FUNCTION__,"1234567890",true,test_is_int_equal);
+}
+
+std::shared_ptr<TestCaseBase<bool>> test_case_is_int3() {
+	return std::make_shared<TestCaseFuncBool<std::string>>(__FUNCTION__,"",false,test_is_int_equal);
+}
+
+std::shared_ptr<TestCaseBase<bool>> test_case_is_int4() {
+	return std::make_shared<TestCaseFuncBool<std::string>>(__FUNCTION__,"abcdef",false,test_is_int_equal);
+}
+
+std::shared_ptr<TestCaseBase<bool>> test_case_is_int5() {
+	return std::make_shared<TestCaseFuncBool<std::string>>(__FUNCTION__," ",false,test_is_int_equal);
+}
+
+std::shared_ptr<TestCaseBase<bool>> test_case_is_int6() {
+	return std::make_shared<TestCaseFuncBool<std::string>>(__FUNCTION__,"\t\n",false,test_is_int_equal);
+}
