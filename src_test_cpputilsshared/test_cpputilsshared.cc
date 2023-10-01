@@ -9,6 +9,7 @@
 #include <iostream>
 #include <OutDebug.h>
 #include <memory>
+#include <format.h>
 
 using namespace Tools;
 
@@ -147,7 +148,7 @@ int main( int argc, char **argv )
 
 			idx++;
 
-			DEBUG( format( "run test: %s", test->getName() ) );
+			CPPDEBUG( format( "run test: %s", test->getName() ) );
 
 			col.addColData( COL_IDX, format( "% 2d", idx ) );
 			col.addColData( COL_NAME, test->getName() );
@@ -175,10 +176,10 @@ int main( int argc, char **argv )
 
 			} catch( const std::exception & error ) {
 				result = "exception";
-				DEBUG( format( "Error: %s", error.what() ));
+				CPPDEBUG( format( "Error: %s", error.what() ));
 			} catch( ... ) {
 				result = "exception";
-				DEBUG( "Error" );
+				CPPDEBUG( "Error" );
 			}
 
 			if( result != expected_result ) {
