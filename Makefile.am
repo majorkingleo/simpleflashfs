@@ -25,6 +25,8 @@ test_cpputilsshared_SOURCES=\
 		src_test_cpputilsshared/test_string_utils.cc \
 		src_test_cpputilsshared/test_string_utils.h \
 		src_test_cpputilsshared/test_cpputilsshared.cc \
+		src_test_cpputilsshared/test_cyclicarray.h \
+		src_test_cpputilsshared/test_cyclicarray.cc \
 		tools_config.h
 		
 
@@ -83,7 +85,8 @@ cpputils_cpputilsshared_libcpputilsshared_a_SOURCES= \
 		cpputils/cpputilsshared/utf8_util.h \
 		cpputils/cpputilsshared/utf8_util.cc \
 		cpputils/cpputilsshared/xml.h \
-		cpputils/cpputilsshared/xml.cc
+		cpputils/cpputilsshared/xml.cc \
+		cpputils/cpputilsshared/CyclicArray.h
 
 
 cpputils_cpputilsshared_cpputilsformat_libcpputilsformat_a_SOURCES= \

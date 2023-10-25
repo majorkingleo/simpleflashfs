@@ -3,6 +3,7 @@
  * @author Copyright (c) 2001 - 2023 Martin Oberzalek
  */
 #include "test_string_utils.h"
+#include "test_cyclicarray.h"
 #include "ColoredOutput.h"
 #include "ColBuilder.h"
 #include <arg.h>
@@ -55,7 +56,6 @@ int main( int argc, char **argv )
 
 	try {
 		std::vector<std::shared_ptr<TestCaseBase<bool>>> test_cases;
-
 
 		test_cases.push_back( test_case_toupper1() );
 		test_cases.push_back( test_case_toupper2() );
@@ -133,6 +133,16 @@ int main( int argc, char **argv )
 		test_cases.push_back( test_case_is_int4() );
 		test_cases.push_back( test_case_is_int5() );
 		test_cases.push_back( test_case_is_int6() );
+
+		test_cases.push_back( test_case_init_cyclic_array1() );
+		test_cases.push_back( test_case_init_cyclic_array2() );
+		test_cases.push_back( test_case_init_cyclic_array3() );
+		test_cases.push_back( test_case_init_cyclic_array4() );
+		test_cases.push_back( test_case_init_cyclic_array5() );
+
+		test_cases.push_back( test_case_modify_cyclic_array1() );
+		test_cases.push_back( test_case_modify_cyclic_array2() );
+		test_cases.push_back( test_case_reverse_iterator() );
 
 		ColBuilder col;
 
