@@ -43,6 +43,13 @@ case $host_os in
 esac
 AM_CONDITIONAL([MINGW], [test x$mingw = xtrue])
 
+AC_CANONICAL_HOST
+case $host_os in
+  *cygwin*) cygwin=true ;;
+  *) cygwin=false ;;
+esac
+AM_CONDITIONAL([CYGWIN], [test x$cygwin = xtrue])
+
 
 AC_PROG_CC
 #  po/Makefile.in

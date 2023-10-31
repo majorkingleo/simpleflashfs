@@ -27,6 +27,10 @@ test_cpputilsshared_SOURCES=\
 		src_test_cpputilsshared/test_cpputilsshared.cc \
 		src_test_cpputilsshared/test_cyclicarray.h \
 		src_test_cpputilsshared/test_cyclicarray.cc \
+		src_test_cpputilsshared/test_static_vector.h \
+		src_test_cpputilsshared/test_static_vector.cc \
+		src_test_cpputilsshared/test_static_list.h \
+		src_test_cpputilsshared/test_static_list.cc \
 		tools_config.h
 		
 
@@ -86,7 +90,9 @@ cpputils_cpputilsshared_libcpputilsshared_a_SOURCES= \
 		cpputils/cpputilsshared/utf8_util.cc \
 		cpputils/cpputilsshared/xml.h \
 		cpputils/cpputilsshared/xml.cc \
-		cpputils/cpputilsshared/CyclicArray.h
+		cpputils/cpputilsshared/CyclicArray.h \
+		cpputils/cpputilsshared/static_vector.h \
+		cpputils/cpputilsshared/static_list.h
 
 
 cpputils_cpputilsshared_cpputilsformat_libcpputilsformat_a_SOURCES= \
@@ -139,6 +145,9 @@ else
 #AM_LDFLAGS += -lX11
 endif
 
+if CYGWIN
+LIBS += -liconv
+endif
 
     
 
