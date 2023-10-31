@@ -20,5 +20,11 @@ std::shared_ptr<TestCaseBase<bool>> test_case_modify_cyclic_array1();
 std::shared_ptr<TestCaseBase<bool>> test_case_modify_cyclic_array2();
 
 std::shared_ptr<TestCaseBase<bool>> test_case_reverse_iterator();
+std::shared_ptr<TestCaseBase<bool>> test_case_insert1();
+std::shared_ptr<TestCaseBase<bool>> test_case_insert2();
+std::shared_ptr<TestCaseBase<bool>> test_case_insert3();
+std::shared_ptr<TestCaseBase<bool>> test_case_insert4();
+std::shared_ptr<TestCaseBase<bool>> test_case_insert5();
+std::shared_ptr<TestCaseBase<bool>> test_case_insert6();
 
 #endif /* SRC_TEST_CPPUTILSSHARED_TEST_CYCLICARRAY_H_ */

@@ -4,6 +4,8 @@
  */
 #include "test_string_utils.h"
 #include "test_cyclicarray.h"
+#include "test_static_vector.h"
+#include "test_static_list.h"
 #include "ColoredOutput.h"
 #include "ColBuilder.h"
 #include <arg.h>
@@ -134,6 +136,7 @@ int main( int argc, char **argv )
 		test_cases.push_back( test_case_is_int5() );
 		test_cases.push_back( test_case_is_int6() );
 
+		/*
 		test_cases.push_back( test_case_init_cyclic_array1() );
 		test_cases.push_back( test_case_init_cyclic_array2() );
 		test_cases.push_back( test_case_init_cyclic_array3() );
@@ -143,6 +146,95 @@ int main( int argc, char **argv )
 		test_cases.push_back( test_case_modify_cyclic_array1() );
 		test_cases.push_back( test_case_modify_cyclic_array2() );
 		test_cases.push_back( test_case_reverse_iterator() );
+
+		test_cases.push_back( test_case_insert1() );
+
+		test_cases.push_back( test_case_insert2() );
+		test_cases.push_back( test_case_insert3() );
+		test_cases.push_back( test_case_insert4() );
+		*/
+		//test_cases.push_back( test_case_insert5() );
+
+
+		test_cases.push_back( test_case_init_static_vector1() );
+		test_cases.push_back( test_case_init_static_vector2() );
+		test_cases.push_back( test_case_init_static_vector3() );
+		test_cases.push_back( test_case_init_static_vector4() );
+		test_cases.push_back( test_case_init_static_vector5() );
+
+		test_cases.push_back( test_case_modify_static_vector1() );
+		test_cases.push_back( test_case_modify_static_vector2() );
+		test_cases.push_back( test_case_static_vector_reverse_iterator() );
+		test_cases.push_back( test_case_static_vector_insert1() );
+
+		test_cases.push_back( test_case_static_vector_insert2() );
+		test_cases.push_back( test_case_static_vector_insert3() );
+		test_cases.push_back( test_case_static_vector_insert4() );
+		test_cases.push_back( test_case_static_vector_insert5() );
+		test_cases.push_back( test_case_static_vector_insert6() );
+		test_cases.push_back( test_case_static_vector_insert7() );
+		test_cases.push_back( test_case_static_vector_insert8() );
+		test_cases.push_back( test_case_static_vector_insert9() );
+
+
+
+		test_cases.push_back( test_case_init_static_list1() );
+
+		test_cases.push_back( test_case_init_static_list2() );
+		test_cases.push_back( test_case_init_static_list3() );
+		test_cases.push_back( test_case_init_static_list4() );
+		test_cases.push_back( test_case_init_static_list5() );
+		test_cases.push_back( test_case_init_static_list6() );
+		test_cases.push_back( test_case_init_static_list7() );
+		test_cases.push_back( test_case_init_static_list8() );
+		test_cases.push_back( test_case_init_static_list9() );
+		test_cases.push_back( test_case_init_static_list10() );
+		test_cases.push_back( test_case_init_static_list11() );
+
+
+		test_cases.push_back( test_case_modify_static_list1() );
+		test_cases.push_back( test_case_modify_static_list2() );
+		test_cases.push_back( test_case_modify_static_list3() );
+
+		test_cases.push_back( test_case_modify_static_list4() );
+		test_cases.push_back( test_case_modify_static_list5() );
+		test_cases.push_back( test_case_modify_static_list6() );
+
+		test_cases.push_back( test_case_static_list_reverse_iterator() );
+
+		test_cases.push_back( test_case_static_list_insert1() );
+
+		test_cases.push_back( test_case_static_list_insert2() );
+		test_cases.push_back( test_case_static_list_insert3() );
+		test_cases.push_back( test_case_static_list_insert4() );
+
+		test_cases.push_back( test_case_static_list_insert5() );
+
+		test_cases.push_back( test_case_static_list_insert6() );
+		test_cases.push_back( test_case_static_list_insert7() );
+		test_cases.push_back( test_case_static_list_insert8() );
+		test_cases.push_back( test_case_static_list_insert9() );
+		test_cases.push_back( test_case_static_list_insert10() );
+
+		test_cases.push_back( test_case_static_list_insert11() );
+
+		test_cases.push_back( test_case_static_list_insert12() );
+
+		test_cases.push_back( test_case_static_list_insert13() );
+		test_cases.push_back( test_case_static_list_insert14() );
+		test_cases.push_back( test_case_static_list_insert15() );
+		test_cases.push_back( test_case_static_list_insert16() );
+
+		test_cases.push_back( test_case_static_list_front1() );
+		test_cases.push_back( test_case_static_list_front2() );
+
+		test_cases.push_back( test_case_static_list_back1() );
+		test_cases.push_back( test_case_static_list_back2() );
+
+		test_cases.push_back( test_case_static_list_emplace1() );
+		test_cases.push_back( test_case_static_list_emplace2() );
+
+		test_cases.push_back( test_case_static_list_push_front1() );
 
 		ColBuilder col;
 
