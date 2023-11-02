@@ -31,6 +31,8 @@ test_cpputilsshared_SOURCES=\
 		src_test_cpputilsshared/test_static_vector.cc \
 		src_test_cpputilsshared/test_static_list.h \
 		src_test_cpputilsshared/test_static_list.cc \
+		src_test_cpputilsshared/test_static_string.h \
+		src_test_cpputilsshared/test_static_string.cc \
 		tools_config.h
 		
 
@@ -40,6 +42,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/tools \
 	-I$(top_srcdir)/cpputils/io \
 	-I$(top_srcdir)/common \
 	-std=gnu++20 \
+	-D_GLIBCXX_USE_CXX11_ABI=1 \
 	-D_XOPEN_SOURCE=700 # for cyggwin fileno()
 
 noinst_LIBRARIES=cpputils/io/libcpputilsio.a \
@@ -92,7 +95,8 @@ cpputils_cpputilsshared_libcpputilsshared_a_SOURCES= \
 		cpputils/cpputilsshared/xml.cc \
 		cpputils/cpputilsshared/CyclicArray.h \
 		cpputils/cpputilsshared/static_vector.h \
-		cpputils/cpputilsshared/static_list.h
+		cpputils/cpputilsshared/static_list.h \
+		cpputils/cpputilsshared/static_string.h
 
 
 cpputils_cpputilsshared_cpputilsformat_libcpputilsformat_a_SOURCES= \
