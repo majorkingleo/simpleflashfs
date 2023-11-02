@@ -6,6 +6,7 @@
 #include "test_cyclicarray.h"
 #include "test_static_vector.h"
 #include "test_static_list.h"
+#include "test_static_string.h"
 #include "ColoredOutput.h"
 #include "ColBuilder.h"
 #include <arg.h>
@@ -56,9 +57,12 @@ int main( int argc, char **argv )
 		return 1;
 	}
 
+#if __cpp_exceptions > 0
 	try {
-		std::vector<std::shared_ptr<TestCaseBase<bool>>> test_cases;
+#endif
 
+		std::vector<std::shared_ptr<TestCaseBase<bool>>> test_cases;
+#if 0
 		test_cases.push_back( test_case_toupper1() );
 		test_cases.push_back( test_case_toupper2() );
 		test_cases.push_back( test_case_toupper3() );
@@ -249,6 +253,11 @@ int main( int argc, char **argv )
 
 		test_cases.push_back( test_case_static_list_unique1() );
 		test_cases.push_back( test_case_static_list_unique2() );
+#endif
+
+		test_cases.push_back( test_case_modify_static_string1() );
+		test_cases.push_back( test_case_modify_static_string2() );
+		test_cases.push_back( test_case_modify_static_string3() );
 
 		ColBuilder col;
 
@@ -278,7 +287,9 @@ int main( int argc, char **argv )
 
 			std::string test_result;
 
+#if __cpp_exceptions > 0
 			try {
+#endif
 
 				if( test->throwsException() ) {
 					 expected_result = "exception";
@@ -290,6 +301,7 @@ int main( int argc, char **argv )
 					result = "false";
 				}
 
+#if __cpp_exceptions > 0
 			} catch( const std::exception & error ) {
 				result = "exception";
 				CPPDEBUG( format( "Error: %s", error.what() ));
@@ -297,6 +309,7 @@ int main( int argc, char **argv )
 				result = "exception";
 				CPPDEBUG( "Error" );
 			}
+#endif
 
 			if( result != expected_result ) {
 				test_result = co.color_output( ColoredOutput::RED, "failed" );
@@ -312,10 +325,12 @@ int main( int argc, char **argv )
 
 		std::cout << col.toString() << std::endl;
 
+#if __cpp_exceptions > 0
 	} catch( const std::exception & error ) {
 		std::cout << "Error: " << error.what() << std::endl;
 		return 1;
 	}
+#endif
 
 	return 0;
 }

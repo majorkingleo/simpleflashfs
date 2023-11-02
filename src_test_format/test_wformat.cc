@@ -41,7 +41,10 @@ int main( int argc, char **argv )
 
 	ColoredOutput colored_output;
 
+#if __cpp_exceptions > 0
 	try {
+#endif
+
 		TESTW( wformat( L"%s", "String" ),                 sprintf( buffer, "%s", "String" ));
 		TESTW( wformat( L"%d", 155 ),                      sprintf( buffer, "%d", 155 ));
 		TESTW( wformat( L"%f", 155.1 ),                    sprintf( buffer, "%f", 155.1 ) );
@@ -135,10 +138,11 @@ int main( int argc, char **argv )
 
 		std::cout << std::endl;
 
-
+#if __cpp_exceptions > 0
 	} catch( std::exception & error ) {
 		std::cerr << format( "Error: %s\n", error.what() );
 	}
+#endif
 
 	return 0;
 }

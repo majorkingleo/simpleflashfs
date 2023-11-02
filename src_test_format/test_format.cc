@@ -27,7 +27,10 @@ int main( int argc, char **argv )
   char buffer[250];
   std::string aa, bb;
 
+#if __cpp_exceptions > 0
   try {
+#endif
+
       TEST( format ("%s", "String" ),                 sprintf( buffer, "%s", "String" ));
       TEST( format ("%d", 155 ),                      sprintf( buffer, "%d", 155 ));
       TEST( format ("%f", 155.1 ),                    sprintf( buffer, "%f", 155.1 ) );
@@ -73,10 +76,10 @@ int main( int argc, char **argv )
 
       std::cout << std::endl;
 
-
+#if __cpp_exceptions > 0
   } catch( std::exception & error ) {
     std::cerr << format( "Error: %s\n", error.what() );
   }
-
+#endif
   return 0;
 }
