@@ -62,7 +62,7 @@ int main( int argc, char **argv )
 #endif
 
 		std::vector<std::shared_ptr<TestCaseBase<bool>>> test_cases;
-#if 0
+
 		test_cases.push_back( test_case_toupper1() );
 		test_cases.push_back( test_case_toupper2() );
 		test_cases.push_back( test_case_toupper3() );
@@ -253,7 +253,6 @@ int main( int argc, char **argv )
 
 		test_cases.push_back( test_case_static_list_unique1() );
 		test_cases.push_back( test_case_static_list_unique2() );
-#endif
 
 		test_cases.push_back( test_case_modify_static_string1() );
 		test_cases.push_back( test_case_modify_static_string2() );
