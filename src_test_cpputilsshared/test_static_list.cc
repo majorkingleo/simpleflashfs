@@ -378,7 +378,7 @@ public:
 
 } // namespace
 
-std::shared_ptr<TestCaseBase<bool>> test_case_static_list_reverse_iterator()
+std::shared_ptr<TestCaseBase<bool>> test_case_static_list_reverse_iterator1()
 {
 	return std::make_shared<TestReverseIterator>(__FUNCTION__);
 }
@@ -1060,3 +1060,148 @@ std::shared_ptr<TestCaseBase<bool>> test_case_static_list_push_front1()
 			});
 }
 
+std::shared_ptr<TestCaseBase<bool>> test_case_static_list_reverse_iterator2()
+{
+	return std::make_shared<TestEqualTolist<int,10>>(__FUNCTION__,
+			[]( auto & v ) {
+				std::visit(
+						[](auto & e){
+
+							auto it_end_before = e.rbegin();
+
+							// make space
+							e.pop_front();
+							e.pop_front();
+							e.pop_front();
+
+							*it_end_before = -1;
+				}, v );
+			});
+}
+
+std::shared_ptr<TestCaseBase<bool>> test_case_static_list_reverse_iterator3()
+{
+	return std::make_shared<TestEqualTolist<int,10>>(__FUNCTION__,
+			[]( auto & v ) {
+				std::visit(
+						[](auto & e){
+
+							auto it_end = e.rend();
+
+							// make space
+							e.pop_back();
+							e.pop_back();
+							e.pop_back();
+							e.pop_back();
+
+							--it_end;
+
+							*it_end = -1;
+				}, v );
+			});
+}
+
+std::shared_ptr<TestCaseBase<bool>> test_case_static_list_reverse1()
+{
+	return std::make_shared<TestEqualTolist<int,10>>(__FUNCTION__,
+			[]( auto & v ) {
+				std::visit(
+						[](auto & e){
+
+							auto it_begin = e.begin();
+							auto it_end = --e.end();
+
+							e.reverse();
+
+							*it_begin = -1;
+							*it_end = -2;
+
+							CPPDEBUG( format( "%s %s", typeid(e).name(), e ) );
+				}, v );
+			});
+}
+
+
+std::shared_ptr<TestCaseBase<bool>> test_case_static_list_remove1()
+{
+	return std::make_shared<TestEqualTolist<int,10>>(__FUNCTION__,
+			[]( auto & v ) {
+				std::visit(
+						[](auto & e){
+
+							e.remove(1);
+							e.remove(5);
+				}, v );
+			});
+}
+
+std::shared_ptr<TestCaseBase<bool>> test_case_static_list_remove2()
+{
+	return std::make_shared<TestEqualTolist<int,10>>(__FUNCTION__,
+			[]( auto & v ) {
+				std::visit(
+						[](auto & e){
+							e.remove_if( [](int n){ return n > 5; });
+
+							// CPPDEBUG( format( "%s %s", typeid(e).name(), e ) );
+				}, v );
+			});
+}
+
+std::shared_ptr<TestCaseBase<bool>> test_case_static_list_sort1()
+{
+	return std::make_shared<TestEqualTolist<int,10>>(__FUNCTION__,
+			[]( auto & v ) {
+				std::visit(
+						[](auto & e){
+
+							e.reverse();
+							e.sort();
+
+							// CPPDEBUG( format( "%s %s", typeid(e).name(), e ) );
+				}, v );
+			});
+}
+
+std::shared_ptr<TestCaseBase<bool>> test_case_static_list_sort2()
+{
+	return std::make_shared<TestEqualTolist<int,10>>(__FUNCTION__,
+			[]( auto & v ) {
+				std::visit(
+						[](auto & e){
+
+							e.sort(std::greater<int>());
+							// CPPDEBUG( format( "%s %s", typeid(e).name(), e ) );
+				}, v );
+			});
+}
+
+std::shared_ptr<TestCaseBase<bool>> test_case_static_list_unique1()
+{
+	return std::make_shared<TestEqualTolist<int,20>>(__FUNCTION__,
+			[]( auto & v ) {
+				std::visit(
+						[](auto & e){
+
+							e = { 1, 1, 2, 2, 3, 3, 4, 5, 6, 6, 6, 4, 8, 6, 9, 9, 10 };
+							e.unique();
+
+							CPPDEBUG( format( "%s %s", typeid(e).name(), e ) );
+				}, v );
+			});
+}
+
+std::shared_ptr<TestCaseBase<bool>> test_case_static_list_unique2()
+{
+	return std::make_shared<TestEqualTolist<int,20>>(__FUNCTION__,
+			[]( auto & v ) {
+				std::visit(
+						[](auto & e){
+
+							e = { 1, 1, 2, 2, 3, 3, 4, 5, 6, 6, 6, 4, 8, 6, 9, 9, 10 };
+							e.unique([]( const int & a, const int & b ) { return a == b; });
+
+							CPPDEBUG( format( "%s %s", typeid(e).name(), e ) );
+				}, v );
+			});
+}

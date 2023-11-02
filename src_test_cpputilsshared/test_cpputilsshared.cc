@@ -136,7 +136,7 @@ int main( int argc, char **argv )
 		test_cases.push_back( test_case_is_int5() );
 		test_cases.push_back( test_case_is_int6() );
 
-		/*
+
 		test_cases.push_back( test_case_init_cyclic_array1() );
 		test_cases.push_back( test_case_init_cyclic_array2() );
 		test_cases.push_back( test_case_init_cyclic_array3() );
@@ -150,10 +150,11 @@ int main( int argc, char **argv )
 		test_cases.push_back( test_case_insert1() );
 
 		test_cases.push_back( test_case_insert2() );
+
 		test_cases.push_back( test_case_insert3() );
 		test_cases.push_back( test_case_insert4() );
-		*/
-		//test_cases.push_back( test_case_insert5() );
+
+		test_cases.push_back( test_case_insert5() );
 
 
 		test_cases.push_back( test_case_init_static_vector1() );
@@ -200,7 +201,9 @@ int main( int argc, char **argv )
 		test_cases.push_back( test_case_modify_static_list5() );
 		test_cases.push_back( test_case_modify_static_list6() );
 
-		test_cases.push_back( test_case_static_list_reverse_iterator() );
+		test_cases.push_back( test_case_static_list_reverse_iterator1() );
+		test_cases.push_back( test_case_static_list_reverse_iterator2() );
+		test_cases.push_back( test_case_static_list_reverse_iterator3() );
 
 		test_cases.push_back( test_case_static_list_insert1() );
 
@@ -235,6 +238,17 @@ int main( int argc, char **argv )
 		test_cases.push_back( test_case_static_list_emplace2() );
 
 		test_cases.push_back( test_case_static_list_push_front1() );
+
+		test_cases.push_back( test_case_static_list_reverse1() );
+
+		test_cases.push_back( test_case_static_list_remove1() );
+		test_cases.push_back( test_case_static_list_remove2() );
+
+		test_cases.push_back( test_case_static_list_sort1() );
+		test_cases.push_back( test_case_static_list_sort2() );
+
+		test_cases.push_back( test_case_static_list_unique1() );
+		test_cases.push_back( test_case_static_list_unique2() );
 
 		ColBuilder col;
 

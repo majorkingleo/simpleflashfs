@@ -34,6 +34,26 @@ bool operator==( const CyclicArray<T,N> & c, const std::vector<T> & v )
     return true;
 }
 
+template<class T,std::size_t N>
+bool operator==( const CyclicArray<T,N> & c, const std::list<T> & v )
+{
+    if( c.size() != v.size() ) {
+    	// CPPDEBUG( format("c.size != v.size => %d != %d", c.size(), v.size()) );
+        return false;
+    }
+
+    auto it_c = c.begin();
+    auto it_v = v.begin();
+
+    for( ; it_c != c.end() && it_v != v.end(); ++it_c, ++it_v ) {
+    	if( *it_c != *it_v ) {
+    		return false;
+    	}
+    }
+
+    return true;
+}
+
 }
 
 namespace std {
@@ -414,9 +434,8 @@ public:
 	{}
 
 	bool run() override {
-		CyclicArray<InstanceCounter,10> c;
-		std::vector<InstanceCounter> v(10);
-		v.resize(0);
+		CyclicArray<InstanceCounter,2> c;
+		std::list<InstanceCounter> v;
 
 
 		c.push_back(InstanceCounter("a", "c"));
