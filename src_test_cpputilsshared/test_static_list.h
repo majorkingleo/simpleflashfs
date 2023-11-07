@@ -71,4 +71,9 @@ std::shared_ptr<TestCaseBase<bool>> test_case_static_list_sort2();
 std::shared_ptr<TestCaseBase<bool>> test_case_static_list_unique1();
 std::shared_ptr<TestCaseBase<bool>> test_case_static_list_unique2();
 
+std::shared_ptr<TestCaseBase<bool>> test_case_static_list_swap1();
+std::shared_ptr<TestCaseBase<bool>> test_case_static_list_swap2();
+std::shared_ptr<TestCaseBase<bool>> test_case_static_list_swap3();
+std::shared_ptr<TestCaseBase<bool>> test_case_static_list_swap4();
+
 #endif /* SRC_TEST_CPPUTILSSHARED_TEST_STATIC_list_H_ */

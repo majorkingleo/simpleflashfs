@@ -1205,3 +1205,128 @@ std::shared_ptr<TestCaseBase<bool>> test_case_static_list_unique2()
 				}, v );
 			});
 }
+
+
+namespace {
+
+class TestSwap1 : public TestCaseBase<bool>
+{
+public:
+	TestSwap1( const std::string & descr )
+	: TestCaseBase<bool>( descr, true, false )
+	{}
+
+	bool run() override {
+
+		static_list<int,10> c1 { 1, 2, 3, 4, 5 };
+		static_list<int,10> c2 { 2, 3, 4, 5, 1 };
+
+		auto it_first = c1.begin();
+		c1.swap(it_first,c1.end());
+
+		CPPDEBUG( format( "c1: %s", c1 ) );
+
+		return c1 == c2;
+	}
+};
+
+} // namespace
+
+std::shared_ptr<TestCaseBase<bool>> test_case_static_list_swap1()
+{
+	return std::make_shared<TestSwap1>(__FUNCTION__);
+}
+
+namespace {
+
+class TestSwap2 : public TestCaseBase<bool>
+{
+public:
+	TestSwap2( const std::string & descr )
+	: TestCaseBase<bool>( descr, true, false )
+	{}
+
+	bool run() override {
+
+		static_list<int,10> c1 { 1, 2, 3, 4, 5 };
+		static_list<int,10> c2 { 1, 3, 4, 5, 2 };
+
+		auto it_first = ++c1.begin();
+		c1.swap(it_first,c1.end());
+
+		CPPDEBUG( format( "c1: %s", c1 ) );
+
+		return c1 == c2;
+	}
+};
+
+} // namespace
+
+std::shared_ptr<TestCaseBase<bool>> test_case_static_list_swap2()
+{
+	return std::make_shared<TestSwap2>(__FUNCTION__);
+}
+
+namespace {
+
+class TestSwap3 : public TestCaseBase<bool>
+{
+public:
+	TestSwap3( const std::string & descr )
+	: TestCaseBase<bool>( descr, true, false )
+	{}
+
+	bool run() override {
+
+		static_list<int,10> c1 { 1, 2, 3, 4, 5 };
+		static_list<int,10> c2 { 1, 4, 3, 2, 5 };
+
+		auto it_first = ++c1.begin();
+		auto it_second = c1.end()-2;
+
+		// CPPDEBUG( format( "end: %d", *it_second ) );
+
+		c1.swap(it_first,it_second);
+
+		CPPDEBUG( format( "c1: %s", c1 ) );
+
+		return c1 == c2;
+	}
+};
+
+} // namespace
+
+std::shared_ptr<TestCaseBase<bool>> test_case_static_list_swap3()
+{
+	return std::make_shared<TestSwap3>(__FUNCTION__);
+}
+
+namespace {
+
+class TestSwap4 : public TestCaseBase<bool>
+{
+public:
+	TestSwap4( const std::string & descr )
+	: TestCaseBase<bool>( descr, true, false )
+	{}
+
+	bool run() override {
+
+		static_list<int,10> c1 { 1, 2, 3, 4, 5 };
+		static_list<int,10> c2 { 1, 3, 4, 5, 2 };
+
+		auto it_first = ++c1.begin();
+		c1.swap(c1.end(),it_first);
+
+		CPPDEBUG( format( "c1: %s", c1 ) );
+
+		return c1 == c2;
+	}
+};
+
+} // namespace
+
+std::shared_ptr<TestCaseBase<bool>> test_case_static_list_swap4()
+{
+	return std::make_shared<TestSwap4>(__FUNCTION__);
+}
