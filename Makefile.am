@@ -81,6 +81,7 @@ cpputils_cpputilsshared_libcpputilsshared_a_SOURCES= \
 		cpputils/cpputilsshared/range.h \
 		cpputils/cpputilsshared/ref.h \
 		cpputils/cpputilsshared/stderr_exception.h \
+		cpputils/cpputilsshared/stderr_exception.cc \
 		cpputils/cpputilsshared/string_utils.h \
 		cpputils/cpputilsshared/string_utils.cc \
 		cpputils/cpputilsshared/utf8.h \
