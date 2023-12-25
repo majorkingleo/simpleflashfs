@@ -126,3 +126,13 @@ On start up all inode pages have to be read from flash. The valid ones have to b
 
 If there is a FRAM available, the index of valid inodes can be stored there. So on startup
 you don't have to read all inodes.
+
+# Implementation modes
+
+## Warp 1
+
+This is the basic implementation.
+
+* The cleanup function has to be called manually, or will be called autoamtically, if there is no free page available.
+* Target is using the smallest memory footprint
+
