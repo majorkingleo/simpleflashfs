@@ -37,11 +37,8 @@
 .deps
 .dirstamp
 Makefile
-supagrep
-supagrep.exe
-testsupagrep.exe
-forward.exe
-addpath.exe
+simple_flash_fs_tar
+simple_flash_fs_tar.exe
 
 # http://www.gnu.org/software/automake
 
@@ -104,7 +101,3 @@ cmake_install.cmake
 dist
 mymoc.sh
 
-test_format
-test_format11
-test_format98
-test_wformat

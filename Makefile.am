@@ -1,38 +1,8 @@
 bin_PROGRAMS=\
-	test_format \
-	test_format11 \
-	test_format98 \
-	test_wformat \
-	test_cpputilsshared
-	
-test_format_SOURCES=\
-		src_test_format/test_format.cc \
-		tools_config.h
-
-test_format11_SOURCES=\
-		src_test_format/test_format11.cc \
-		tools_config.h
-
-test_format98_SOURCES=\
-		src_test_format/test_format98.cc \
-		tools_config.h
+	simple_flash_fs_tar
 		
-test_wformat_SOURCES=\
-		src_test_format/test_wformat.cc \
-		tools_config.h
-
-test_cpputilsshared_SOURCES=\
-		src_test_cpputilsshared/test_string_utils.cc \
-		src_test_cpputilsshared/test_string_utils.h \
-		src_test_cpputilsshared/test_cpputilsshared.cc \
-		src_test_cpputilsshared/test_cyclicarray.h \
-		src_test_cpputilsshared/test_cyclicarray.cc \
-		src_test_cpputilsshared/test_static_vector.h \
-		src_test_cpputilsshared/test_static_vector.cc \
-		src_test_cpputilsshared/test_static_list.h \
-		src_test_cpputilsshared/test_static_list.cc \
-		src_test_cpputilsshared/test_static_string.h \
-		src_test_cpputilsshared/test_static_string.cc \
+simple_flash_fs_tar_SOURCES=\
+		src_simple_flash_fs_tar/main.cc \
 		tools_config.h
 		
 
@@ -119,23 +89,12 @@ common_libcommon_a_SOURCES=\
 	common/ColBuilder.h \
 	common/ColBuilder.cc
 
-test_format_LDADD = cpputils/cpputilsshared/cpputilsformat/libcpputilsformat.a \
-	cpputils/io/libcpputilsio.a
-
-test_format11_LDADD = cpputils/cpputilsshared/cpputilsformat/libcpputilsformat.a \
-	cpputils/io/libcpputilsio.a
-
-test_format98_LDADD = cpputils/cpputilsshared/cpputilsformat/libcpputilsformat.a \
-	cpputils/io/libcpputilsio.a
-
-test_wformat_LDADD = cpputils/cpputilsshared/cpputilsformat/libcpputilsformat.a \
-	cpputils/io/libcpputilsio.a \
-	cpputils/cpputilsshared/libcpputilsshared.a
-
-test_cpputilsshared_LDADD = cpputils/cpputilsshared/cpputilsformat/libcpputilsformat.a \
+simple_flash_fs_tar_LDADD = \
 	cpputils/io/libcpputilsio.a \
 	cpputils/cpputilsshared/libcpputilsshared.a \
-	common/libcommon.a
+	common/libcommon.a \
+	cpputils/cpputilsshared/cpputilsformat/libcpputilsformat.a
+	
 				 
 LIBS=
     
