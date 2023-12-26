@@ -12,6 +12,7 @@
 #include <bit>
 #include <cstring>
 #include "../crc/crc.h"
+#include <format.h>
 
 using namespace Tools;
 
@@ -149,6 +150,111 @@ void SimpleFlashFs::add_page_checksum( std::vector<std::byte> & page )
 		throw std::out_of_range("unknown checksum type");
 	}
 }
+
+uint32_t SimpleFlashFs::calc_page_checksum( const std::vector<std::byte> & page )
+{
+	switch( header.crc_checksum_type )
+	{
+	case Header::CRC_CHECKSUM::CRC32:
+		return crcFast( reinterpret_cast<const unsigned char*>(&page[0]), page.size() - sizeof(uint32_t));
+	default:
+		throw std::out_of_range("unknown checksum type");
+	}
+}
+
+uint32_t SimpleFlashFs::get_page_checksum( const std::vector<std::byte> & page )
+{
+	switch( header.crc_checksum_type )
+	{
+	case Header::CRC_CHECKSUM::CRC32:
+		{
+			uint32_t chksum = 0;
+			memcpy( &chksum, &page[page.size() - sizeof(uint32_t)], sizeof(uint32_t) );
+			auto_endianess(chksum);
+			return chksum;
+		}
+	default:
+		throw std::out_of_range("unknown checksum type");
+	}
+}
+
+bool SimpleFlashFs::init()
+{
+	Header h{};
+	std::vector<std::byte> page(MIN_PAGE_SIZE);
+
+	mem->read(0, page.data(), page.size());
+
+	std::size_t pos = 0;
+	h.magic_string = std::string_view( reinterpret_cast<char*>(&page[pos]), MAGICK_STRING_LEN );
+
+	if( h.magic_string != MAGICK_STRING ) {
+		CPPDEBUG( format( "invalid magick string: '%s'", h.magic_string ));
+		return false;
+	}
+
+	pos += MAGICK_STRING_LEN;
+
+	std::string_view endianess( reinterpret_cast<char*>(&page[pos]), ENDIANESS_LEN );
+
+	if( endianess == ENDIANESS_BE ) {
+		h.endianess = Header::ENDIANESS::BE;
+	} else if( endianess == ENDIANESS_LE ) {
+		h.endianess = Header::ENDIANESS::LE;
+	} else {
+		CPPDEBUG( format( "invalid endianess: '%s'", endianess ));
+		return false;
+	}
+
+	// auto_endianess is looking at header.endianess
+	header = h;
+
+	pos += ENDIANESS_LEN;
+
+	auto read=[this,&pos,&page]( auto & t ) {
+		std::memcpy(&t, &page[pos], sizeof(t) );
+		auto_endianess(t);
+		pos += sizeof(t);
+	};
+
+	read(h.version);
+	read(h.page_size);
+	read(h.filesystem_size);
+	read(h.max_inodes);
+	read(h.max_path_len);
+	uint16_t chktype = 0;
+	read(chktype);
+
+	switch( chktype ) {
+	case static_cast<uint16_t>(Header::CRC_CHECKSUM::CRC32):
+		h.crc_checksum_type = Header::CRC_CHECKSUM::CRC32;
+		break;
+	default:
+		CPPDEBUG( format( "invalid chksum type: '%d'", chktype ));
+		return false;
+	}
+
+	if( h.page_size < MIN_PAGE_SIZE ) {
+		CPPDEBUG( format( "invalid page size '%d'", h.page_size ));
+		return false;
+	}
+
+	// now reread the whole page
+	page.resize(h.page_size);
+	mem->read(0, page.data(), page.size());
+
+	uint32_t chksum_calc = calc_page_checksum( page );
+	uint32_t chksum_page = get_page_checksum( page );
+
+	if( chksum_calc != chksum_page ) {
+		CPPDEBUG( format( "chksum_calc: %d != chksum_page: %d", chksum_calc, chksum_page ));
+		return false;
+	}
+
+	header = h;
+
+	return true;
+ }
 
 } // namespace SimpleFlashFs::dynamic
 

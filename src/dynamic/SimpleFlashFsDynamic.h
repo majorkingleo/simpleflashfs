@@ -47,7 +47,13 @@ public:
 	bool create( const Header & header );
 	static Header create_default_header( uint32_t page_size, uint64_t filesystem_size );
 
+	// read the fs the memory interface points to
+	// starting at offset 0
 	bool init();
+
+	const Header & get_header() const {
+		return header;
+	}
 
 protected:
 	bool write( const Header & header );
@@ -62,6 +68,8 @@ protected:
 	std::size_t get_num_of_checksum_bytes() const;
 
 	void add_page_checksum( std::vector<std::byte> & page );
+	uint32_t calc_page_checksum( const std::vector<std::byte> & page );
+	uint32_t get_page_checksum( const std::vector<std::byte> & page );
 };
 
 } // namespace dynamic

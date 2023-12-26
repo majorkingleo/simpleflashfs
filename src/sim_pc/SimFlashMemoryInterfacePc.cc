@@ -7,7 +7,10 @@
 #include "SimFlashMemoryInterfacePc.h"
 #include <filesystem>
 #include <vector>
+#include <stderr_exception.h>
+#include <format.h>
 
+using namespace Tools;
 using namespace SimpleFlashFs::SimPc;
 
 SimFlashFsFlashMemoryInterface::SimFlashFsFlashMemoryInterface( const std::string & filename_, std::size_t file_size_ )
@@ -21,6 +24,19 @@ SimFlashFsFlashMemoryInterface::SimFlashFsFlashMemoryInterface( const std::strin
 
 	std::filesystem::resize_file(filename_, file_size);
 	file.open( filename.c_str(), std::ios_base::binary | std::ios_base::in | std::ios_base::out );
+}
+
+SimFlashFsFlashMemoryInterface::SimFlashFsFlashMemoryInterface( const std::string & filename_ )
+: filename( filename_ ),
+  file(),
+  file_size( 0 )
+{
+	file_size = std::filesystem::file_size(filename);
+	file.open( filename.c_str(), std::ios_base::binary | std::ios_base::in | std::ios_base::out );
+
+	if( !file ) {
+		throw STDERR_EXCEPTION( format( "cannot open file '%s'", filename ) );
+	}
 }
 
 

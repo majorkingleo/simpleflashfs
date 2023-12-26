@@ -214,3 +214,20 @@ std::string ColBuilder::fill_leading( std::string s, const std::string fill_sign
 	return s;
 }
 
+unsigned ColBuilder::get_width() const
+{
+	unsigned cols = getNumOfCols();
+	unsigned width = margin_left;
+
+	for( unsigned i = 0; i < cols; i++ ) {
+
+		// on space between each column
+		if( i > 0 ) {
+			width++;
+		}
+
+		width += getColWidth(i);
+	}
+
+	return width;
+}

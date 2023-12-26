@@ -23,7 +23,13 @@ class SimFlashFsFlashMemoryInterface : public FlashMemoryInterface
 	std::size_t file_size;
 
 public:
+	// create a new file, if it does not exists.
+	// automatically resizes the file to the given size
 	SimFlashFsFlashMemoryInterface( const std::string & filename_, std::size_t size );
+
+	// opens a file
+	// size will be automatically detected
+	SimFlashFsFlashMemoryInterface( const std::string & filename_);
 
 	std::size_t size() const override {
 		return file_size;

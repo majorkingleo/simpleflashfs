@@ -17,6 +17,9 @@ extern const std::size_t MAGICK_STRING_LEN;
 
 extern const char * ENDIANESS_LE;
 extern const char * ENDIANESS_BE;
+extern const std::size_t ENDIANESS_LEN;
+
+constexpr std::size_t MIN_PAGE_SIZE = 37;
 
 }
 

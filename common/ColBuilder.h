@@ -51,6 +51,10 @@ public:
 	 */
 	int getColByName( const std::string & name ) const;
 
+	/**
+	 * Returns the with of the resulting table in chars.
+	 * The margin is in inclusive.
+	 */
 	int getNumOfCols() const
 	{
 		return col_headers.size();
@@ -61,6 +65,8 @@ public:
 	int getColWidth( int idx ) const;
 
 	std::string toString() const;
+
+	unsigned get_width() const;
 
 protected:
 	static std::string fill_leading( std::string s, const std::string fill_sign, unsigned int len );
