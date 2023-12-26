@@ -3,7 +3,17 @@ bin_PROGRAMS=\
 		
 simple_flash_fs_tar_SOURCES=\
 		src_simple_flash_fs_tar/main.cc \
-		tools_config.h
+		tools_config.h \
+		src/crc/crc.c \
+		src/crc/crc.h \
+		src/dynamic/SimpleFlashFsDynamicHeader.h \
+		src/dynamic/SimpleFlashFsDynamic.h \
+		src/dynamic/SimpleFlashFsDynamic.cc \
+		src/SimpleFlashFsFlashMemoryInterface.h \
+		src/SimpleFlashFsConstants.h \
+		src/SimpleFlashFsConstants.cc \
+		src/sim_pc/SimFlashMemoryInterfacePc.h \
+		src/sim_pc/SimFlashMemoryInterfacePc.cc
 		
 
 AM_CPPFLAGS = -I$(top_srcdir)/tools \
@@ -11,6 +21,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/tools \
 	-I$(top_srcdir)/cpputils/cpputilsshared/cpputilsformat \
 	-I$(top_srcdir)/cpputils/io \
 	-I$(top_srcdir)/common \
+	-I$(top_srcdir)/src \
 	-std=gnu++20 \
 	-D_GLIBCXX_USE_CXX11_ABI=1 \
 	-D_XOPEN_SOURCE=700 # for cyggwin fileno()
