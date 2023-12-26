@@ -15,6 +15,7 @@
 #include <stderr_exception.h>
 #include <SimpleFlashFsConstants.h>
 #include <string_utils.h>
+#include <filesystem>
 
 using namespace Tools;
 using namespace SimpleFlashFs;
@@ -110,6 +111,26 @@ static void info_fs( const SimpleFlashFs::dynamic::SimpleFlashFs & fs )
 	std::cout << co.toString() << std::endl;
 }
 
+static std::vector<std::byte> read_file( const std::string & file )
+{
+	std::ifstream in( file, std::ios_base::in | std::ios_base::binary );
+	if( !in ) {
+		throw STDERR_EXCEPTION( format( "cannot open file '%s'", file ) );
+	}
+
+	std::vector<std::byte> data( std::filesystem::file_size(file) );
+
+	in.read(reinterpret_cast<char*>(&data[0]),data.size());
+
+	return data;
+}
+
+static void add_file( const SimpleFlashFs::dynamic::SimpleFlashFs & fs, const std::string & file )
+{
+	auto data = read_file( file );
+
+}
+
 int main( int argc, char **argv )
 {
 	ColoredOutput co;
@@ -145,6 +166,12 @@ int main( int argc, char **argv )
 	o_fs_info.setDescription("inspect a filesystem");
 	o_fs_info.setRequired(false);
 	arg.addOptionR( &o_fs_info );
+
+	Arg::StringOption o_fs_add("a");
+	o_fs_add.addName( "add" );
+	o_fs_add.setDescription("add file");
+	o_fs_add.setRequired(false);
+	arg.addOptionR( &o_fs_add );
 
 	try {
 
@@ -189,6 +216,24 @@ int main( int argc, char **argv )
 			}
 
 			info_fs( fs );
+		}
+
+
+		if( o_fs_add.isSet() ) {
+			auto values = o_fs_info.getValues();
+
+			std::string file = values->at(0);
+
+			SimFlashFsFlashMemoryInterface mem(file);
+			SimpleFlashFs::dynamic::SimpleFlashFs fs(&mem);
+
+			if( !fs.init() ) {
+				throw STDERR_EXCEPTION( "init failed" );
+			}
+
+			for( unsigned i = 1; i < values->size(); i++ ) {
+				add_file( fs, values->at(i) );
+			}
 		}
 
 	} catch( const std::exception &error ) {

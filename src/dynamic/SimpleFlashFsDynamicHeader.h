@@ -10,6 +10,7 @@
 
 #include <cstdint>
 #include <string>
+#include <vector>
 
 namespace SimpleFlashFs {
 namespace dynamic {
@@ -35,6 +36,19 @@ struct Header
 	uint32_t		max_inodes = 0;
 	uint16_t		max_path_len = 0;
 	CRC_CHECKSUM	crc_checksum_type{CRC_CHECKSUM::CRC32};
+};
+
+struct Inode
+{
+	uint64_t 		inode_number{};
+	uint64_t		inode_version_number{};
+	uint16_t		file_name_len=0;
+	std::string		file_name;
+	uint64_t		attributes=0;
+	uint64_t		file_len=0;
+	uint32_t		pages=0;
+
+	std::vector<uint16_t> inode_pages;
 };
 
 } // namespace dynamic

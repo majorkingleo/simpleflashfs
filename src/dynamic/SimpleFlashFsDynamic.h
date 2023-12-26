@@ -10,6 +10,7 @@
 
 #include "SimpleFlashFsDynamicHeader.h"
 #include <vector>
+#include <memory>
 
 namespace SimpleFlashFs {
 
@@ -28,6 +29,11 @@ template<typename T> inline static T swapByteOrder(const T& val) {
     return swapped;
 }
 
+struct FileHandle
+{
+	Inode inode;
+	std::size_t pos{0};
+};
 
 class SimpleFlashFs
 {
@@ -55,6 +61,8 @@ public:
 		return header;
 	}
 
+	std::shared_ptr<FileHandle> open( const std::string & name, std::ios_base::openmode mode );
+
 protected:
 	bool write( const Header & header );
 	bool swap_endianess();
@@ -70,6 +78,12 @@ protected:
 	void add_page_checksum( std::vector<std::byte> & page );
 	uint32_t calc_page_checksum( const std::vector<std::byte> & page );
 	uint32_t get_page_checksum( const std::vector<std::byte> & page );
+
+	std::shared_ptr<FileHandle> find_file( const std::string & name );
+
+	bool read_page( std::size_t idx, std::vector<std::byte> & data, bool check_crc = false );
+
+	std::shared_ptr<FileHandle> get_inode( const std::vector<std::byte> & data );
 };
 
 } // namespace dynamic

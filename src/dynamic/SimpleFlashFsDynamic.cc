@@ -256,5 +256,80 @@ bool SimpleFlashFs::init()
 	return true;
  }
 
+std::shared_ptr<FileHandle> SimpleFlashFs::open( const std::string & name, std::ios_base::openmode mode )
+{
+	auto ret = find_file( name );
+
+	if( !ret ) {
+		std::shared_ptr<FileHandle> ret = std::make_shared<FileHandle>();
+	}
+
+	return ret;
+}
+
+std::shared_ptr<FileHandle> SimpleFlashFs::find_file( const std::string & name )
+{
+	for( unsigned i = 0; i < header.max_inodes; i++ ) {
+
+		std::vector<std::byte> page(header.page_size);
+
+		if( read_page( i, page ) ) {
+
+		}
+	}
+}
+
+bool SimpleFlashFs::read_page( std::size_t idx, std::vector<std::byte> & page, bool check_crc )
+{
+	std::size_t offset = header.page_size + idx * header.page_size;
+
+	if( mem->read(offset, &page[0], page.size() ) != page.size() ) {
+		CPPDEBUG( "cannot read all data" );
+		return false;
+	}
+
+	if( check_crc ) {
+		if( get_page_checksum( page ) != calc_page_checksum(page) ) {
+			CPPDEBUG( "checksum failed" );
+			return false;
+		}
+	}
+
+	return true;
+}
+
+std::shared_ptr<FileHandle> SimpleFlashFs::get_inode( const std::vector<std::byte> & page )
+{
+	std::shared_ptr<FileHandle> ret = std::make_shared<FileHandle>();
+	std::size_t pos = 0;
+
+	auto read=[this,&pos,&page]( auto & t ) {
+		std::memcpy(&t, &page[pos], sizeof(t) );
+		auto_endianess(t);
+		pos += sizeof(t);
+	};
+
+	read( ret->inode.inode_number );
+	read( ret->inode.inode_version_number );
+	read( ret->inode.file_name_len );
+
+	std::vector<char> file_name(ret->inode.file_name_len+1);
+	std::memcpy(&file_name[0], &page[pos], ret->inode.file_name_len );
+	pos += ret->inode.file_name_len;
+	ret->inode.file_name = std::string_view( &file_name[0], ret->inode.file_name_len );
+
+	read( ret->inode.attributes );
+	read( ret->inode.file_len );
+	read( ret->inode.pages );
+
+	ret->inode.inode_pages.resize( ret->inode.pages, 0 );
+
+	for( unsigned i = 0; i < ret->inode.pages; i++ ) {
+		read( ret->inode.inode_pages[i] );
+	}
+
+	return ret;
+}
+
 } // namespace SimpleFlashFs::dynamic
 
