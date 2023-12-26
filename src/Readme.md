@@ -84,6 +84,8 @@ as additional meta information.
 ...
 * last Bytes: CRC checksum (depends on checksum type)
 
+The minimum page size is: 37, plus checksum size
+
 ### Inode
 
 * Bytes 08: Inode number
