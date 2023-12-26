@@ -80,7 +80,9 @@ as additional meta information.
 * Bytes 08: Filesystem size in pages
 * Bytes 04: Maximum number of inodes
 * Bytes 02: Maximum path len (path + filename)
-
+* Bytes 02: CRC checksum type
+...
+* last Bytes: CRC checksum (depends on checksum type)
 
 ### Inode
 
