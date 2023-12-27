@@ -11,6 +11,7 @@
 #include "SimpleFlashFsDynamicHeader.h"
 #include <vector>
 #include <memory>
+#include <set>
 
 namespace SimpleFlashFs {
 
@@ -29,16 +30,33 @@ template<typename T> inline static T swapByteOrder(const T& val) {
     return swapped;
 }
 
-struct FileHandle
+class SimpleFlashFs;
+
+class FileHandle
 {
+public:
 	Inode inode;
+	uint32_t page{0};
 	std::size_t pos{0};
+
+protected:
+	SimpleFlashFs *fs;
+
+public:
+	FileHandle( SimpleFlashFs *fs_ )
+	: fs( fs_ )
+	{}
+
+	~FileHandle();
 };
 
 class SimpleFlashFs
 {
 	Header header;
 	FlashMemoryInterface *mem;
+
+	std::set<uint32_t> allocated_unwritten_pages;
+
 public:
 
 	SimpleFlashFs( FlashMemoryInterface *mem_interface );
@@ -63,6 +81,8 @@ public:
 
 	std::shared_ptr<FileHandle> open( const std::string & name, std::ios_base::openmode mode );
 
+	friend class FileHandle;
+
 protected:
 	bool write( const Header & header );
 	bool swap_endianess();
@@ -84,6 +104,11 @@ protected:
 	bool read_page( std::size_t idx, std::vector<std::byte> & data, bool check_crc = false );
 
 	std::shared_ptr<FileHandle> get_inode( const std::vector<std::byte> & data );
+	std::shared_ptr<FileHandle> allocate_free_inode_page();
+
+	void free_unwritten_pages( uint32_t page ) {
+		allocated_unwritten_pages.erase(page);
+	}
 };
 
 } // namespace dynamic

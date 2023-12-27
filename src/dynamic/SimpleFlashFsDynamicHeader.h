@@ -48,7 +48,7 @@ struct Inode
 	uint64_t		file_len=0;
 	uint32_t		pages=0;
 
-	std::vector<uint16_t> inode_pages;
+	std::vector<uint32_t> data_pages;
 };
 
 } // namespace dynamic

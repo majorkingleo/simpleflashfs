@@ -18,6 +18,14 @@ using namespace Tools;
 
 namespace SimpleFlashFs::dynamic {
 
+FileHandle::~FileHandle()
+{
+	fs->free_unwritten_pages( page );
+	for( auto page : inode.data_pages ) {
+		fs->free_unwritten_pages(page);
+	}
+}
+
 SimpleFlashFs::SimpleFlashFs( FlashMemoryInterface *mem_interface_ )
 : mem(mem_interface_)
 {
@@ -258,13 +266,32 @@ bool SimpleFlashFs::init()
 
 std::shared_ptr<FileHandle> SimpleFlashFs::open( const std::string & name, std::ios_base::openmode mode )
 {
-	auto ret = find_file( name );
+	auto handle = find_file( name );
 
-	if( !ret ) {
-		std::shared_ptr<FileHandle> ret = std::make_shared<FileHandle>();
+	if( !handle ) {
+		// file does not exists
+		if( !(mode & std::ios_base::out) ) {
+			return {};
+		}
+
+		handle = allocate_free_inode_page();
+
+		handle->inode.file_name = name;
+		handle->inode.file_name_len = name.size();
+		return handle;
+	}
+	else if( mode & std::ios_base::trunc ) {
+		std::size_t offset = header.page_size;
+
+		for( auto page : handle->inode.data_pages ) {
+			std::size_t address = offset + page * header.page_size;
+			mem->erase(address, header.page_size );
+		}
+
+		handle->inode.data_pages.clear();
 	}
 
-	return ret;
+	return handle;
 }
 
 std::shared_ptr<FileHandle> SimpleFlashFs::find_file( const std::string & name )
@@ -274,9 +301,15 @@ std::shared_ptr<FileHandle> SimpleFlashFs::find_file( const std::string & name )
 		std::vector<std::byte> page(header.page_size);
 
 		if( read_page( i, page ) ) {
-
+			auto inode = get_inode( page );
+			if( inode->inode.file_name == name ) {
+				inode->page = i;
+				return inode;
+			}
 		}
 	}
+
+	return {};
 }
 
 bool SimpleFlashFs::read_page( std::size_t idx, std::vector<std::byte> & page, bool check_crc )
@@ -300,7 +333,8 @@ bool SimpleFlashFs::read_page( std::size_t idx, std::vector<std::byte> & page, b
 
 std::shared_ptr<FileHandle> SimpleFlashFs::get_inode( const std::vector<std::byte> & page )
 {
-	std::shared_ptr<FileHandle> ret = std::make_shared<FileHandle>();
+	std::shared_ptr<FileHandle> ret = std::make_shared<FileHandle>(this);
+
 	std::size_t pos = 0;
 
 	auto read=[this,&pos,&page]( auto & t ) {
@@ -322,13 +356,30 @@ std::shared_ptr<FileHandle> SimpleFlashFs::get_inode( const std::vector<std::byt
 	read( ret->inode.file_len );
 	read( ret->inode.pages );
 
-	ret->inode.inode_pages.resize( ret->inode.pages, 0 );
+	ret->inode.data_pages.resize( ret->inode.pages, 0 );
 
 	for( unsigned i = 0; i < ret->inode.pages; i++ ) {
-		read( ret->inode.inode_pages[i] );
+		read( ret->inode.data_pages[i] );
 	}
 
 	return ret;
+}
+
+std::shared_ptr<FileHandle> SimpleFlashFs::allocate_free_inode_page()
+{
+	for( unsigned i = 0; i < header.max_inodes; i++ ) {
+
+		std::vector<std::byte> page(header.page_size);
+
+		if( !read_page( i, page ) ) {
+			auto ret = std::make_shared<FileHandle>(this);
+			ret->page = i;
+			allocated_unwritten_pages.insert(i);
+			return ret;
+		}
+	}
+
+	return {};
 }
 
 } // namespace SimpleFlashFs::dynamic
