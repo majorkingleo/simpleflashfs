@@ -125,10 +125,11 @@ static std::vector<std::byte> read_file( const std::string & file )
 	return data;
 }
 
-static void add_file( const SimpleFlashFs::dynamic::SimpleFlashFs & fs, const std::string & file )
+static void add_file( SimpleFlashFs::dynamic::SimpleFlashFs & fs, const std::string & file )
 {
 	auto data = read_file( file );
-
+	auto handle = fs.open( file, std::ios_base::in | std::ios_base::out );
+	handle->write( data.data(), data.size() );
 }
 
 int main( int argc, char **argv )
@@ -220,7 +221,7 @@ int main( int argc, char **argv )
 
 
 		if( o_fs_add.isSet() ) {
-			auto values = o_fs_info.getValues();
+			auto values = o_fs_add.getValues();
 
 			std::string file = values->at(0);
 
