@@ -570,7 +570,18 @@ void SimpleFlashFs::read_all_free_data_pages()
 
 		std::vector<std::byte> page(header.page_size);
 
-		if( read_page( i, page ) ) {
+		if( read_page( i, page, true ) ) {
+			/*
+			CPPDEBUG( format( "inode page: %d data %x%x%x%x%x%x%x%x", i,
+					static_cast<unsigned>(page[0]),
+					static_cast<unsigned>(page[1]),
+					static_cast<unsigned>(page[2]),
+					static_cast<unsigned>(page[3]),
+					static_cast<unsigned>(page[4]),
+					static_cast<unsigned>(page[5]),
+					static_cast<unsigned>(page[6]),
+					static_cast<unsigned>(page[7]) ) );
+					*/
 			auto inode = get_inode( page );
 
 			max_inode_number = std::max( max_inode_number, inode->inode.inode_number );

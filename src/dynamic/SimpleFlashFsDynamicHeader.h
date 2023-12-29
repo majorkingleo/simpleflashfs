@@ -42,11 +42,11 @@ struct Inode
 {
 	uint64_t 		inode_number{};
 	uint64_t		inode_version_number{};
-	uint16_t		file_name_len=0;
+	uint16_t		file_name_len{};
 	std::string		file_name;
-	uint64_t		attributes=0;
-	uint64_t		file_len=0;
-	uint32_t		pages=0;
+	uint64_t		attributes{};
+	uint64_t		file_len{};
+	uint32_t		pages{};
 
 	std::vector<uint32_t> data_pages;
 };
