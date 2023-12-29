@@ -60,6 +60,7 @@ class SimpleFlashFs
 
 	std::set<uint32_t> allocated_unwritten_pages;
 	std::set<uint32_t> free_data_pages;
+	uint64_t max_inode_number = 0;
 
 public:
 
@@ -89,6 +90,14 @@ public:
 	void flush( FileHandle* file );
 
 	friend class FileHandle;
+
+	uint64_t get_max_inode_number() const {
+		return max_inode_number;
+	}
+
+	std::size_t get_number_of_free_data_pages() const {
+		return free_data_pages.size();
+	}
 
 protected:
 	bool write( const Header & header );

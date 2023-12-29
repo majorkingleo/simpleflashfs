@@ -50,65 +50,80 @@ namespace std {
 
 static void info_fs( const SimpleFlashFs::dynamic::SimpleFlashFs & fs )
 {
-	ColBuilder co;
+	{
+		ColBuilder co;
+		std::cout << "Header:\n";
 
-	std::cout << "Header:\n";
+		const int BYTES = co.addCol("Bytes");
+		const int LEN = co.addCol("Len");
+		const int TITLE = co.addCol("Title");
+		const int DATA = co.addCol("Data");
 
-	const int BYTES = co.addCol("Bytes");
-	const int LEN = co.addCol("Len");
-	const int TITLE = co.addCol("Title");
-	const int DATA = co.addCol("Data");
+		const SimpleFlashFs::dynamic::Header & header = fs.get_header();
 
-	const SimpleFlashFs::dynamic::Header & header = fs.get_header();
+		co.addColData(BYTES, "00 - 12" );
+		co.addColData(LEN,   x2s(MAGICK_STRING_LEN) );
+		co.addColData(TITLE, "Magic");
+		co.addColData(DATA,  header.magic_string );
 
-	co.addColData(BYTES, "00 - 12" );
-	co.addColData(LEN,   x2s(MAGICK_STRING_LEN) );
-	co.addColData(TITLE, "Magic");
-	co.addColData(DATA,  header.magic_string );
+		co.addColData(BYTES, "13 - 14" );
+		co.addColData(TITLE, "Endianess");
+		co.addColData(LEN,   x2s(ENDIANESS_LEN) );
+		co.addColData(DATA,  x2s(header.endianess) );
 
-	co.addColData(BYTES, "13 - 14" );
-	co.addColData(TITLE, "Endianess");
-	co.addColData(LEN,   x2s(ENDIANESS_LEN) );
-	co.addColData(DATA,  x2s(header.endianess) );
+		co.addColData(BYTES, "15 - 16" );
+		co.addColData(TITLE, "Version");
+		co.addColData(LEN,   x2s(2) );
+		co.addColData(DATA,  x2s(header.version) );
 
-	co.addColData(BYTES, "15 - 16" );
-	co.addColData(TITLE, "Version");
-	co.addColData(LEN,   x2s(2) );
-	co.addColData(DATA,  x2s(header.version) );
+		co.addColData(BYTES, "17 - 20" );
+		co.addColData(TITLE, "page size");
+		co.addColData(LEN,   x2s(4) );
+		co.addColData(DATA,  x2s(header.page_size) );
 
-	co.addColData(BYTES, "17 - 20" );
-	co.addColData(TITLE, "page size");
-	co.addColData(LEN,   x2s(4) );
-	co.addColData(DATA,  x2s(header.page_size) );
+		co.addColData(BYTES, "21 - 28" );
+		co.addColData(TITLE, "filesystem size");
+		co.addColData(LEN,   x2s(8) );
+		co.addColData(DATA,  x2s(header.filesystem_size) );
 
-	co.addColData(BYTES, "21 - 28" );
-	co.addColData(TITLE, "filesystem size");
-	co.addColData(LEN,   x2s(8) );
-	co.addColData(DATA,  x2s(header.filesystem_size) );
+		co.addColData(BYTES, "29 - 32" );
+		co.addColData(TITLE, "max inodes");
+		co.addColData(LEN,   x2s(4) );
+		co.addColData(DATA,  x2s(header.max_inodes) );
 
-	co.addColData(BYTES, "29 - 32" );
-	co.addColData(TITLE, "max inodes");
-	co.addColData(LEN,   x2s(4) );
-	co.addColData(DATA,  x2s(header.max_inodes) );
+		co.addColData(BYTES, "33 - 34" );
+		co.addColData(TITLE, "max path len");
+		co.addColData(LEN,   x2s(2) );
+		co.addColData(DATA,  x2s(header.max_path_len) );
 
-	co.addColData(BYTES, "33 - 34" );
-	co.addColData(TITLE, "max path len");
-	co.addColData(LEN,   x2s(2) );
-	co.addColData(DATA,  x2s(header.max_path_len) );
-
-	co.addColData(BYTES, "35 - 36" );
-	co.addColData(TITLE, "crc checksum type");
-	co.addColData(LEN,   x2s(2) );
-	co.addColData(DATA,  x2s(header.crc_checksum_type) );
+		co.addColData(BYTES, "35 - 36" );
+		co.addColData(TITLE, "crc checksum type");
+		co.addColData(LEN,   x2s(2) );
+		co.addColData(DATA,  x2s(header.crc_checksum_type) );
 
 
-	const unsigned width = co.get_width();
-	for( unsigned i = 0; i < width; i++ ) {
-		std::cout << '=';
+		const unsigned width = co.get_width();
+		for( unsigned i = 0; i < width; i++ ) {
+			std::cout << '=';
+		}
+		std::cout << '\n';
+
+		std::cout << co.toString() << std::endl;
 	}
-	std::cout << '\n';
 
-	std::cout << co.toString() << std::endl;
+	{
+		ColBuilder co;
+		const int INFO = co.addCol("Info");
+		const int DATA = co.addCol("Data");
+
+		co.addColData(INFO, "free data pages" );
+		co.addColData(DATA, x2s(fs.get_number_of_free_data_pages()));
+
+		co.addColData(INFO, "max inode number" );
+		co.addColData(DATA, x2s(fs.get_max_inode_number()));
+
+		std::cout << co.toString() << std::endl;
+	}
 }
 
 static std::vector<std::byte> read_file( const std::string & file )

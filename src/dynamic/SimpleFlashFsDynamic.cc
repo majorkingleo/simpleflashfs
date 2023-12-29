@@ -362,6 +362,7 @@ std::shared_ptr<FileHandle> SimpleFlashFs::get_inode( const std::vector<std::byt
 	};
 
 	read( ret->inode.inode_number );
+	CPPDEBUG( format("inode: %d", ret->inode.inode_number ) );
 	read( ret->inode.inode_version_number );
 	read( ret->inode.file_name_len );
 
@@ -571,6 +572,9 @@ void SimpleFlashFs::read_all_free_data_pages()
 
 		if( read_page( i, page ) ) {
 			auto inode = get_inode( page );
+
+			max_inode_number = std::max( max_inode_number, inode->inode.inode_number );
+
 			inodes[inode->inode.inode_number].push_back(inode);
 			//free_data_pages.insert(inode->inode.data_pages.begin(), inode->inode.data_pages.end());
 		}
