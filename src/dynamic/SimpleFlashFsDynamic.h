@@ -59,6 +59,7 @@ public:
 	FileHandle & operator=( const FileHandle & other ) = delete;
 
 	std::size_t write( const std::byte *data, std::size_t size );
+	std::size_t read( std::byte *data, std::size_t size );
 	bool flush();
 
 	friend class SimpleFlashFs;
@@ -114,6 +115,8 @@ public:
 	std::shared_ptr<FileHandle> open( const std::string & name, std::ios_base::openmode mode );
 
 	std::size_t write( FileHandle* file, const std::byte *data, std::size_t size );
+	std::size_t read( FileHandle* file, std::byte *data, std::size_t size );
+
 	bool flush( FileHandle* file );
 
 	friend class FileHandle;
@@ -141,12 +144,24 @@ protected:
 	std::size_t get_num_of_checksum_bytes() const;
 
 	void add_page_checksum( std::vector<std::byte> & page );
-	uint32_t calc_page_checksum( const std::vector<std::byte> & page );
-	uint32_t get_page_checksum( const std::vector<std::byte> & page );
+
+	uint32_t calc_page_checksum( const std::vector<std::byte> & page ) {
+		return calc_page_checksum( page.data(), page.size() );
+	}
+	uint32_t calc_page_checksum( const std::byte *page, std::size_t size );
+
+	uint32_t get_page_checksum( const std::vector<std::byte> & page ) {
+		return get_page_checksum( page.data(), page.size() );
+	}
+	uint32_t get_page_checksum( const std::byte *page, std::size_t size );
 
 	std::shared_ptr<FileHandle> find_file( const std::string & name );
 
-	bool read_page( std::size_t idx, std::vector<std::byte> & data, bool check_crc = false );
+	bool read_page( std::size_t idx, std::vector<std::byte> & page, bool check_crc = false ) {
+		return read_page( idx, page.data(), page.size(), check_crc );
+	}
+
+	bool read_page( std::size_t idx, std::byte *data, std::size_t size, bool check_crc = false );
 
 	std::shared_ptr<FileHandle> get_inode( const std::vector<std::byte> & data );
 	std::shared_ptr<FileHandle> allocate_free_inode_page();

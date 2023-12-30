@@ -16,6 +16,7 @@
 #include <SimpleFlashFsConstants.h>
 #include <string_utils.h>
 #include <filesystem>
+#include <optional>
 
 using namespace Tools;
 using namespace SimpleFlashFs;
@@ -166,6 +167,37 @@ static void add_file( SimpleFlashFs::dynamic::SimpleFlashFs & fs, const std::str
 	handle->write( data.data(), data.size() );
 }
 
+static bool extract_file( SimpleFlashFs::dynamic::SimpleFlashFs & fs, const std::string & file )
+{
+	auto handle = fs.open( file, std::ios_base::in );
+
+	if( !handle ) {
+		CPPDEBUG( "file not found" );
+		return false;
+	}
+
+	std::vector<std::byte> buffer(handle->inode.file_len);
+
+	if( handle->read(buffer.data(),buffer.size()) != buffer.size() ) {
+		CPPDEBUG( "reading all data failed" );
+		return false;
+	}
+
+	std::ofstream out( file, std::ios_base::trunc | std::ios_base::binary );
+
+	if( !out ) {
+		CPPDEBUG( "cannot open file for writing" );
+		return false;
+	}
+
+	out.write(reinterpret_cast<const char*>(buffer.data()),buffer.size());
+	if( !out ) {
+		return false;
+	}
+
+	return true;
+}
+
 int main( int argc, char **argv )
 {
 	ColoredOutput co;
@@ -190,6 +222,14 @@ int main( int argc, char **argv )
 	o_debug.setRequired(false);
 	arg.addOptionR( &o_debug );
 
+	Arg::StringOption o_tar_archive("f");
+	o_tar_archive.addName( "file" );
+	o_tar_archive.setDescription("archive file");
+	o_tar_archive.setRequired(false);
+	o_tar_archive.setMinValues(1);
+	o_tar_archive.setMaxValues(1);
+	arg.addOptionR( &o_tar_archive );
+
 	Arg::StringOption o_create("c");
 	o_create.addName( "create" );
 	o_create.setDescription("create new filesystem");
@@ -208,13 +248,33 @@ int main( int argc, char **argv )
 	o_fs_add.setRequired(false);
 	arg.addOptionR( &o_fs_add );
 
+	Arg::FlagOption o_tar_list("t");
+	o_tar_list.addName( "list" );
+	o_tar_list.setDescription("list files in archive");
+	o_tar_list.setRequired(false);
+	arg.addOptionR( &o_tar_list );
+
+	Arg::StringOption o_tar_extract("x");
+	o_tar_extract.addName( "extract" );
+	o_tar_extract.setDescription("extract files from archive");
+	o_tar_extract.setRequired(false);
+	o_tar_extract.setMinValues(0);
+	arg.addOptionR( &o_tar_extract );
+
 	try {
+
+		std::optional<std::string> archive_file_name;
 
 		if( !arg.parse() )
 		{
 			std::cout << arg.getHelp(5,20,30, 80 ) << std::endl;
 			return 1;
 		}
+
+		if( o_tar_archive.isSet() ) {
+			archive_file_name = *o_tar_archive.getValues()->begin();
+		}
+
 
 		if( o_debug.getState() )
 		{
@@ -268,6 +328,63 @@ int main( int argc, char **argv )
 
 			for( unsigned i = 1; i < values->size(); i++ ) {
 				add_file( fs, values->at(i) );
+			}
+		}
+
+		if( o_tar_list.isSet() ) {
+
+			if( !archive_file_name ) {
+				throw STDERR_EXCEPTION( "missing archive file name");
+			}
+
+			SimFlashFsFlashMemoryInterface mem(*archive_file_name);
+			SimpleFlashFs::dynamic::SimpleFlashFs fs(&mem);
+
+			if( !fs.init() ) {
+				throw STDERR_EXCEPTION( "init failed" );
+			}
+
+			for( auto inode : fs.get_all_inodes() ) {
+				std::cout << inode->inode.file_name << std::endl;
+			}
+		}
+
+		if( o_tar_extract.isSet() ) {
+
+			if( !archive_file_name ) {
+				throw STDERR_EXCEPTION( "missing archive file name");
+			}
+
+			SimFlashFsFlashMemoryInterface mem(*archive_file_name);
+			SimpleFlashFs::dynamic::SimpleFlashFs fs(&mem);
+
+			if( !fs.init() ) {
+				throw STDERR_EXCEPTION( "init failed" );
+			}
+
+			auto values = o_tar_extract.getValues();
+			std::set<std::string> v(values->begin(), values->end());
+			std::size_t count = 0;
+
+			for( auto inode : fs.get_all_inodes() ) {
+
+				const std::string & file_name = inode->inode.file_name;
+
+				if( !v.empty() ) {
+					if( v.find(file_name) == v.end() ) {
+						continue;
+					}
+				}
+
+				if( !extract_file(fs,file_name) ) {
+					throw STDERR_EXCEPTION( format( "Cannot extract file: %s", file_name ) );
+				}
+
+				count++;
+			} // for
+
+			if( !v.empty() && count != v.size() ) {
+				std::cerr << "warning: no all files found in archive\n";
 			}
 		}
 

@@ -36,6 +36,10 @@ std::size_t FileHandle::write( const std::byte *data, std::size_t size ) {
 	return fs->write( this, data, size );
 }
 
+std::size_t FileHandle::read( std::byte *data, std::size_t size ) {
+	return fs->read( this, data, size );
+}
+
 bool FileHandle::flush() {
 	return fs->flush(this);
 }
@@ -173,25 +177,25 @@ void SimpleFlashFs::add_page_checksum( std::vector<std::byte> & page )
 	}
 }
 
-uint32_t SimpleFlashFs::calc_page_checksum( const std::vector<std::byte> & page )
+uint32_t SimpleFlashFs::calc_page_checksum( const std::byte *page, std::size_t size )
 {
 	switch( header.crc_checksum_type )
 	{
 	case Header::CRC_CHECKSUM::CRC32:
-		return crcFast( reinterpret_cast<const unsigned char*>(&page[0]), page.size() - sizeof(uint32_t));
+		return crcFast( reinterpret_cast<const unsigned char*>(page), size - sizeof(uint32_t));
 	default:
 		throw std::out_of_range("unknown checksum type");
 	}
 }
 
-uint32_t SimpleFlashFs::get_page_checksum( const std::vector<std::byte> & page )
+uint32_t SimpleFlashFs::get_page_checksum( const std::byte *page, std::size_t size )
 {
 	switch( header.crc_checksum_type )
 	{
 	case Header::CRC_CHECKSUM::CRC32:
 		{
 			uint32_t chksum = 0;
-			memcpy( &chksum, &page[page.size() - sizeof(uint32_t)], sizeof(uint32_t) );
+			memcpy( &chksum, page + (size - sizeof(uint32_t)), sizeof(uint32_t) );
 			auto_endianess(chksum);
 			return chksum;
 		}
@@ -335,17 +339,17 @@ std::shared_ptr<FileHandle> SimpleFlashFs::find_file( const std::string & name )
 	return {};
 }
 
-bool SimpleFlashFs::read_page( std::size_t idx, std::vector<std::byte> & page, bool check_crc )
+bool SimpleFlashFs::read_page( std::size_t idx, std::byte *page, std::size_t size, bool check_crc )
 {
 	std::size_t offset = header.page_size + idx * header.page_size;
 
-	if( mem->read(offset, &page[0], page.size() ) != page.size() ) {
+	if( mem->read(offset, page, size ) != size ) {
 		CPPDEBUG( "cannot read all data" );
 		return false;
 	}
 
 	if( check_crc ) {
-		if( get_page_checksum( page ) != calc_page_checksum(page) ) {
+		if( get_page_checksum( page, size ) != calc_page_checksum(page, size) ) {
 			//CPPDEBUG( "checksum failed" );
 			return false;
 		}
@@ -786,6 +790,72 @@ std::list<std::shared_ptr<FileHandle>> SimpleFlashFs::get_all_inodes()
 	}
 
 	return ret;
+}
+
+std::size_t SimpleFlashFs::read( FileHandle* file, std::byte *data, std::size_t size )
+{
+	std::size_t page_idx = file->pos / header.page_size;
+	std::size_t bytes_readen = 0;
+
+	if( file->inode.file_len - file->pos < size ) {
+		size = file->inode.file_len - file->pos;
+	}
+
+	if( size == 0 ) {
+		return 0;
+	}
+
+	// unaligned data, map the buffer to a complete page
+	const std::size_t data_start_at_page = file->pos % header.page_size;
+
+	if( data_start_at_page != 0 ) {
+		std::vector<std::byte> page(header.page_size);
+		if( !read_page( file->inode.data_pages.at(page_idx), page, false ) ) {
+			CPPDEBUG( format( "reading from pos %d failed", page_idx * header.page_size ) );
+			return bytes_readen;
+		}
+
+		const std::size_t len = std::min( size, header.page_size - data_start_at_page );
+		memcpy( data + bytes_readen, &page[data_start_at_page], len );
+
+		bytes_readen += len;
+		file->pos += len;
+	}
+
+	while( bytes_readen < size ) {
+		page_idx = file->pos / header.page_size;
+
+		// last partial page
+		if( bytes_readen + header.page_size > size ) {
+
+			std::vector<std::byte> page(header.page_size);
+
+			if( !read_page( file->inode.data_pages.at(page_idx), page, false ) ) {
+				CPPDEBUG( format( "reading from pos %d failed", page_idx * header.page_size ) );
+				return bytes_readen;
+			}
+
+			const std::size_t len = std::min( static_cast<uint32_t>(size - bytes_readen), header.page_size );
+			memcpy( data + bytes_readen, page.data(), len );
+
+			bytes_readen += len;
+			file->pos += len;
+
+		} else {
+
+			if( !read_page( file->inode.data_pages.at(page_idx), data + bytes_readen, header.page_size ) ) {
+				CPPDEBUG( "reading from device failed" );
+				return bytes_readen;
+			}
+
+			bytes_readen += header.page_size;
+			file->pos += header.page_size;
+
+		} // else
+
+	} // while
+
+	return bytes_readen;
 }
 
 } // namespace SimpleFlashFs::dynamic
