@@ -163,7 +163,7 @@ static std::vector<std::byte> read_file( const std::string & file )
 static void add_file( SimpleFlashFs::dynamic::SimpleFlashFs & fs, const std::string & file )
 {
 	auto data = read_file( file );
-	auto handle = fs.open( file, std::ios_base::in | std::ios_base::out );
+	auto handle = fs.open( file, std::ios_base::in | std::ios_base::out | std::ios_base::trunc );
 	handle->write( data.data(), data.size() );
 }
 

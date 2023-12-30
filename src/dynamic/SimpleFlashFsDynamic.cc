@@ -307,15 +307,14 @@ std::shared_ptr<FileHandle> SimpleFlashFs::open( const std::string & name, std::
 		return handle;
 	}
 	else if( mode & std::ios_base::trunc ) {
-		std::size_t offset = header.page_size;
 
-		for( auto page : handle->inode.data_pages ) {
-			std::size_t address = offset + page * header.page_size;
-			mem->erase(address, header.page_size );
-		}
+		auto new_handle = allocate_free_inode_page();
+		new_handle->inode = handle->inode;
+		new_handle->inode.file_len = 0;
+		new_handle->inode.pages = 0;
+		new_handle->inode.data_pages.clear();
 
-		handle->inode.data_pages.clear();
-		handle->inode.file_len = 0;
+		return new_handle;
 	}
 
 	return handle;
@@ -544,7 +543,7 @@ std::size_t SimpleFlashFs::write( FileHandle* file, const std::byte *data, std::
 	} // while
 
 	file->modified = true;
-	file->inode.file_len = std::max(file->pos + 1, file->inode.file_len) ;
+	file->inode.file_len = std::max(file->pos, file->inode.file_len) ;
 
 	return bytes_written;
 }
