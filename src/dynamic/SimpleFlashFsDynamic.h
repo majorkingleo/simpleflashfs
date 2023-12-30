@@ -36,8 +36,9 @@ class FileHandle
 {
 public:
 	Inode inode;
-	uint32_t page{0};
-	std::size_t pos{0};
+	uint32_t page   {0};
+	std::size_t pos {0};
+	bool modified   {false};
 
 protected:
 	SimpleFlashFs *fs;
@@ -47,10 +48,35 @@ public:
 	: fs( fs_ )
 	{}
 
+	/**
+	 * automatically calls flush()
+	 */
 	~FileHandle();
 
+	FileHandle( const FileHandle & other ) = delete;
+
+	FileHandle & operator=( const FileHandle & other ) = delete;
+
 	std::size_t write( const std::byte *data, std::size_t size );
-	void flush();
+	bool flush();
+
+	friend class SimpleFlashFs;
+
+private:
+	/**
+	 * For creating a backup copy, disconnects the pointer to fs.
+	 * This is for creating backup copies of the handle.
+	 */
+	FileHandle( const FileHandle & other, bool no_fs_connection )
+	: inode( other.inode ),
+	  page( other.page ),
+	  pos( other.pos ),
+	  modified( other.modified ),
+	  fs( nullptr )
+	{
+
+	}
+
 };
 
 class SimpleFlashFs
@@ -87,7 +113,7 @@ public:
 	std::shared_ptr<FileHandle> open( const std::string & name, std::ios_base::openmode mode );
 
 	std::size_t write( FileHandle* file, const std::byte *data, std::size_t size );
-	void flush( FileHandle* file );
+	bool flush( FileHandle* file );
 
 	friend class FileHandle;
 
@@ -121,6 +147,7 @@ protected:
 
 	std::shared_ptr<FileHandle> get_inode( const std::vector<std::byte> & data );
 	std::shared_ptr<FileHandle> allocate_free_inode_page();
+	uint32_t allocate_free_inode_page_number();
 	uint32_t allocate_free_data_page();
 
 	void free_unwritten_pages( uint32_t page ) {
@@ -132,20 +159,22 @@ protected:
 	bool write_page( FileHandle* file,
 			const std::basic_string_view<std::byte> & page,
 			bool target_page_is_a_new_allocated_one,
-			uint32_t page_idx );
+			uint32_t page_number );
 
 	bool write_page( FileHandle* file,
 			const std::vector<std::byte> & page,
 			bool target_page_is_a_new_allocated_one,
-			uint32_t page_idx ) {
+			uint32_t page_number ) {
 
 		return write_page( file,
 				std::basic_string_view<std::byte>( page.data(), page.size() ),
 				target_page_is_a_new_allocated_one,
-				page_idx );
+				page_number );
 	}
 
-	void erase_inode_and_unused_pages( std::shared_ptr<FileHandle> & inode_to_erase, std::shared_ptr<FileHandle> & next_inode_version );
+	void erase_inode_and_unused_pages( FileHandle & inode_to_erase, FileHandle & next_inode_version );
+
+	std::vector<std::byte> inode2page( const Inode & inode );
 };
 
 } // namespace dynamic
