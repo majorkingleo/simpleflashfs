@@ -15,7 +15,6 @@
 #include <format.h>
 #include <string_utils.h>
 #include <map>
-#include <list>
 
 using namespace Tools;
 
@@ -312,6 +311,7 @@ std::shared_ptr<FileHandle> SimpleFlashFs::open( const std::string & name, std::
 		}
 
 		handle->inode.data_pages.clear();
+		handle->inode.file_len = 0;
 	}
 
 	return handle;
@@ -540,6 +540,7 @@ std::size_t SimpleFlashFs::write( FileHandle* file, const std::byte *data, std::
 	} // while
 
 	file->modified = true;
+	file->inode.file_len = std::max(file->pos + 1, file->inode.file_len) ;
 
 	return bytes_written;
 }
@@ -765,6 +766,26 @@ std::vector<std::byte> SimpleFlashFs::inode2page( const Inode & inode )
 	}
 
 	return page;
+}
+
+std::list<std::shared_ptr<FileHandle>> SimpleFlashFs::get_all_inodes()
+{
+	std::list<std::shared_ptr<FileHandle>> ret;
+
+	for( unsigned i = 0; i < header.max_inodes; i++ ) {
+
+		std::vector<std::byte> page(header.page_size);
+
+		if( read_page( i, page, true ) ) {
+
+			auto inode = get_inode( page );
+			inode->page = i;
+
+			ret.push_back(inode);
+		}
+	}
+
+	return ret;
 }
 
 } // namespace SimpleFlashFs::dynamic

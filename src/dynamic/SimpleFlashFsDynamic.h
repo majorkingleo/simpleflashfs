@@ -12,6 +12,7 @@
 #include <vector>
 #include <memory>
 #include <set>
+#include <list>
 
 namespace SimpleFlashFs {
 
@@ -124,6 +125,8 @@ public:
 	std::size_t get_number_of_free_data_pages() const {
 		return free_data_pages.size();
 	}
+
+	std::list<std::shared_ptr<FileHandle>> get_all_inodes();
 
 protected:
 	bool write( const Header & header );

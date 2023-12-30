@@ -48,7 +48,7 @@ namespace std {
 }
 
 
-static void info_fs( const SimpleFlashFs::dynamic::SimpleFlashFs & fs )
+static void info_fs( SimpleFlashFs::dynamic::SimpleFlashFs & fs )
 {
 	{
 		ColBuilder co;
@@ -121,6 +121,25 @@ static void info_fs( const SimpleFlashFs::dynamic::SimpleFlashFs & fs )
 
 		co.addColData(INFO, "max inode number" );
 		co.addColData(DATA, x2s(fs.get_max_inode_number()));
+
+		std::cout << co.toString() << std::endl;
+	}
+
+	{
+		ColBuilder co;
+		const int INODE      = co.addCol("Inode");
+		const int PAGE       = co.addCol("Page");
+		const int FILENAME   = co.addCol("Filename");
+		const int SIZE       = co.addCol("Size");
+		const int DATA_PAGES = co.addCol("Data pages");
+
+		for( auto inode : fs.get_all_inodes() ) {
+			co.addColData(INODE,      format( "%d,%d", inode->inode.inode_number, inode->inode.inode_version_number ));
+			co.addColData(PAGE,       x2s(inode->page));
+			co.addColData(FILENAME,   inode->inode.file_name);
+			co.addColData(SIZE,       x2s(inode->inode.file_len));
+			co.addColData(DATA_PAGES, IterableToCommaSeparatedString(inode->inode.data_pages));
+		}
 
 		std::cout << co.toString() << std::endl;
 	}
