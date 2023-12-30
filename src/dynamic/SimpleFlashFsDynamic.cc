@@ -204,6 +204,21 @@ uint32_t SimpleFlashFs::get_page_checksum( const std::byte *page, std::size_t si
 	}
 }
 
+
+uint32_t SimpleFlashFs::get_checksum_size() const
+{
+	switch( header.crc_checksum_type )
+	{
+	case Header::CRC_CHECKSUM::CRC32:
+		{
+			return sizeof(uint32_t);
+		}
+	default:
+		throw std::out_of_range("unknown checksum type");
+	}
+}
+
+
 bool SimpleFlashFs::init()
 {
 	Header h{};
@@ -313,6 +328,7 @@ std::shared_ptr<FileHandle> SimpleFlashFs::open( const std::string & name, std::
 		new_handle->inode.file_len = 0;
 		new_handle->inode.pages = 0;
 		new_handle->inode.data_pages.clear();
+		new_handle->inode.inode_data.clear();
 
 		return new_handle;
 	}
@@ -382,10 +398,20 @@ std::shared_ptr<FileHandle> SimpleFlashFs::get_inode( const std::vector<std::byt
 	read( ret->inode.file_len );
 	read( ret->inode.pages );
 
-	ret->inode.data_pages.resize( ret->inode.pages, 0 );
+	if( ret->inode.pages  ) {
+		ret->inode.data_pages.resize( ret->inode.pages, 0 );
 
-	for( unsigned i = 0; i < ret->inode.pages; i++ ) {
-		read( ret->inode.data_pages[i] );
+		for( unsigned i = 0; i < ret->inode.pages; i++ ) {
+			read( ret->inode.data_pages[i] );
+		}
+	}
+	/**
+	 * read the data, that is directly stored inside the inode
+	 */
+	else if( ret->inode.pages == 0 && ret->inode.file_len > 0 ) {
+		FileHandle *handle = &(*ret);
+		ret->inode.inode_data.resize(get_inode_data_space_size(handle));
+		memcpy( ret->inode.inode_data.data(), page.data() + pos, ret->inode.file_len );
 	}
 
 	return ret;
@@ -447,6 +473,30 @@ std::size_t SimpleFlashFs::write( FileHandle* file, const std::byte *data, std::
 {
 	std::size_t page_idx = file->pos / header.page_size;
 	std::size_t bytes_written = 0;
+
+	/**
+	 * store the data inside the inode itself, if there is enough space
+	 */
+	std::size_t space_inside_the_inode = get_inode_data_space_size(file);
+	if( space_inside_the_inode > file->pos + size &&
+		file->inode.file_len < space_inside_the_inode ) {
+
+		if( file->inode.inode_data.size() < space_inside_the_inode ) {
+			file->inode.inode_data.resize(space_inside_the_inode);
+		}
+
+		memcpy( file->inode.inode_data.data() + file->pos, data, size );
+		file->pos += size;
+		file->inode.file_len = std::max( file->pos, file->inode.file_len);
+		file->modified = true;
+
+		// the read write will occur during flush
+		return size;
+
+	} else if( file->inode.inode_data.size() ) {
+		file->inode.inode_data.clear();
+		file->modified = true;
+	}
 
 	bool target_page_is_a_new_allocated_one = false;
 
@@ -768,6 +818,11 @@ std::vector<std::byte> SimpleFlashFs::inode2page( const Inode & inode )
 		write( inode.data_pages[i] );
 	}
 
+	// write small data directly into the inode
+	if( pages == 0 && inode.file_len > 0 ) {
+		memcpy( page.data() + pos, inode.inode_data.data(), inode.inode_data.size() );
+	}
+
 	return page;
 }
 
@@ -802,6 +857,18 @@ std::size_t SimpleFlashFs::read( FileHandle* file, std::byte *data, std::size_t 
 
 	if( size == 0 ) {
 		return 0;
+	}
+
+	/**
+	 * stored data is inside the inode itself, if there is enough space
+	 */
+	std::size_t space_inside_the_inode = get_inode_data_space_size(file);
+	if( space_inside_the_inode > file->pos + size &&
+		file->inode.file_len < space_inside_the_inode ) {
+
+		std::size_t len = std::min( file->inode.file_len - file->pos, size );
+		memcpy( data, file->inode.inode_data.data() + file->pos, len );
+		return len;
 	}
 
 	// unaligned data, map the buffer to a complete page
@@ -855,6 +922,17 @@ std::size_t SimpleFlashFs::read( FileHandle* file, std::byte *data, std::size_t 
 	} // while
 
 	return bytes_readen;
+}
+
+std::size_t SimpleFlashFs::get_inode_data_space_size( FileHandle* file ) const
+{
+	return header.page_size - (sizeof(Inode::inode_number)
+			+ sizeof(Inode::inode_version_number)
+			+ sizeof(Inode::file_name_len)
+			+ file->inode.file_name_len
+			+ sizeof(Inode::attributes)
+			+ sizeof(Inode::file_len)
+			+ sizeof(Inode::pages));
 }
 
 } // namespace SimpleFlashFs::dynamic

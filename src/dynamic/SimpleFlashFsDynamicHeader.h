@@ -49,6 +49,10 @@ struct Inode
 	uint32_t		pages{};
 
 	std::vector<uint32_t> data_pages;
+
+	// data, that can be stored inside the inode
+	// will only be filled if pages == 0
+	std::vector<std::byte> inode_data;
 };
 
 } // namespace dynamic

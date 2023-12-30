@@ -154,6 +154,7 @@ protected:
 		return get_page_checksum( page.data(), page.size() );
 	}
 	uint32_t get_page_checksum( const std::byte *page, std::size_t size );
+	uint32_t get_checksum_size() const;
 
 	std::shared_ptr<FileHandle> find_file( const std::string & name );
 
@@ -193,6 +194,12 @@ protected:
 	void erase_inode_and_unused_pages( FileHandle & inode_to_erase, FileHandle & next_inode_version );
 
 	std::vector<std::byte> inode2page( const Inode & inode );
+
+	/**
+	 * returns the maximum size of data, that fits inside an spacific inode
+	 * depends, on the filename len
+	 */
+	std::size_t get_inode_data_space_size( FileHandle* file ) const;
 };
 
 } // namespace dynamic
