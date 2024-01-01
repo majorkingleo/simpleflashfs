@@ -520,8 +520,9 @@ std::size_t SimpleFlashFs::write( FileHandle* file, const std::byte *data, std::
 
 	if( data_start_at_page != 0 ) {
 		std::vector<std::byte> page(header.page_size);
-		if( !read_page( page_idx, page, false ) ) {
-			CPPDEBUG( format( "reading from pos %d failed", page_idx * header.page_size ) );
+		const std::size_t page_number = file->inode.data_pages.at(page_idx);
+		if( !read_page( page_number, page, false ) ) {
+			CPPDEBUG( format( "reading from pos %d failed", page_number * header.page_size ) );
 			return 0;
 		}
 
@@ -559,8 +560,9 @@ std::size_t SimpleFlashFs::write( FileHandle* file, const std::byte *data, std::
 			std::vector<std::byte> page(header.page_size);
 
 			if( !target_page_is_a_new_allocated_one ) {
-				if( !read_page( page_idx, page, false ) ) {
-					CPPDEBUG( format( "reading from pos %d failed", page_idx * header.page_size ) );
+				const std::size_t page_number = file->inode.data_pages.at(page_idx);
+				if( !read_page( page_number, page, false ) ) {
+					CPPDEBUG( format( "reading from pos %d failed", page_number * header.page_size ) );
 					return 0;
 				}
 			}
