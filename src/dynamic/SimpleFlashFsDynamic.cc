@@ -1,8 +1,6 @@
-/*
- * SimpleFlashFsDynamic.cc
- *
- *  Created on: 25.12.2023
- *      Author: martin
+/**
+ * SimpleFlashFs main implementation class
+ * @author Copyright (c) 2023-2024 Martin Oberzalek
  */
 #include "SimpleFlashFsDynamic.h"
 #include "../SimpleFlashFsFlashMemoryInterface.h"

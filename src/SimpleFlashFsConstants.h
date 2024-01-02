@@ -1,8 +1,10 @@
-/*
- * SimpleFlashFsConstants.h
+/**
+ * SimpleFlashFs constants
  *
- *  Created on: 25.12.2023
- *      Author: martin
+ * This file is part of the filesystem definition
+ * and can be redistributed
+ *
+ * @author Copyright (c) 2023-2024 Martin Oberzalek
  */
 
 #ifndef SRC_SIMPLEFLASHFSCONSTANTS_H_

@@ -1,6 +1,6 @@
 /**
- * config
- * @author Copyright (c) 2023 Martin Oberzalek
+ * SimpleFlashFs configuration header file template
+ * @author Copyright (c) 2023-2024 Martin Oberzalek
  */
 #pragma once
 #ifndef SRC_SIMPLEFLASHFSCONFIG_H_

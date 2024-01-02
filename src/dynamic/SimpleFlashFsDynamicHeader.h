@@ -1,10 +1,7 @@
-/*
- * SimpleFlashFsDynamicHeader.h
- *
- *  Created on: 25.12.2023
- *      Author: martin
+/**
+ * Internal data representation structs
+ * @author Copyright (c) 2023-2024 Martin Oberzalek
  */
-
 #ifndef SRC_DYNAMIC_SIMPLEFLASHFSDYNAMICHEADER_H_
 #define SRC_DYNAMIC_SIMPLEFLASHFSDYNAMICHEADER_H_
 
@@ -15,6 +12,9 @@
 namespace SimpleFlashFs {
 namespace dynamic {
 
+/**
+ * Filesystem header
+ */
 struct Header
 {
 	enum class ENDIANESS
@@ -32,12 +32,15 @@ struct Header
 	ENDIANESS 		endianess{ENDIANESS::LE};
 	uint16_t   		version = 0;
 	uint32_t		page_size = 0;
-	uint64_t		filesystem_size = 0;
+	uint64_t		filesystem_size = 0; // size in pages
 	uint32_t		max_inodes = 0;
 	uint16_t		max_path_len = 0;
 	CRC_CHECKSUM	crc_checksum_type{CRC_CHECKSUM::CRC32};
 };
 
+/**
+ * Inode struct
+ */
 struct Inode
 {
 	uint64_t 		inode_number{};

@@ -1,8 +1,6 @@
-/*
- * SimpleFlashFsDynamic.h
- *
- *  Created on: 25.12.2023
- *      Author: martin
+/**
+ * SimpleFlashFs main implementation class
+ * @author Copyright (c) 2023-2024 Martin Oberzalek
  */
 
 #ifndef SRC_DYNAMIC_SIMPLEFLASHFSDYNAMIC_H_
@@ -22,6 +20,9 @@ namespace dynamic {
 
 
 // https://stackoverflow.com/a/35092546
+/**
+ * swaps the byte order of a value
+ */
 template<typename T> inline static T swapByteOrder(const T& val) {
     int totalBytes = sizeof(val);
     T swapped = (T) 0;
@@ -33,6 +34,9 @@ template<typename T> inline static T swapByteOrder(const T& val) {
 
 class SimpleFlashFs;
 
+/**
+ * FileHandle class
+ */
 class FileHandle
 {
 public:
