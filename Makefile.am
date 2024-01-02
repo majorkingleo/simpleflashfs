@@ -1,23 +1,16 @@
 bin_PROGRAMS=\
-	simple_flash_fs_tar
+	simple_flash_fs_tar \
+	test_dynamic
 		
 simple_flash_fs_tar_SOURCES=\
 		src_simple_flash_fs_tar/main.cc \
-		tools_config.h \
-		src/crc/crc.c \
-		src/crc/crc.h \
-		src/dynamic/SimpleFlashFsDynamicHeader.h \
-		src/dynamic/SimpleFlashFsDynamic.h \
-		src/dynamic/SimpleFlashFsDynamic.cc \
-		src/dynamic/SimpleFlashFsDynamicInstanceHandler.h \
-		src/dynamic/SimpleFlashFsDynamicInstanceHandler.cc \
-		src/dynamic/SimpleFlashFsDynamicWrapper.h \
-		src/dynamic/SimpleFlashFsDynamicWrapper.cc \
-		src/SimpleFlashFsFlashMemoryInterface.h \
-		src/SimpleFlashFsConstants.h \
-		src/SimpleFlashFsConstants.cc \
-		src/sim_pc/SimFlashMemoryInterfacePc.h \
-		src/sim_pc/SimFlashMemoryInterfacePc.cc
+		tools_config.h
+		
+test_dynamic_SOURCES=\
+		src_test_dynamic/test_dynamic.cc \
+		src_test_dynamic/test_dynamic_init.h \
+		src_test_dynamic/test_dynamic_init.cc \
+		tools_config.h		
 		
 
 AM_CPPFLAGS = -I$(top_srcdir)/tools \
@@ -33,7 +26,24 @@ AM_CPPFLAGS = -I$(top_srcdir)/tools \
 noinst_LIBRARIES=cpputils/io/libcpputilsio.a \
 	cpputils/cpputilsshared/libcpputilsshared.a \
 	cpputils/cpputilsshared/cpputilsformat/libcpputilsformat.a \
-	common/libcommon.a
+	common/libcommon.a \
+	src/libSimpleFlashFs.a
+	
+src_libSimpleFlashFs_a_SOURCES=\
+		src/crc/crc.c \
+		src/crc/crc.h \
+		src/dynamic/SimpleFlashFsDynamicHeader.h \
+		src/dynamic/SimpleFlashFsDynamic.h \
+		src/dynamic/SimpleFlashFsDynamic.cc \
+		src/dynamic/SimpleFlashFsDynamicInstanceHandler.h \
+		src/dynamic/SimpleFlashFsDynamicInstanceHandler.cc \
+		src/dynamic/SimpleFlashFsDynamicWrapper.h \
+		src/dynamic/SimpleFlashFsDynamicWrapper.cc \
+		src/SimpleFlashFsFlashMemoryInterface.h \
+		src/SimpleFlashFsConstants.h \
+		src/SimpleFlashFsConstants.cc \
+		src/sim_pc/SimFlashMemoryInterfacePc.h \
+		src/sim_pc/SimFlashMemoryInterfacePc.cc
 
 cpputils_io_libcpputilsio_a_SOURCES= \
 	cpputils/io/ColoredOutput.h \
@@ -105,12 +115,19 @@ common_libcommon_a_SOURCES=\
 	common/ColBuilder.cc
 
 simple_flash_fs_tar_LDADD = \
+	src/libSimpleFlashFs.a \
 	cpputils/io/libcpputilsio.a \
 	cpputils/cpputilsshared/libcpputilsshared.a \
 	common/libcommon.a \
 	cpputils/cpputilsshared/cpputilsformat/libcpputilsformat.a
 	
-				 
+test_dynamic_LDADD = \
+	src/libSimpleFlashFs.a \
+	cpputils/io/libcpputilsio.a \
+	cpputils/cpputilsshared/libcpputilsshared.a \
+	common/libcommon.a \
+	cpputils/cpputilsshared/cpputilsformat/libcpputilsformat.a
+		 
 LIBS=
     
 AM_LDFLAGS=
