@@ -88,6 +88,16 @@ bool SimpleFlashFs::create( const Header & h )
 		return false;
 	}
 
+	if( h.page_size < MIN_PAGE_SIZE ) {
+		CPPDEBUG( "invalid data" );
+		return false;
+	}
+
+	if( h.filesystem_size < 4 ) {
+		CPPDEBUG( "invalid data" );
+		return false;
+	}
+
 	mem->erase(0, h.page_size * h.filesystem_size );
 
 	return write( h );
