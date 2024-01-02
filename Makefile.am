@@ -9,6 +9,10 @@ simple_flash_fs_tar_SOURCES=\
 		src/dynamic/SimpleFlashFsDynamicHeader.h \
 		src/dynamic/SimpleFlashFsDynamic.h \
 		src/dynamic/SimpleFlashFsDynamic.cc \
+		src/dynamic/SimpleFlashFsDynamicInstanceHandler.h \
+		src/dynamic/SimpleFlashFsDynamicInstanceHandler.cc \
+		src/dynamic/SimpleFlashFsDynamicWrapper.h \
+		src/dynamic/SimpleFlashFsDynamicWrapper.cc \
 		src/SimpleFlashFsFlashMemoryInterface.h \
 		src/SimpleFlashFsConstants.h \
 		src/SimpleFlashFsConstants.cc \

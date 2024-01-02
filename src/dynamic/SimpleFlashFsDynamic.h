@@ -66,6 +66,22 @@ public:
 	std::size_t read( std::byte *data, std::size_t size );
 	bool flush();
 
+	std::size_t tellg() const {
+		return pos;
+	}
+
+	std::size_t file_size() const {
+		return inode.file_len;
+	}
+
+	bool eof() const {
+		return pos == inode.file_len-1;
+	}
+
+	void seek( std::size_t pos_ ) {
+		pos = pos_;
+	}
+
 	friend class SimpleFlashFs;
 
 private:
