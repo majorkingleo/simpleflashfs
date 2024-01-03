@@ -7,6 +7,7 @@
 #include <stderr_exception.h>
 #include <format.h>
 #include <src/dynamic/SimpleFlashFsDynamicWrapper.h>
+#include <CpputilsDebug.h>
 
 #define fopen( path, mode ) SimpleFlashFs_dynamic_fopen( path, mode )
 #define FILE SIMPLE_FLASH_FS_DYNAMIC_FILE
@@ -16,13 +17,15 @@ using namespace SimpleFlashFs;
 using namespace SimpleFlashFs::dynamic;
 using namespace SimpleFlashFs::SimPc;
 
+unsigned instance_count = 0;
+
 class TestCaseWrapperBase : public TestCaseBase<bool>
 {
 	std::size_t page_size;
 	std::size_t size;
 	std::shared_ptr<SimFlashFsFlashMemoryInterface> mem;
 	std::shared_ptr<SimpleFlashFs::dynamic::SimpleFlashFs> fs;
-	std::string instance_name = "default";
+	const std::string instance_name;
 
 public:
 	TestCaseWrapperBase( const std::string & name_,
@@ -32,7 +35,8 @@ public:
 			bool exception_ = false )
 	: TestCaseBase<bool>( name_, expected_result_, exception_ ),
 	  page_size( page_size_ ),
-	  size( size_ )
+	  size( size_ ),
+	  instance_name( format( ".test%d.bin", instance_count++ ) )
 	{
 
 	}
@@ -44,9 +48,9 @@ public:
 
 	bool init()
 	{
-		auto instance_handler = InstanceHandler::instance();
+		auto & instance_handler = InstanceHandler::instance();
 
-		const std::string file = "test.bin";
+		const std::string file = instance_name;
 
 		mem = std::make_shared<SimFlashFsFlashMemoryInterface>(file,size);
 		fs = std::make_shared<SimpleFlashFs::dynamic::SimpleFlashFs>(mem.get());
@@ -57,11 +61,12 @@ public:
 			throw STDERR_EXCEPTION( format( "cannot create %s", file ) );
 		}
 
+		//CPPDEBUG( format( "registering instance: '%s'", instance_name));
 		SimpleFlashFs_dynamic_instance_name(instance_name.c_str());
 
 		return true;
 	}
-
+/*
 	bool run() override
 	{
 		if( !init() ) {
@@ -70,7 +75,7 @@ public:
 
 		return true;
 	}
-
+*/
 };
 
 #if 0
@@ -117,6 +122,7 @@ public:
 	bool run() override
 	{
 		if( !init() ) {
+			CPPDEBUG( "init failed" );
 			return false;
 		}
 

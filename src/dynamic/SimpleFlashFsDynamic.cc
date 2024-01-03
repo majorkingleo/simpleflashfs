@@ -314,6 +314,7 @@ std::shared_ptr<FileHandle> SimpleFlashFs::open( const std::string & name, std::
 	if( !handle ) {
 		// file does not exists
 		if( !(mode & std::ios_base::out) ) {
+			CPPDEBUG( "no out mode" );
 			return {};
 		}
 
@@ -327,6 +328,13 @@ std::shared_ptr<FileHandle> SimpleFlashFs::open( const std::string & name, std::
 		handle->inode.file_name = name;
 		handle->inode.file_name_len = name.size();
 		handle->modified = true;
+
+		if( mode & std::ios_base::ate ) {
+			if( handle->inode.file_len > 0 ) {
+				handle->pos = handle->inode.file_len - 1;
+			}
+		}
+
 		return handle;
 	}
 	else if( mode & std::ios_base::trunc ) {

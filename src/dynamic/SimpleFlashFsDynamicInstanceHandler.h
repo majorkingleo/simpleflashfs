@@ -18,14 +18,18 @@ namespace dynamic {
 class InstanceHandler
 {
 	std::map<std::string,std::shared_ptr<SimpleFlashFs>> instances;
+
+private:
+	InstanceHandler() {};
+
 public:
+	InstanceHandler( const InstanceHandler & other ) = delete;
+	InstanceHandler & operator=( const InstanceHandler & other ) = delete;
 
 	void register_instance(const std::string & name, std::shared_ptr<SimpleFlashFs> & instance );
 	void deregister_instance(const std::string & name );
 
-	std::shared_ptr<SimpleFlashFs> get( const std::string & name ) {
-		return instances[name];
-	}
+	std::shared_ptr<SimpleFlashFs> get( const std::string & name );
 
 	static InstanceHandler & instance();
 };

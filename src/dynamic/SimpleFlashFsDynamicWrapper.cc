@@ -1,7 +1,10 @@
 #include "SimpleFlashFsDynamicWrapper.h"
 #include "SimpleFlashFsDynamicInstanceHandler.h"
 #include <cstring>
+#include <CpputilsDebug.h>
+#include <format.h>
 
+using namespace Tools;
 using namespace SimpleFlashFs;
 using namespace SimpleFlashFs::dynamic;
 
@@ -29,27 +32,34 @@ SIMPLE_FLASH_FS_DYNAMIC_FILE* SimpleFlashFs_dynamic_fopen( const char *path, con
 	std::shared_ptr<SimpleFlashFs::dynamic::SimpleFlashFs> fs = InstanceHandler::instance().get(default_instance_name);
 
 	if( !fs ) {
+		CPPDEBUG( format( "no fs with name '%s' found", default_instance_name ) );
 		return nullptr;
 	}
 
 	std::ios_base::openmode mode = {};
 
-	for( const char* m = cmode; m != 0; m++ ) {
+	for( const char* m = cmode; *m != '\0'; m++ ) {
 		switch( *m )
 		{
 		case 'r': mode = std::ios_base::in; break;
 		case 'w': mode = std::ios_base::out; break;
+		case 'a': mode = std::ios_base::app; break;
 		case '+':
-			if( mode & std::ios_base::out | std::ios_base::app ) {
+			if( mode & std::ios_base::out ) {
 				mode = std::ios_base::trunc;
 			}
+			else if( mode & std::ios_base::app ) {
+				mode = std::ios_base::in | std::ios_base::out | std::ios_base::ate;
+				CPPDEBUG( "here" );
+			}
 			break;
-		case 'a': mode = std::ios_base::app; break;
 		}
 	}
 
 	auto handle = fs->open( path, mode );
+
 	if( !handle ) {
+		CPPDEBUG( "no handle" );
 		return nullptr;
 	}
 
