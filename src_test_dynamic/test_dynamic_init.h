@@ -10,6 +10,7 @@
 
 std::shared_ptr<TestCaseBase<bool>> test_case_init1();
 std::shared_ptr<TestCaseBase<bool>> test_case_init2();
+std::shared_ptr<TestCaseBase<bool>> test_case_init3();
 
 
 #endif /* TEST_DYNAMIC_TEST_DYNAMIC_INIT_H_ */

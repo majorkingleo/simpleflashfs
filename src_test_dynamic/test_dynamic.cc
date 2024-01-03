@@ -9,7 +9,8 @@
 #include <OutDebug.h>
 #include <memory>
 #include <format.h>
-#include "../src_test_dynamic/test_dynamic_init.h"
+#include "test_dynamic_init.h"
+#include "test_dynamic_wrapper.h"
 
 using namespace Tools;
 
@@ -61,6 +62,12 @@ int main( int argc, char **argv )
 
 		test_cases.push_back( test_case_init1() );
 		test_cases.push_back( test_case_init2() );
+		test_cases.push_back( test_case_init3() );
+		test_cases.push_back( test_case_wrapper_fopen1() );
+		test_cases.push_back( test_case_wrapper_fopen2() );
+		test_cases.push_back( test_case_wrapper_fopen3() );
+		test_cases.push_back( test_case_wrapper_fopen4() );
+		test_cases.push_back( test_case_wrapper_fopen5() );
 
 		ColBuilder col;
 

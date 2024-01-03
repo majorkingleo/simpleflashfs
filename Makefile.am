@@ -10,6 +10,8 @@ test_dynamic_SOURCES=\
 		src_test_dynamic/test_dynamic.cc \
 		src_test_dynamic/test_dynamic_init.h \
 		src_test_dynamic/test_dynamic_init.cc \
+		src_test_dynamic/test_dynamic_wrapper.h \
+		src_test_dynamic/test_dynamic_wrapper.cc \
 		tools_config.h		
 		
 

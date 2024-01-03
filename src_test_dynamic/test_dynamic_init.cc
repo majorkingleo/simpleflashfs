@@ -10,6 +10,8 @@ using namespace SimpleFlashFs;
 using namespace SimpleFlashFs::dynamic;
 using namespace SimpleFlashFs::SimPc;
 
+namespace {
+
 class TestCaseInitBase : public TestCaseBase<bool>
 {
 	std::size_t page_size;
@@ -19,15 +21,18 @@ public:
 	TestCaseInitBase( const std::string & name_,
 			std::size_t page_size_ = 528,
 			std::size_t size_ = 100*1024,
+			bool expected_result_ = true,
 			bool exception_ = false )
-	: TestCaseBase<bool>( name, true, exception_ ),
+	: TestCaseBase<bool>( name_, expected_result_, exception_ ),
 	  page_size( page_size_ ),
 	  size( size_ )
 	{
 
 	}
 
-	bool run() override
+
+
+	bool init()
 	{
 		const std::string file = "test.bin";
 		SimFlashFsFlashMemoryInterface mem(file,size);
@@ -40,19 +45,18 @@ public:
 		return true;
 	}
 
-};
-
-#if 0
-class TestCaseInit1 : public TestCaseInitBase
-{
-public:
-	TestCaseInit1()
-	: TestCaseBase<bool>( "init1" )
+	bool run() override
 	{
+		if( !init() ) {
+			return false;
+		}
 
+		return true;
 	}
+
 };
-#endif
+
+} // namespace
 
 
 std::shared_ptr<TestCaseBase<bool>> test_case_init1()
@@ -62,8 +66,12 @@ std::shared_ptr<TestCaseBase<bool>> test_case_init1()
 
 std::shared_ptr<TestCaseBase<bool>> test_case_init2()
 {
-	return std::make_shared<TestCaseInitBase>("init2", 1);
+	return std::make_shared<TestCaseInitBase>("init2", 1, 100, false, true );
 }
 
+std::shared_ptr<TestCaseBase<bool>> test_case_init3()
+{
+	return std::make_shared<TestCaseInitBase>("init3", 37, 100, false, true );
+}
 
 

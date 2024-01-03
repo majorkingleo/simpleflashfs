@@ -39,6 +39,8 @@
 Makefile
 simple_flash_fs_tar
 simple_flash_fs_tar.exe
+test_dynamic
+test_dynamic.exe
 
 # http://www.gnu.org/software/automake
 
