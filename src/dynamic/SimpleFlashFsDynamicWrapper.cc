@@ -22,9 +22,15 @@ static std::map<SIMPLE_FLASH_FS_DYNAMIC_FILE*,std::shared_ptr<SIMPLE_FLASH_FS_DY
 
 int SIMPLE_FLASH_FS_DYNAMIC_EOF = -1;
 
-void SimpleFlashFs_dynamic_instance_name( const char *name )
+void SimpleFlashFs_dynamic_wrapper_register_default_instance_name( const char *name )
 {
 	default_instance_name = name;
+}
+
+void SimpleFlashFs_dynamic_wrapper_unregister_default_instance_name( const char *name )
+{
+	default_instance_name.clear();
+	file_handles.clear();
 }
 
 SIMPLE_FLASH_FS_DYNAMIC_FILE* SimpleFlashFs_dynamic_fopen( const char *path, const char *cmode)
@@ -36,27 +42,45 @@ SIMPLE_FLASH_FS_DYNAMIC_FILE* SimpleFlashFs_dynamic_fopen( const char *path, con
 		return nullptr;
 	}
 
-	std::ios_base::openmode mode = {};
+	std::string smode = cmode;
 
-	for( const char* m = cmode; *m != '\0'; m++ ) {
-		switch( *m )
-		{
-		case 'r': mode = std::ios_base::in; break;
-		case 'w': mode = std::ios_base::out; break;
-		case 'a': mode = std::ios_base::app; break;
-		case '+':
-			if( mode & std::ios_base::out ) {
-				mode = std::ios_base::trunc;
-			}
-			else if( mode & std::ios_base::app ) {
-				mode = std::ios_base::in | std::ios_base::out | std::ios_base::ate;
-				CPPDEBUG( "here" );
-			}
-			break;
-		}
+
+
+	std::ios_base::openmode mode = {};
+	std::ios_base::openmode mode2 = {};
+
+
+	// Open for reading and writing.  The stream is positioned at the beginning of the file.
+	if( smode.find( "r+" ) != std::string::npos ) {
+		 mode = std::ios_base::in;
+		 mode2 = std::ios_base::out | std::ios_base::in;
+
+	// Open for reading and writing.  The file is created if it does not exist, otherwise it is truncated.  The stream is positioned at the be‐
+    // ginning of the file.
+	} else if( smode.find( "w+" ) != std::string::npos ) {
+		mode = std::ios_base::in | std::ios_base::out | std::ios_base::trunc;
+	} else if( smode.find( "a+" ) != std::string::npos ) {
+		mode = std::ios_base::out | std::ios_base::in | std::ios_base::app;
+	} else if( smode.find( "r" ) != std::string::npos ) {
+		mode = std::ios_base::in;
+	} else if( smode.find( "w" ) != std::string::npos ) {
+		mode = std::ios_base::out | std::ios_base::trunc;
+	} else if( smode.find( "a" ) != std::string::npos ) {
+		mode = std::ios_base::app | std::ios_base::out;
 	}
 
 	auto handle = fs->open( path, mode );
+
+	if( !handle ) {
+		CPPDEBUG( "no handle" );
+		return nullptr;
+	}
+
+	// handle r+
+	// reopen it with in and output mode
+	if( mode2 ) {
+		handle = fs->open( path, mode2 );
+	}
 
 	if( !handle ) {
 		CPPDEBUG( "no handle" );

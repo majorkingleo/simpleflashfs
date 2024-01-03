@@ -21,7 +21,8 @@ struct SIMPLE_FLASH_FS_DYNAMIC_FILE;
 /**
  * define SimpleFlashFs instance, that the wrapper is working on
  */
-void SimpleFlashFs_dynamic_instance_name( const char *name );
+void SimpleFlashFs_dynamic_wrapper_register_default_instance_name( const char *name );
+void SimpleFlashFs_dynamic_wrapper_unregister_default_instance_name( const char *name );
 
 /**
  * fopen implemententation

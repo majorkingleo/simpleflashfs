@@ -10,6 +10,7 @@
 #include <CpputilsDebug.h>
 
 #define fopen( path, mode ) SimpleFlashFs_dynamic_fopen( path, mode )
+#define fclose( file ) SimpleFlashFs_dynamic_fclose( file)
 #define FILE SIMPLE_FLASH_FS_DYNAMIC_FILE
 
 using namespace Tools;
@@ -62,9 +63,14 @@ public:
 		}
 
 		//CPPDEBUG( format( "registering instance: '%s'", instance_name));
-		SimpleFlashFs_dynamic_instance_name(instance_name.c_str());
+		SimpleFlashFs_dynamic_wrapper_register_default_instance_name(instance_name.c_str());
 
 		return true;
+	}
+
+	void deinit()
+	{
+		SimpleFlashFs_dynamic_wrapper_unregister_default_instance_name(instance_name.c_str());
 	}
 /*
 	bool run() override
@@ -126,7 +132,16 @@ public:
 			return false;
 		}
 
-		return func();
+		try {
+			bool ret = func();
+
+			deinit();
+
+			return ret;
+		} catch( std::exception & error ) {
+			deinit();
+			throw error;
+		}
 	}
 };
 
@@ -139,6 +154,8 @@ std::shared_ptr<TestCaseBase<bool>> test_case_wrapper_fopen1()
 		if( f == nullptr ) {
 			return true;
 		}
+
+		fclose( f );
 		return false;
 	});
 }
@@ -146,10 +163,11 @@ std::shared_ptr<TestCaseBase<bool>> test_case_wrapper_fopen1()
 std::shared_ptr<TestCaseBase<bool>> test_case_wrapper_fopen2()
 {
 	return std::make_shared<TestCaseWrapperFunc>("fopen2", []() {
-		FILE *f = fopen( "test", "rw" );
+		FILE *f = fopen( "test", "r+" );
 		if( f == nullptr ) {
 			return true;
 		}
+		fclose( f );
 		return false;
 	});
 }
@@ -160,9 +178,10 @@ std::shared_ptr<TestCaseBase<bool>> test_case_wrapper_fopen3()
 	return std::make_shared<TestCaseWrapperFunc>("fopen3", []() {
 		FILE *f = fopen( "test", "rw+" );
 		if( f == nullptr ) {
-			return true;
+			return false;
 		}
-		return false;
+		fclose( f );
+		return true;
 	});
 }
 
@@ -171,9 +190,10 @@ std::shared_ptr<TestCaseBase<bool>> test_case_wrapper_fopen4()
 	return std::make_shared<TestCaseWrapperFunc>("fopen4", []() {
 		FILE *f = fopen( "test", "a" );
 		if( f == nullptr ) {
-			return true;
+			return false;
 		}
-		return false;
+		fclose( f );
+		return true;
 	});
 }
 
@@ -184,6 +204,7 @@ std::shared_ptr<TestCaseBase<bool>> test_case_wrapper_fopen5()
 		if( f == nullptr ) {
 			return false;
 		}
+		fclose( f );
 		return true;
 	});
 }
