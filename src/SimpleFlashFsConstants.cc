@@ -1,8 +1,6 @@
-/*
- * SimpleFlashFsConstants.cc
- *
- *  Created on: 25.12.2023
- *      Author: martin
+/**
+ * SimpleFlashFs constants
+ * @author Copyright (C) 2023-2024 Martin Oberzalek
  */
 #include "SimpleFlashFsConstants.h"
 
