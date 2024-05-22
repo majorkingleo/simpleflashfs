@@ -11,6 +11,8 @@
 
 #define fopen( path, mode ) SimpleFlashFs_dynamic_fopen( path, mode )
 #define fclose( file ) SimpleFlashFs_dynamic_fclose( file)
+#define fwrite( ptr, size, nmemb, stream ) SimpleFlashFs_dynamic_fwrite( ptr, size, nmemb, stream )
+#define fread( ptr, size, nmemb, stream ) SimpleFlashFs_dynamic_fread( ptr, size, nmemb, stream )
 #define FILE SIMPLE_FLASH_FS_DYNAMIC_FILE
 
 using namespace Tools;
@@ -84,34 +86,6 @@ public:
 */
 };
 
-#if 0
-class TestCaseInit1 : public TestCaseInitBase
-{
-public:
-	TestCaseInit1()
-	: TestCaseBase<bool>( "init1" )
-	{
-
-	}
-};
-
-
-
-std::shared_ptr<TestCaseBase<bool>> test_case_init1()
-{
-	return std::make_shared<TestCaseInitBase>("init1");
-}
-
-std::shared_ptr<TestCaseBase<bool>> test_case_init2()
-{
-	return std::make_shared<TestCaseInitBase>("init2", 1, 100, false, true );
-}
-
-std::shared_ptr<TestCaseBase<bool>> test_case_init3()
-{
-	return std::make_shared<TestCaseInitBase>("init3", 37, 100, false, true );
-}
-#endif
 
 class TestCaseWrapperFunc : public TestCaseWrapperBase
 {
@@ -204,6 +178,27 @@ std::shared_ptr<TestCaseBase<bool>> test_case_wrapper_fopen5()
 		if( f == nullptr ) {
 			return false;
 		}
+		fclose( f );
+		return true;
+	});
+}
+
+std::shared_ptr<TestCaseBase<bool>> test_case_wrapper_fwrite1()
+{
+	return std::make_shared<TestCaseWrapperFunc>("fwrite1", []() {
+		FILE *f = fopen( "test", "w+" );
+		if( f == nullptr ) {
+			return false;
+		}
+
+		char buffer[1000] = { "Hello" };
+
+		std::size_t bytes_written = fwrite( buffer, 1, sizeof(buffer), f );
+		if( bytes_written != sizeof(buffer) ) {
+			CPPDEBUG( format( "%d bytes written", bytes_written ) );
+			return false;
+		}
+
 		fclose( f );
 		return true;
 	});

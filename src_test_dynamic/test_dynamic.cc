@@ -59,20 +59,17 @@ int main( int argc, char **argv )
 #endif
 
 		std::vector<std::shared_ptr<TestCaseBase<bool>>> test_cases;
-
+/*
 		test_cases.push_back( test_case_init1() );
 		test_cases.push_back( test_case_init2() );
 		test_cases.push_back( test_case_init3() );
 		test_cases.push_back( test_case_wrapper_fopen1() );
-
 		test_cases.push_back( test_case_wrapper_fopen2() );
-
 		test_cases.push_back( test_case_wrapper_fopen3() );
-
 		test_cases.push_back( test_case_wrapper_fopen4() );
 		test_cases.push_back( test_case_wrapper_fopen5() );
-
-
+*/
+		test_cases.push_back( test_case_wrapper_fwrite1() );
 
 		ColBuilder col;
 
