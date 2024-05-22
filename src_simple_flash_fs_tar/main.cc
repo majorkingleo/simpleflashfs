@@ -59,6 +59,7 @@ static void info_fs( SimpleFlashFs::dynamic::SimpleFlashFs & fs )
 		const int LEN = co.addCol("Len");
 		const int TITLE = co.addCol("Title");
 		const int DATA = co.addCol("Data");
+		const int UNIT = co.addCol("Unit");
 
 		const SimpleFlashFs::dynamic::Header & header = fs.get_header();
 
@@ -66,41 +67,49 @@ static void info_fs( SimpleFlashFs::dynamic::SimpleFlashFs & fs )
 		co.addColData(LEN,   x2s(MAGICK_STRING_LEN) );
 		co.addColData(TITLE, "Magic");
 		co.addColData(DATA,  header.magic_string );
+		co.addColData(UNIT,  "" );
 
 		co.addColData(BYTES, "13 - 14" );
 		co.addColData(TITLE, "Endianess");
 		co.addColData(LEN,   x2s(ENDIANESS_LEN) );
 		co.addColData(DATA,  x2s(header.endianess) );
+		co.addColData(UNIT,  "" );
 
 		co.addColData(BYTES, "15 - 16" );
 		co.addColData(TITLE, "Version");
 		co.addColData(LEN,   x2s(2) );
 		co.addColData(DATA,  x2s(header.version) );
+		co.addColData(UNIT,  "" );
 
 		co.addColData(BYTES, "17 - 20" );
 		co.addColData(TITLE, "page size");
 		co.addColData(LEN,   x2s(4) );
 		co.addColData(DATA,  x2s(header.page_size) );
+		co.addColData(UNIT,  "bytes" );
 
 		co.addColData(BYTES, "21 - 28" );
 		co.addColData(TITLE, "filesystem size");
 		co.addColData(LEN,   x2s(8) );
-		co.addColData(DATA,  x2s(header.filesystem_size) );
+		co.addColData(DATA,  x2s(header.filesystem_size));
+		co.addColData(UNIT,  "pages" );
 
 		co.addColData(BYTES, "29 - 32" );
 		co.addColData(TITLE, "max inodes");
 		co.addColData(LEN,   x2s(4) );
 		co.addColData(DATA,  x2s(header.max_inodes) );
+		co.addColData(UNIT,  "" );
 
 		co.addColData(BYTES, "33 - 34" );
-		co.addColData(TITLE, "max path len");
+		co.addColData(TITLE, "max path len" );
 		co.addColData(LEN,   x2s(2) );
 		co.addColData(DATA,  x2s(header.max_path_len) );
+		co.addColData(UNIT,  "bytes" );
 
 		co.addColData(BYTES, "35 - 36" );
 		co.addColData(TITLE, "crc checksum type");
 		co.addColData(LEN,   x2s(2) );
 		co.addColData(DATA,  x2s(header.crc_checksum_type) );
+		co.addColData(UNIT,  "" );
 
 
 		const unsigned width = co.get_width();
