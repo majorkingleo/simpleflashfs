@@ -13,6 +13,7 @@
 #include <format.h>
 #include <string_utils.h>
 #include <map>
+#include <type_traits>
 
 using namespace Tools;
 
@@ -100,7 +101,11 @@ bool SimpleFlashFs::create( const Header & h )
 
 	mem->erase(0, h.page_size * h.filesystem_size );
 
-	return write( h );
+	if( !write( h ) ) {
+		return false;
+	}
+
+	return init();
 }
 
 
@@ -126,8 +131,9 @@ bool SimpleFlashFs::write( const Header & header_ )
 
 	auto add=[this,&pos,&page]( auto & t ) {
 		auto_endianess(t);
-		std::memcpy( &page[pos], &t, sizeof(t) );
-		pos += sizeof(t);
+		const size_t size = sizeof(std::remove_reference_t<decltype(t)>);
+		std::memcpy( &page[pos], &t, size );
+		pos += size;
 	};
 
 	add(h.version);
@@ -261,9 +267,10 @@ bool SimpleFlashFs::init()
 	pos += ENDIANESS_LEN;
 
 	auto read=[this,&pos,&page]( auto & t ) {
-		std::memcpy(&t, &page[pos], sizeof(t) );
+		const size_t size = sizeof(std::remove_reference_t<decltype(t)>);
+		std::memcpy(&t, &page[pos], size );
 		auto_endianess(t);
-		pos += sizeof(t);
+		pos += size;
 	};
 
 	read(h.version);
@@ -396,9 +403,10 @@ std::shared_ptr<FileHandle> SimpleFlashFs::get_inode( const std::vector<std::byt
 	std::size_t pos = 0;
 
 	auto read=[this,&pos,&page]( auto & t ) {
-		std::memcpy(&t, &page[pos], sizeof(t) );
+		const size_t size = sizeof(std::remove_reference_t<decltype(t)>);
+		std::memcpy(&t, &page[pos], size );
 		auto_endianess(t);
-		pos += sizeof(t);
+		pos += size;
 	};
 
 	read( ret->inode.inode_number );
@@ -732,10 +740,11 @@ bool SimpleFlashFs::flush( FileHandle* file )
 		file->inode.inode_number = max_inode_number + 1;
 		max_inode_number = file->inode.inode_number;
 
-		CPPDEBUG( format( "writing new inode %d,%d at page %d",
+		CPPDEBUG( format( "writing new inode %d,%d at page %d, data pages: %s",
 				file->inode.inode_number,
 				file->inode.inode_version_number,
-				file->page ));
+				file->page,
+				IterableToCommaSeparatedString( file->inode.data_pages )));
 
 		auto page = inode2page(file->inode);
 		add_page_checksum(page);
@@ -815,7 +824,8 @@ std::vector<std::byte> SimpleFlashFs::inode2page( const Inode & inode )
 
 	auto write=[this,&pos,&page]( auto t ) {
 		auto_endianess(t);
-		std::memcpy(&page[pos], &t, sizeof(t) );
+		const size_t size = sizeof(t);
+		std::memcpy(&page[pos], &t, size );
 		pos += sizeof(t);
 	};
 
@@ -832,7 +842,7 @@ std::vector<std::byte> SimpleFlashFs::inode2page( const Inode & inode )
 	uint32_t pages = inode.data_pages.size();
 	write( pages );
 
-	for( unsigned i = 0; i < inode.pages; i++ ) {
+	for( unsigned i = 0; i < pages; i++ ) {
 		write( inode.data_pages[i] );
 	}
 

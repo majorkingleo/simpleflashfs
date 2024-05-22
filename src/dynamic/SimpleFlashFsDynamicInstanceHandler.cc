@@ -25,23 +25,18 @@ void InstanceHandler::register_instance(const std::string & name, std::shared_pt
 
 std::shared_ptr<SimpleFlashFs> InstanceHandler::get( const std::string & name ) {
 
-	/*
-	for( auto & pair : instances ) {
-		CPPDEBUG( format( "instance: '%s'", pair.first ) );
-	}*/
+	auto ret = instances.find(name);
 
-	auto ret = instances[name];
-
-	if( !ret ) {
+	if( ret == instances.end() ) {
 		CPPDEBUG( format( "%p no instance with name: '%s'", this, name ) );
+		return {};
 	}
 
-	return ret;
+	return ret->second;
 }
 
 void InstanceHandler::deregister_instance(const std::string & name )
 {
-	//CPPDEBUG( format( "deregistering '%s'", name ));
 	if( auto it = instances.find( name ); it != instances.end() ) {
 		instances.erase(it);
 	}
