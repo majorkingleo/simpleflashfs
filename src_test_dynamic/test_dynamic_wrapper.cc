@@ -204,3 +204,47 @@ std::shared_ptr<TestCaseBase<bool>> test_case_wrapper_fwrite1()
 	});
 }
 
+std::shared_ptr<TestCaseBase<bool>> test_case_wrapper_fwrite2()
+{
+	return std::make_shared<TestCaseWrapperFunc>("fwrite2", []() {
+		FILE *f = fopen( "test", "w+" );
+		if( f == nullptr ) {
+			return false;
+		}
+
+		char buffer[10000] = { "Hello" };
+
+		std::size_t bytes_written = fwrite( buffer, 1, sizeof(buffer), f );
+		if( bytes_written != sizeof(buffer) ) {
+			CPPDEBUG( format( "%d bytes written", bytes_written ) );
+			return false;
+		}
+
+		fclose( f );
+		return true;
+	});
+}
+
+// no space left on device
+std::shared_ptr<TestCaseBase<bool>> test_case_wrapper_fwrite3()
+{
+	return std::make_shared<TestCaseWrapperFunc>("fwrite3", []() {
+		FILE *f = fopen( "test", "w+" );
+		if( f == nullptr ) {
+			return false;
+		}
+
+		std::vector<char> buffer;
+		buffer.resize(200 * 1042 * sizeof(char));
+		snprintf( buffer.data(), buffer.size(), "%s", "Hello"  );
+
+		std::size_t bytes_written = fwrite( buffer.data(), 1, buffer.size(), f );
+		if( bytes_written != buffer.size() ) {
+			CPPDEBUG( format( "%d bytes written", bytes_written ) );
+			return true;
+		}
+
+		fclose( f );
+		return false;
+	});
+}
