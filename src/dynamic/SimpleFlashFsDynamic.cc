@@ -825,24 +825,37 @@ std::vector<std::byte> SimpleFlashFs::inode2page( const Inode & inode )
 	auto write=[this,&pos,&page]( auto t ) {
 		auto_endianess(t);
 		const size_t size = sizeof(t);
+
+		if( pos + sizeof(size) > page.size() ) {
+			CPPDEBUG( format( "%d + %d > %d", pos, sizeof(size), page.size() ) );
+			throw new std::out_of_range( format( "%d + %d > %d", pos, sizeof(size), page.size() ));
+		}
+
 		std::memcpy(&page[pos], &t, size );
 		pos += sizeof(t);
 	};
 
+	CPPDEBUG( "HERE1" );
 	write( inode.inode_number );
+	CPPDEBUG( "HERE1" );
 	write( inode.inode_version_number );
+	CPPDEBUG( "HERE1" );
 	write( inode.file_name_len );
 
 	std::memcpy(&page[pos], &inode.file_name[0], inode.file_name_len );
 	pos += inode.file_name_len;
 
+	CPPDEBUG( "HERE1" );
 	write( inode.attributes );
+	CPPDEBUG( "HERE1" );
 	write( inode.file_len );
 
+	CPPDEBUG( "HERE1" );
 	uint32_t pages = inode.data_pages.size();
 	write( pages );
 
 	for( unsigned i = 0; i < pages; i++ ) {
+		CPPDEBUG( format( "pos: %d HERE%d", pos, i ) );
 		write( inode.data_pages[i] );
 	}
 

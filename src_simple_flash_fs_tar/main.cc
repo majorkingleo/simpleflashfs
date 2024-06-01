@@ -129,6 +129,9 @@ static void info_fs( SimpleFlashFs::dynamic::SimpleFlashFs & fs )
 		co.addColData(INFO, "free data pages" );
 		co.addColData(DATA, x2s(fs.get_number_of_free_data_pages()));
 
+		co.addColData(INFO, "free data pages" );
+		co.addColData(DATA, x2s(fs.get_number_of_free_data_pages()));
+
 		co.addColData(INFO, "max inode number" );
 		co.addColData(DATA, x2s(fs.get_max_inode_number()));
 
