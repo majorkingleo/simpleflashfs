@@ -188,6 +188,7 @@ protected:
 	std::shared_ptr<FileHandle> allocate_free_inode_page();
 	uint32_t allocate_free_inode_page_number();
 	uint32_t allocate_free_data_page();
+	uint32_t allocate_free_data_page( const FileHandle *file );
 
 	void free_unwritten_pages( uint32_t page ) {
 		allocated_unwritten_pages.erase(page);
@@ -219,7 +220,13 @@ protected:
 	 * returns the maximum size of data, that fits inside an spacific inode
 	 * depends, on the filename len
 	 */
-	std::size_t get_inode_data_space_size( FileHandle* file ) const;
+	std::size_t get_inode_data_space_size( const FileHandle* file ) const;
+
+	/**
+	 * The length of the filename is dynamic, so we have to calculate
+	 * it per file.
+	 */
+	std::size_t get_max_inode_data_pages( const FileHandle* file ) const;
 };
 
 } // namespace dynamic

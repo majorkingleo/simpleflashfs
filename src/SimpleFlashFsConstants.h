@@ -23,6 +23,6 @@ extern const std::size_t ENDIANESS_LEN;
 
 constexpr std::size_t MIN_PAGE_SIZE = 37;
 
-}
+} // namespace SimpleFlashFs
 
 #endif /* SRC_SIMPLEFLASHFSCONSTANTS_H_ */

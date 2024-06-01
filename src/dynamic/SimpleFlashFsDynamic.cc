@@ -526,7 +526,7 @@ std::size_t SimpleFlashFs::write( FileHandle* file, const std::byte *data, std::
 
 	// allocate new pages
 	while( page_idx > file->inode.data_pages.size() ) {
-		uint32_t new_page_idx = allocate_free_data_page();
+		uint32_t new_page_idx = allocate_free_data_page(file);
 
 		if( new_page_idx == 0 ) {
 			CPPDEBUG( "no space left on device" );
@@ -567,7 +567,7 @@ std::size_t SimpleFlashFs::write( FileHandle* file, const std::byte *data, std::
 		target_page_is_a_new_allocated_one = false;
 
 		if( page_idx >= file->inode.data_pages.size() ) {
-			uint32_t new_page_number = allocate_free_data_page();
+			uint32_t new_page_number = allocate_free_data_page(file);
 
 			if( new_page_number == 0 ) {
 				CPPDEBUG( "no space left on device" );
@@ -835,27 +835,20 @@ std::vector<std::byte> SimpleFlashFs::inode2page( const Inode & inode )
 		pos += sizeof(t);
 	};
 
-	CPPDEBUG( "HERE1" );
 	write( inode.inode_number );
-	CPPDEBUG( "HERE1" );
 	write( inode.inode_version_number );
-	CPPDEBUG( "HERE1" );
 	write( inode.file_name_len );
 
 	std::memcpy(&page[pos], &inode.file_name[0], inode.file_name_len );
 	pos += inode.file_name_len;
 
-	CPPDEBUG( "HERE1" );
 	write( inode.attributes );
-	CPPDEBUG( "HERE1" );
 	write( inode.file_len );
 
-	CPPDEBUG( "HERE1" );
 	uint32_t pages = inode.data_pages.size();
 	write( pages );
 
 	for( unsigned i = 0; i < pages; i++ ) {
-		CPPDEBUG( format( "pos: %d HERE%d", pos, i ) );
 		write( inode.data_pages[i] );
 	}
 
@@ -965,7 +958,7 @@ std::size_t SimpleFlashFs::read( FileHandle* file, std::byte *data, std::size_t 
 	return bytes_readen;
 }
 
-std::size_t SimpleFlashFs::get_inode_data_space_size( FileHandle* file ) const
+std::size_t SimpleFlashFs::get_inode_data_space_size( const FileHandle* file ) const
 {
 	return header.page_size - (sizeof(Inode::inode_number)
 			+ sizeof(Inode::inode_version_number)
@@ -974,6 +967,24 @@ std::size_t SimpleFlashFs::get_inode_data_space_size( FileHandle* file ) const
 			+ sizeof(Inode::attributes)
 			+ sizeof(Inode::file_len)
 			+ sizeof(Inode::pages));
+}
+
+std::size_t SimpleFlashFs::get_max_inode_data_pages( const FileHandle* file ) const
+{
+	std::size_t space = get_inode_data_space_size( file );
+	return space / sizeof(decltype(Inode::data_pages)::value_type);
+}
+
+uint32_t SimpleFlashFs::allocate_free_data_page( const FileHandle *file )
+{
+	std::size_t max_pages = get_max_inode_data_pages( file );
+
+	if( file->inode.data_pages.size() + 1 >= max_pages ) {
+		// no space left
+		return 0;
+	}
+
+	return allocate_free_data_page();
 }
 
 } // namespace SimpleFlashFs::dynamic

@@ -51,10 +51,12 @@ struct Inode
 	uint64_t		file_len{};
 	uint32_t		pages{};
 
+	// the index of data pages
 	std::vector<uint32_t> data_pages;
 
 	// data, that can be stored inside the inode
-	// will only be filled if pages == 0
+	// will only be filled if pages == 0, so data_pages is also
+	// zero and needs no space
 	std::vector<std::byte> inode_data;
 };
 
