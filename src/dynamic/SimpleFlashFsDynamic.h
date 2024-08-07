@@ -86,8 +86,7 @@ public:
 
 private:
 	/**
-	 * For creating a backup copy, disconnects the pointer to fs.
-	 * This is for creating backup copies of the handle.
+	 * For creating a backup copy, disconnect the pointer to fs.
 	 */
 	FileHandle( const FileHandle & other, bool no_fs_connection )
 	: inode( other.inode ),
