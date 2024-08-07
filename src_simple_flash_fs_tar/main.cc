@@ -24,8 +24,10 @@ using namespace SimpleFlashFs::dynamic;
 using namespace SimpleFlashFs::SimPc;
 
 namespace std {
-	std::ostream & operator<<( std::ostream & out, SimpleFlashFs::dynamic::Header::ENDIANESS en )
+	std::ostream & operator<<( std::ostream & out, SimpleFlashFs::dynamic::SimpleFlashFs::Header::ENDIANESS en )
 	{
+		using Header = SimpleFlashFs::dynamic::SimpleFlashFs::Header;
+
 		switch( en )
 		{
 		case Header::ENDIANESS::BE: return out << ENDIANESS_BE;
@@ -37,8 +39,10 @@ namespace std {
 }
 
 namespace std {
-	std::ostream & operator<<( std::ostream & out, SimpleFlashFs::dynamic::Header::CRC_CHECKSUM crc )
+	std::ostream & operator<<( std::ostream & out, SimpleFlashFs::dynamic::SimpleFlashFs::Header::CRC_CHECKSUM crc )
 	{
+		using Header = SimpleFlashFs::dynamic::SimpleFlashFs::Header;
+
 		switch( crc )
 		{
 		case Header::CRC_CHECKSUM::CRC32: return out << "CRC32";
@@ -51,6 +55,8 @@ namespace std {
 
 static void info_fs( SimpleFlashFs::dynamic::SimpleFlashFs & fs )
 {
+	using Header = SimpleFlashFs::dynamic::SimpleFlashFs::Header;
+
 	{
 		ColBuilder co;
 		std::cout << "Header:\n";
@@ -61,7 +67,7 @@ static void info_fs( SimpleFlashFs::dynamic::SimpleFlashFs & fs )
 		const int DATA = co.addCol("Data");
 		const int UNIT = co.addCol("Unit");
 
-		const SimpleFlashFs::dynamic::Header & header = fs.get_header();
+		const Header & header = fs.get_header();
 
 		co.addColData(BYTES, "00 - 12" );
 		co.addColData(LEN,   x2s(MAGICK_STRING_LEN) );

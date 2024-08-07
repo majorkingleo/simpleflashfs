@@ -3,9 +3,6 @@
  * @author Copyright (c) 2023-2024 Martin Oberzalek
  */
 #include "SimpleFlashFsDynamic.h"
-#include "../SimpleFlashFsFlashMemoryInterface.h"
-#include "../SimpleFlashFsConstants.h"
-#include <algorithm>
 #include <CpputilsDebug.h>
 #include <bit>
 #include <cstring>
@@ -44,37 +41,12 @@ bool FileHandle::flush() {
 }
 
 SimpleFlashFs::SimpleFlashFs( FlashMemoryInterface *mem_interface_ )
-: mem(mem_interface_)
+: base::SimpleFlashFsBase<Config>(mem_interface_)
 {
 	crcInit();
 }
 
-Header SimpleFlashFs::create_default_header( uint32_t page_size, uint64_t filesystem_size )
-{
-	Header header;
 
-	header.magic_string = MAGICK_STRING;
-	header.version = 1;
-	header.page_size = page_size;
-	header.filesystem_size = filesystem_size;
-
-	header.max_inodes = filesystem_size / 10 * 2;
-	header.max_inodes = std::max( header.max_inodes, static_cast<uint32_t>(10) );
-
-	if( header.max_inodes > header.filesystem_size ) {
-		header.max_inodes = 2;
-	}
-
-	header.max_path_len = 50;
-
-	if( std::endian::native == std::endian::big ) {
-		header.endianess = Header::ENDIANESS::BE;
-	} else {
-		header.endianess = Header::ENDIANESS::LE;
-	}
-
-	return header;
-}
 
 bool SimpleFlashFs::create( const Header & h )
 {

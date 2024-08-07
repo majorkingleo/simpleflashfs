@@ -15,6 +15,7 @@ namespace dynamic {
 /**
  * Filesystem header
  */
+#if 0
 struct Header
 {
 	enum class ENDIANESS
@@ -37,7 +38,7 @@ struct Header
 	uint16_t		max_path_len = 0;
 	CRC_CHECKSUM	crc_checksum_type{CRC_CHECKSUM::CRC32};
 };
-
+#endif
 /**
  * Inode struct
  */

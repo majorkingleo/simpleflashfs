@@ -6,6 +6,7 @@
 #ifndef SRC_DYNAMIC_SIMPLEFLASHFSDYNAMIC_H_
 #define SRC_DYNAMIC_SIMPLEFLASHFSDYNAMIC_H_
 
+#include "SimpleFlashFsBase.h"
 #include "SimpleFlashFsDynamicHeader.h"
 #include <vector>
 #include <memory>
@@ -100,9 +101,17 @@ private:
 
 };
 
-class SimpleFlashFs
+struct Config
 {
-	Header header;
+	using string_type = std::string;
+};
+
+class SimpleFlashFs : public base::SimpleFlashFsBase<Config>
+{
+public:
+	using Header = base::Header<Config>;
+
+protected:
 	FlashMemoryInterface *mem;
 
 	std::set<uint32_t> allocated_unwritten_pages;
@@ -121,7 +130,6 @@ public:
 	 *
 	 */
 	bool create( const Header & header );
-	static Header create_default_header( uint32_t page_size, uint64_t filesystem_size );
 
 	// read the fs the memory interface points to
 	// starting at offset 0
