@@ -37,6 +37,7 @@ public:
 	{
 
 	}
+
 	/** creates a new fs
 	 *
 	 * following values has to be set
@@ -75,6 +76,7 @@ public:
 
 		return base::SimpleFlashFsBase<Config>::init();
 	}
+
 
 	friend class base::FileHandle<Config,SimpleFlashFs>;
 };
