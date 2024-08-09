@@ -32,7 +32,7 @@ AC_DEFUN([LD_FLAGS_CHECK],
 ])
 
 
-AC_INIT(cpputilstest, 0.0.1)
+AC_INIT(simpleflashfs, 0.0.1)
 AM_INIT_AUTOMAKE([subdir-objects -Wall])
 
 

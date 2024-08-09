@@ -7,17 +7,12 @@
 #define SRC_DYNAMIC_SIMPLEFLASHFSDYNAMIC_H_
 
 #include "SimpleFlashFsBase.h"
-#include "SimpleFlashFsDynamicHeader.h"
-#include <vector>
 #include <memory>
-#include <set>
 #include <list>
 
 namespace SimpleFlashFs {
 
 namespace dynamic {
-
-class SimpleFlashFs;
 
 struct Config
 {

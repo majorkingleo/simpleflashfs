@@ -1,6 +1,7 @@
 bin_PROGRAMS=\
 	simple_flash_fs_tar \
-	test_dynamic
+	test_dynamic \
+	test_static
 		
 simple_flash_fs_tar_SOURCES=\
 		src_simple_flash_fs_tar/main.cc \
@@ -14,6 +15,13 @@ test_dynamic_SOURCES=\
 		src_test_dynamic/test_dynamic_wrapper.cc \
 		tools_config.h		
 		
+test_static_SOURCES=\
+		src_test_static/test_static.cc \
+		src_test_static/test_static_init.h \
+		src_test_static/test_static_init.cc \
+		src_test_static/static_fs.cc \
+		src_test_static/static_fs.h \
+		tools_config.h				
 
 AM_CPPFLAGS = -I$(top_srcdir)/tools \
 	-I$(top_srcdir)/cpputils/cpputilsshared  \
@@ -34,7 +42,7 @@ noinst_LIBRARIES=cpputils/io/libcpputilsio.a \
 src_libSimpleFlashFs_a_SOURCES=\
 		src/crc/crc.c \
 		src/crc/crc.h \
-		src/dynamic/SimpleFlashFsDynamicHeader.h \
+		src/dynamic/SimpleFlashFsBase.h \
 		src/dynamic/SimpleFlashFsDynamic.h \
 		src/dynamic/SimpleFlashFsDynamic.cc \
 		src/dynamic/SimpleFlashFsDynamicInstanceHandler.h \
@@ -45,7 +53,8 @@ src_libSimpleFlashFs_a_SOURCES=\
 		src/SimpleFlashFsConstants.h \
 		src/SimpleFlashFsConstants.cc \
 		src/sim_pc/SimFlashMemoryInterfacePc.h \
-		src/sim_pc/SimFlashMemoryInterfacePc.cc
+		src/sim_pc/SimFlashMemoryInterfacePc.cc \
+		src/static/SimpleFlashFsStatic.h	
 
 cpputils_io_libcpputilsio_a_SOURCES= \
 	cpputils/io/ColoredOutput.h \
@@ -74,7 +83,6 @@ cpputils_cpputilsshared_libcpputilsshared_a_SOURCES= \
 		cpputils/cpputilsshared/leoini.cc \
 		cpputils/cpputilsshared/map_utils.h \
 		cpputils/cpputilsshared/pairs.h \
-		cpputils/cpputilsshared/pairs.cc \
 		cpputils/cpputilsshared/range.h \
 		cpputils/cpputilsshared/ref.h \
 		cpputils/cpputilsshared/stderr_exception.h \
@@ -129,6 +137,13 @@ test_dynamic_LDADD = \
 	cpputils/cpputilsshared/libcpputilsshared.a \
 	common/libcommon.a \
 	cpputils/cpputilsshared/cpputilsformat/libcpputilsformat.a
+	
+test_static_LDADD = \
+	src/libSimpleFlashFs.a \
+	cpputils/io/libcpputilsio.a \
+	cpputils/cpputilsshared/libcpputilsshared.a \
+	common/libcommon.a \
+	cpputils/cpputilsshared/cpputilsformat/libcpputilsformat.a	
 		 
 LIBS=
     

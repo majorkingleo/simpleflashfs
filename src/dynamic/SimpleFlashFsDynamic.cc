@@ -16,16 +16,17 @@ using namespace Tools;
 
 namespace SimpleFlashFs::dynamic {
 
+uint32_t Config::crc32( const std::byte *bytes, size_t len )
+{
+	return crcFast( reinterpret_cast<unsigned const char*>(bytes), len );
+}
+
+
 
 SimpleFlashFs::SimpleFlashFs( FlashMemoryInterface *mem_interface_ )
 : base::SimpleFlashFsBase<Config>(mem_interface_)
 {
 	crcInit();
-}
-
-uint32_t Config::crc32( const std::byte *bytes, size_t len )
-{
-	return crcFast( reinterpret_cast<unsigned const char*>(bytes), len );
 }
 
 bool SimpleFlashFs::create( const Header & h )

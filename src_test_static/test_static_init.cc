@@ -1,14 +1,14 @@
-#include "test_dynamic_init.h"
+#include "test_static_init.h"
 
-#include <src/dynamic/SimpleFlashFsDynamic.h>
+#include "static_fs.h"
 #include <sim_pc/SimFlashMemoryInterfacePc.h>
 #include <stderr_exception.h>
 #include <format.h>
 
 using namespace Tools;
 using namespace SimpleFlashFs;
-using namespace SimpleFlashFs::dynamic;
-using namespace SimpleFlashFs::SimPc;
+using namespace SimpleFlashFs::static_memory;
+using namespace ::SimpleFlashFs::SimPc;
 
 namespace {
 
@@ -35,8 +35,8 @@ public:
 	bool init()
 	{
 		const std::string file = "test.bin";
-		SimFlashFsFlashMemoryInterface mem(file,size);
-		SimpleFlashFs::dynamic::SimpleFlashFs fs(&mem);
+		::SimpleFlashFs::SimPc::SimFlashFsFlashMemoryInterface mem(file,size);
+		SimpleFs fs(&mem);
 
 		if( !fs.create(fs.create_default_header(page_size, size/page_size)) ) {
 			throw STDERR_EXCEPTION( format( "cannot create %s", file ) );
