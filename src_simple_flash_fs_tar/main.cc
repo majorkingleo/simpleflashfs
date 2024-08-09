@@ -182,7 +182,7 @@ static void add_file( SimpleFlashFs::dynamic::SimpleFlashFs & fs, const std::str
 {
 	auto data = read_file( file );
 	auto handle = fs.open( file, std::ios_base::in | std::ios_base::out | std::ios_base::trunc );
-	handle->write( data.data(), data.size() );
+	handle.write( data.data(), data.size() );
 }
 
 static bool extract_file( SimpleFlashFs::dynamic::SimpleFlashFs & fs, const std::string & file )
@@ -194,9 +194,9 @@ static bool extract_file( SimpleFlashFs::dynamic::SimpleFlashFs & fs, const std:
 		return false;
 	}
 
-	std::vector<std::byte> buffer(handle->inode.file_len);
+	std::vector<std::byte> buffer(handle.inode.file_len);
 
-	if( handle->read(buffer.data(),buffer.size()) != buffer.size() ) {
+	if( handle.read(buffer.data(),buffer.size()) != buffer.size() ) {
 		CPPDEBUG( "reading all data failed" );
 		return false;
 	}

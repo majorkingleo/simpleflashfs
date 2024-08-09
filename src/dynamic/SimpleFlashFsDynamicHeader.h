@@ -38,7 +38,7 @@ struct Header
 	uint16_t		max_path_len = 0;
 	CRC_CHECKSUM	crc_checksum_type{CRC_CHECKSUM::CRC32};
 };
-#endif
+
 /**
  * Inode struct
  */
@@ -60,6 +60,7 @@ struct Inode
 	// zero and needs no space
 	std::vector<std::byte> inode_data;
 };
+#endif
 
 } // namespace dynamic
 } // namespace SimpleFlashFs

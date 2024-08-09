@@ -10,9 +10,9 @@ using namespace SimpleFlashFs::dynamic;
 
 struct SIMPLE_FLASH_FS_DYNAMIC_FILE
 {
-	std::shared_ptr<FileHandle> handle;
+	std::shared_ptr<SimpleFlashFs::dynamic::SimpleFlashFs::FileHandle> handle;
 
-	SIMPLE_FLASH_FS_DYNAMIC_FILE( std::shared_ptr<FileHandle> h )
+	SIMPLE_FLASH_FS_DYNAMIC_FILE( std::shared_ptr<SimpleFlashFs::dynamic::SimpleFlashFs::FileHandle> h )
 	: handle( h )
 	{}
 };
@@ -35,6 +35,8 @@ void SimpleFlashFs_dynamic_wrapper_unregister_default_instance_name( const char 
 
 SIMPLE_FLASH_FS_DYNAMIC_FILE* SimpleFlashFs_dynamic_fopen( const char *path, const char *cmode)
 {
+	using FileHandle = SimpleFlashFs::dynamic::SimpleFlashFs::FileHandle;
+
 	std::shared_ptr<SimpleFlashFs::dynamic::SimpleFlashFs> fs = InstanceHandler::instance().get(default_instance_name);
 
 	if( !fs ) {
@@ -69,7 +71,7 @@ SIMPLE_FLASH_FS_DYNAMIC_FILE* SimpleFlashFs_dynamic_fopen( const char *path, con
 		mode = std::ios_base::app | std::ios_base::out;
 	}
 
-	auto handle = fs->open( path, mode );
+	FileHandle handle = fs->open( path, mode );
 
 	if( !handle ) {
 		CPPDEBUG( "no handle" );
@@ -87,7 +89,8 @@ SIMPLE_FLASH_FS_DYNAMIC_FILE* SimpleFlashFs_dynamic_fopen( const char *path, con
 		return nullptr;
 	}
 
-	auto file = std::make_shared<SIMPLE_FLASH_FS_DYNAMIC_FILE>(handle);
+	std::shared_ptr<FileHandle> dyn_handle( new FileHandle(std::move(handle)) );
+	auto file = std::make_shared<SIMPLE_FLASH_FS_DYNAMIC_FILE>(dyn_handle);
 
 	file_handles[file.get()] = file;
 
