@@ -332,7 +332,7 @@ Header<Config> SimpleFlashFsBase<Config>::create_default_header( uint32_t page_s
 {
 	header_t header;
 
-	header.magic_string = MAGICK_STRING;
+	header.magic_string.assign(MAGICK_STRING);
 	header.version = 1;
 	header.page_size = page_size;
 	header.filesystem_size = filesystem_size;
@@ -558,7 +558,7 @@ bool SimpleFlashFsBase<Config>::init()
 	mem->read(0, page.data(), page.size());
 
 	std::size_t pos = 0;
-	h.magic_string = std::string_view( reinterpret_cast<char*>(&page[pos]), MAGICK_STRING_LEN );
+	h.magic_string.assign(std::string_view( reinterpret_cast<char*>(&page[pos]), MAGICK_STRING_LEN ));
 
 	if( h.magic_string != MAGICK_STRING ) {
 		CPPDEBUG( Tools::format( "invalid magick string: '%s'", h.magic_string ));
