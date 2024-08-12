@@ -9,6 +9,7 @@
 #include "SimpleFlashFsBase.h"
 #include <memory>
 #include <list>
+#include <set>
 
 namespace SimpleFlashFs {
 
@@ -20,6 +21,7 @@ struct Config
 	using page_type = std::vector<std::byte>;
 
 	template<class T> class vector_type : public std::vector<T> {};
+	template<class T> class set_type : public std::set<T> {};
 
 	static uint32_t crc32( const std::byte *bytes, size_t len );
 };

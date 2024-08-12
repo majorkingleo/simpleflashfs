@@ -14,6 +14,7 @@
 #include <CpputilsDebug.h>
 #include <format.h>
 #include <string_utils.h>
+#include <bit>
 #include <set>
 
 namespace SimpleFlashFs {
@@ -52,7 +53,7 @@ struct Header
 		CRC32 = 0
 	};
 
-	Config::string_type 	magic_string{};
+	Config::string_type 	magic_string;
 	ENDIANESS 				endianess{ENDIANESS::LE};
 	uint16_t   				version = 0;
 	uint32_t				page_size = 0;
@@ -202,12 +203,13 @@ protected:
 	using header_t = Header<Config>;
 	using inode_t = Inode<Config>;
 	using file_handle_t = FileHandle<Config,SimpleFlashFsBase<Config>>;
+
 	header_t header {};
 	FlashMemoryInterface *mem;
 
 	// to be replaced by a static version later
-	std::set<uint32_t> allocated_unwritten_pages;
-	std::set<uint32_t> free_data_pages;
+	typename Config::set_type<uint32_t> allocated_unwritten_pages;
+	typename Config::set_type<uint32_t> free_data_pages;
 
 	uint64_t max_inode_number = 0;
 
@@ -892,7 +894,9 @@ void SimpleFlashFsBase<Config>::erase_inode_and_unused_pages( file_handle_t & in
 	auto & dp = inode_to_erase.inode.data_pages;
 
 	// assume to erase all old pages
-	std::set<uint32_t> pages_to_erase( dp.begin(), dp.end() );
+	//typename Config::set_type<uint32_t> pages_to_erase( dp.begin(), dp.end() );
+	typename Config::set_type<uint32_t> pages_to_erase;
+	pages_to_erase.insert( dp.begin(), dp.end() );
 
 	// now remove all pages from the inode in the next version
 	for( auto page : next_inode_version.inode.data_pages ) {

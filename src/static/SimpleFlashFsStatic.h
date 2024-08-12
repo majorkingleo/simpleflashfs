@@ -7,6 +7,7 @@
 #include "../dynamic/SimpleFlashFsBase.h"
 #include <static_vector.h>
 #include <static_string.h>
+#include <static_list.h>
 
 namespace SimpleFlashFs {
 namespace static_memory {
@@ -18,6 +19,39 @@ struct Config
 	using page_type = Tools::static_vector<std::byte,SFF_PAGE_SIZE>;
 
 	template<class T> class vector_type : public Tools::static_vector<T,SFF_PAGE_SIZE> {};
+	template<class T> class set_type : private Tools::static_list<T,SFF_PAGE_SIZE> {
+
+	public:
+		template< class InputIt >
+		void insert( InputIt first, InputIt last ) {
+			for( InputIt it = first; it != last; ++it ) {
+				insert( *it );
+			}
+		}
+
+		void insert( const T & value ) {
+
+			for( auto it = Tools::static_list<T,SFF_PAGE_SIZE>::begin();
+					  it != Tools::static_list<T,SFF_PAGE_SIZE>::end(); ++it ) {
+				if( *it == value ) {
+					return;
+				}
+			}
+
+			Tools::static_list<T,SFF_PAGE_SIZE>::push_back(value);
+		}
+
+		void erase( const T & value ) {
+
+			for( auto it = Tools::static_list<T,SFF_PAGE_SIZE>::begin();
+					  it != Tools::static_list<T,SFF_PAGE_SIZE>::end(); ++it ) {
+				if( *it == value ) {
+					Tools::static_list<T,SFF_PAGE_SIZE>::erase(it);
+					return;
+				}
+			}
+		}
+	};
 
 	static uint32_t crc32( const std::byte *bytes, size_t len );
 };

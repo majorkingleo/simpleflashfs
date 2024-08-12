@@ -19,7 +19,7 @@ class TestCaseInitBase : public TestCaseBase<bool>
 
 public:
 	TestCaseInitBase( const std::string & name_,
-			std::size_t page_size_ = 528,
+			std::size_t page_size_ = 1024,
 			std::size_t size_ = 100*1024,
 			bool expected_result_ = true,
 			bool exception_ = false )
@@ -34,6 +34,11 @@ public:
 
 	bool init()
 	{
+		static_string<5> magick;
+		magick.assign("hello");
+
+		CPPDEBUG( Tools::format("here: %s", magick ) );
+
 		const std::string file = "test.bin";
 		::SimpleFlashFs::SimPc::SimFlashFsFlashMemoryInterface mem(file,size);
 		SimpleFs fs(&mem);
