@@ -22,6 +22,8 @@ using namespace SimpleFlashFs::SimPc;
 
 unsigned instance_count = 0;
 
+namespace {
+
 class TestCaseWrapperBase : public TestCaseBase<bool>
 {
 	std::size_t page_size;
@@ -119,7 +121,7 @@ public:
 	}
 };
 
-
+} // namespace
 
 std::shared_ptr<TestCaseBase<bool>> test_case_wrapper_fopen1()
 {

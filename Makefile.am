@@ -21,6 +21,10 @@ test_static_SOURCES=\
 		src_test_static/test_static_init.cc \
 		src_test_static/static_fs.cc \
 		src_test_static/static_fs.h \
+		src_test_static/static_fs_h7.cc \
+		src_test_static/static_fs_h7.h \
+		src_test_static/test_static_open.h \
+		src_test_static/test_static_open.cc \
 		tools_config.h				
 
 AM_CPPFLAGS = -I$(top_srcdir)/tools \

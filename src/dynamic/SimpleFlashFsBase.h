@@ -53,14 +53,14 @@ struct Header
 		CRC32 = 0
 	};
 
-	Config::string_type 	magic_string;
-	ENDIANESS 				endianess{ENDIANESS::LE};
-	uint16_t   				version = 0;
-	uint32_t				page_size = 0;
-	uint64_t				filesystem_size = 0; // size in pages
-	uint32_t				max_inodes = 0;
-	uint16_t				max_path_len = 0;
-	CRC_CHECKSUM			crc_checksum_type{CRC_CHECKSUM::CRC32};
+	Config::magic_string_type 	magic_string;
+	ENDIANESS 					endianess{ENDIANESS::LE};
+	uint16_t   					version = 0;
+	uint32_t					page_size = 0;
+	uint64_t					filesystem_size = 0; // size in pages
+	uint32_t					max_inodes = 0;
+	uint16_t					max_path_len = 0;
+	CRC_CHECKSUM				crc_checksum_type{CRC_CHECKSUM::CRC32};
 };
 
 /**
@@ -100,6 +100,7 @@ public:
 	uint32_t page   {0};
 	std::size_t pos {0};
 	bool modified   {false};
+	bool append     {false}; // always write at the end of file
 
 protected:
 	FS *fs;
@@ -114,6 +115,7 @@ public:
 	  page( other.page ),
 	  pos( other.pos ),
 	  modified( other.modified ),
+	  append( other.append ),
 	  fs( other.fs )
 	{
 		other.fs = nullptr;
@@ -144,6 +146,7 @@ public:
 		page = other.page;
 		pos = other.pos;
 		modified = other.modified;
+		append = other.append;
 		fs = other.fs;
 
 		other.fs = nullptr;
@@ -157,6 +160,9 @@ public:
 
 
 	std::size_t write( const std::byte *data, std::size_t size ) {
+		if( append ) {
+			seek( inode.file_len-1 );
+		}
 		return fs->write( this, data, size );
 	}
 
@@ -191,6 +197,7 @@ public:
 		ret.page = page;
 		ret.pos = pos;
 		ret.modified = modified;
+		ret.append = append;
 
 		return ret;
 	}
@@ -220,13 +227,13 @@ public:
 
 	}
 
-	Header<Config> create_default_header( uint32_t page_size, uint64_t filesystem_size );
+	Header<Config> create_default_header( uint32_t page_size, uint64_t filesystem_size_in_pages );
 
 	const Header<Config> & get_header() const {
 		return header;
 	}
 
-	file_handle_t open( const std::string & name, std::ios_base::openmode mode );
+	file_handle_t open( const Config::string_view_type & name, std::ios_base::openmode mode );
 
 	std::size_t write( file_handle_t* file, const std::byte *data, std::size_t size );
 
@@ -243,6 +250,10 @@ public:
 	}
 
 	friend class FileHandle<Config,SimpleFlashFsBase<Config>>;
+
+	// read the fs that the memory interface points to
+	// starting at offset 0
+	bool init();
 
 protected:
 	bool swap_endianess();
@@ -279,11 +290,7 @@ protected:
 
 	Config::page_type inode2page( const Inode<Config> & inode );
 
-	// read the fs the memory interface points to
-	// starting at offset 0
-	bool init();
-
-	file_handle_t find_file( const std::string & name );
+	file_handle_t find_file( const Config::string_view_type & name );
 
 	file_handle_t get_inode( const Config::page_type & data );
 
@@ -491,8 +498,10 @@ bool SimpleFlashFsBase<Config>::read_page( std::size_t idx, std::byte *page, std
 {
 	std::size_t offset = header.page_size + idx * header.page_size;
 
-	if( mem->read(offset, page, size ) != size ) {
+
+	if( std::size_t len_read; (len_read = mem->read(offset, page, size )) != size ) {
 		CPPDEBUG( "cannot read all data" );
+		CPPDEBUG( Tools::format( "cannot read all data from page: %d size: %d len_read: %d offset: %d", idx, size, len_read, offset ) );
 		return false;
 	}
 
@@ -632,13 +641,13 @@ bool SimpleFlashFsBase<Config>::init()
  }
 
 template <class Config>
-FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::open( const std::string & name, std::ios_base::openmode mode )
+FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::open( const Config::string_view_type & name, std::ios_base::openmode mode )
 {
 	auto handle = find_file( name );
 
 	if( !handle ) {
 		// file does not exists
-		if( !(mode & std::ios_base::out) ) {
+		if( !(mode & std::ios_base::out) && !(mode & std::ios_base::app)) {
 			CPPDEBUG( "no out mode" );
 			return {};
 		}
@@ -653,6 +662,10 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::open( co
 		handle.inode.file_name = name;
 		handle.inode.file_name_len = name.size();
 		handle.modified = true;
+
+		if( mode & std::ios_base::app ) {
+			handle.append = true;
+		}
 
 		if( mode & std::ios_base::ate ) {
 			if( handle.inode.file_len > 0 ) {
@@ -678,7 +691,7 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::open( co
 }
 
 template <class Config>
-FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::find_file( const std::string & name )
+FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::find_file( const Config::string_view_type & name )
 {
 	for( unsigned i = 0; i < header.max_inodes; i++ ) {
 
@@ -747,7 +760,7 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::allocate
 {
 	for( unsigned i = 0; i < header.max_inodes; i++ ) {
 
-		std::vector<std::byte> page(header.page_size);
+		typename Config::page_type page(header.page_size);
 
 		if( !read_page( i, page, true ) ) {
 			if( allocated_unwritten_pages.count(i) == 0 ) {

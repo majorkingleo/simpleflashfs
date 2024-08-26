@@ -34,11 +34,6 @@ public:
 
 	bool init()
 	{
-		static_string<5> magick;
-		magick.assign("hello");
-
-		CPPDEBUG( Tools::format("here: %s", magick ) );
-
 		const std::string file = "test.bin";
 		::SimpleFlashFs::SimPc::SimFlashFsFlashMemoryInterface mem(file,size);
 		SimpleFs fs(&mem);

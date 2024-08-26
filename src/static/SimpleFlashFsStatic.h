@@ -15,11 +15,17 @@ namespace static_memory {
 template <size_t SFF_FILENAME_MAX, size_t SFF_PAGE_SIZE>
 struct Config
 {
+	using magic_string_type = Tools::static_string<MAGICK_STRING_LEN>;
 	using string_type = Tools::static_string<SFF_FILENAME_MAX>;
+	using string_view_type = std::string_view;
 	using page_type = Tools::static_vector<std::byte,SFF_PAGE_SIZE>;
 
 	template<class T> class vector_type : public Tools::static_vector<T,SFF_PAGE_SIZE> {};
-	template<class T> class set_type : private Tools::static_list<T,SFF_PAGE_SIZE> {
+
+	template<class T>
+	class set_type : public Tools::static_list<T,SFF_PAGE_SIZE>
+	{
+		using base_t = Tools::static_list<T,SFF_PAGE_SIZE>;
 
 	public:
 		template< class InputIt >
@@ -41,15 +47,31 @@ struct Config
 			Tools::static_list<T,SFF_PAGE_SIZE>::push_back(value);
 		}
 
-		void erase( const T & value ) {
+		base_t::size_type erase( const T & value ) {
 
 			for( auto it = Tools::static_list<T,SFF_PAGE_SIZE>::begin();
 					  it != Tools::static_list<T,SFF_PAGE_SIZE>::end(); ++it ) {
 				if( *it == value ) {
 					Tools::static_list<T,SFF_PAGE_SIZE>::erase(it);
-					return;
+					return 1;
 				}
 			}
+
+			return 0;
+		}
+
+		base_t::iterator erase( base_t::const_iterator it ) {
+			return base_t::erase(it);
+		}
+
+		base_t::size_type count(const T & member) const {
+			for( auto it = base_t::begin(); it != base_t::end(); ++it ) {
+				if( *it == member ) {
+					return 1;
+				}
+			}
+
+			return 0;
 		}
 	};
 

@@ -17,7 +17,9 @@ namespace dynamic {
 
 struct Config
 {
+	using magic_string_type = std::string;
 	using string_type = std::string;
+	using string_view_type = std::string_view;
 	using page_type = std::vector<std::byte>;
 
 	template<class T> class vector_type : public std::vector<T> {};

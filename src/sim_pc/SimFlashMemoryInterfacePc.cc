@@ -9,6 +9,7 @@
 #include <vector>
 #include <stderr_exception.h>
 #include <format.h>
+#include <CpputilsDebug.h>
 
 using namespace Tools;
 using namespace SimpleFlashFs::SimPc;
@@ -50,6 +51,7 @@ std::size_t SimFlashFsFlashMemoryInterface::write( std::size_t address, const st
 std::size_t SimFlashFsFlashMemoryInterface::read( std::size_t address, std::byte *data, std::size_t size )
 {
 	file.seekg(address);
+	file.clear();
 	file.read( reinterpret_cast<char*>(data), size );
 	long data_read = file.tellg() - static_cast<long>(address);
 	return data_read;
