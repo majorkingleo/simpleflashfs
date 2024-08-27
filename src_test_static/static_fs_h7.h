@@ -146,7 +146,7 @@ void SimpleFsNoDel<Config>::read_all_free_data_pages()
 	CPPDEBUG( Tools::format( "free Data pages: %s", Tools::IterableToCommaSeparatedString(base_t::free_data_pages) ) );
 	CPPDEBUG( Tools::format( "largest file size: %dB", stat_largest_file_size ) );
 	CPPDEBUG( Tools::format( "trash size size: %dB", stat_largest_file_size ) );
-	CPPDEBUG( Tools::format( "used inodes: %d trash inodes: %d free inodex: %d",
+	CPPDEBUG( Tools::format( "used inodes: %d trash inodes: %d free inodes: %d",
 			stat_used_inodes,
 			stat_trash_inodes,
 			base_t::header.max_inodes - stat_used_inodes - stat_trash_inodes ));
