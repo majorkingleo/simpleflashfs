@@ -11,6 +11,7 @@
 #include <cstring>
 #include "../SimpleFlashFsConstants.h"
 #include "../SimpleFlashFsFlashMemoryInterface.h"
+#include "../SimpleFlashFsFileInterface.h"
 #include <CpputilsDebug.h>
 #include <format.h>
 #include <string_utils.h>
@@ -93,7 +94,7 @@ struct Inode
  * FileHandle class
  */
 template <class Config,class FS>
-class FileHandle
+class FileHandle : public FileInterface
 {
 public:
 	base::Inode<Config> inode {};
@@ -154,39 +155,39 @@ public:
 		return *this;
 	}
 
-	bool operator!() const {
+	bool operator!() const override {
 		return (fs == nullptr);
 	}
 
 
-	std::size_t write( const std::byte *data, std::size_t size ) {
+	std::size_t write( const std::byte *data, std::size_t size ) override {
 		if( append ) {
 			seek( inode.file_len-1 );
 		}
 		return fs->write( this, data, size );
 	}
 
-	std::size_t read( std::byte *data, std::size_t size ) {
+	std::size_t read( std::byte *data, std::size_t size ) override {
 		return fs->read( this, data, size );
 	}
 
-	bool flush() {
+	bool flush() override {
 		return fs->flush(this);
 	}
 
-	std::size_t tellg() const {
+	std::size_t tellg() const override {
 		return pos;
 	}
 
-	std::size_t file_size() const {
+	std::size_t file_size() const override {
 		return inode.file_len;
 	}
 
-	bool eof() const {
+	bool eof() const override {
 		return pos == inode.file_len-1;
 	}
 
-	void seek( std::size_t pos_ ) {
+	void seek( std::size_t pos_ ) override {
 		pos = pos_;
 	}
 
@@ -206,11 +207,13 @@ public:
 template <class Config>
 class SimpleFlashFsBase
 {
-protected:
+public:
 	using header_t = Header<Config>;
 	using inode_t = Inode<Config>;
 	using file_handle_t = FileHandle<Config,SimpleFlashFsBase<Config>>;
+	using config_t = Config;
 
+protected:
 	header_t header {};
 	FlashMemoryInterface *mem;
 
@@ -226,6 +229,8 @@ public:
 	{
 
 	}
+
+	virtual ~SimpleFlashFsBase() {}
 
 	Header<Config> create_default_header( uint32_t page_size, uint64_t filesystem_size_in_pages );
 
@@ -245,6 +250,12 @@ public:
 		return max_inode_number;
 	}
 
+	// it is a very rare use case to set this from outside.
+	// don't to it
+	void set_max_inode_number( uint64_t max_inode_number_ ) {
+		max_inode_number = max_inode_number_;
+	}
+
 	std::size_t get_number_of_free_data_pages() const {
 		return free_data_pages.size();
 	}
@@ -253,7 +264,7 @@ public:
 
 	// read the fs that the memory interface points to
 	// starting at offset 0
-	bool init();
+	virtual bool init();
 
 protected:
 	bool swap_endianess();
@@ -316,7 +327,7 @@ protected:
 	 */
 	std::size_t get_max_inode_data_pages( const file_handle_t* file ) const;
 
-	void erase_inode_and_unused_pages( file_handle_t & inode_to_erase, file_handle_t & next_inode_version );
+	virtual void erase_inode_and_unused_pages( file_handle_t & inode_to_erase, file_handle_t & next_inode_version );
 
 
 	bool write_page( file_handle_t* file,
@@ -851,6 +862,7 @@ template <class Config>
 uint32_t SimpleFlashFsBase<Config>::allocate_free_data_page()
 {
 	if( free_data_pages.empty() ) {
+		CPPDEBUG( "no free data pages left" );
 		return 0;
 	}
 
@@ -1027,7 +1039,7 @@ std::size_t SimpleFlashFsBase<Config>::write( file_handle_t* file, const std::by
 	const std::size_t data_start_at_page = file->pos % header.page_size;
 
 	if( data_start_at_page != 0 ) {
-		std::vector<std::byte> page(header.page_size);
+		typename Config::page_type page(header.page_size);
 		const std::size_t page_number = file->inode.data_pages.at(page_idx);
 		if( !read_page( page_number, page, false ) ) {
 			CPPDEBUG( Tools::format( "reading from pos %d failed", page_number * header.page_size ) );
@@ -1065,7 +1077,7 @@ std::size_t SimpleFlashFsBase<Config>::write( file_handle_t* file, const std::by
 		// last partial page
 		if( bytes_written + header.page_size > size ) {
 
-			std::vector<std::byte> page(header.page_size);
+			typename Config::page_type page(header.page_size);
 
 			if( !target_page_is_a_new_allocated_one ) {
 				const std::size_t page_number = file->inode.data_pages.at(page_idx);
@@ -1138,7 +1150,7 @@ std::size_t SimpleFlashFsBase<Config>::read( file_handle_t* file, std::byte *dat
 	const std::size_t data_start_at_page = file->pos % header.page_size;
 
 	if( data_start_at_page != 0 ) {
-		std::vector<std::byte> page(header.page_size);
+		typename Config::page_type page(header.page_size);
 		if( !read_page( file->inode.data_pages.at(page_idx), page, false ) ) {
 			CPPDEBUG( Tools::format( "reading from pos %d failed", page_idx * header.page_size ) );
 			return bytes_readen;
@@ -1157,7 +1169,7 @@ std::size_t SimpleFlashFsBase<Config>::read( file_handle_t* file, std::byte *dat
 		// last partial page
 		if( bytes_readen + header.page_size > size ) {
 
-			std::vector<std::byte> page(header.page_size);
+			typename Config::page_type page(header.page_size);
 
 			if( !read_page( file->inode.data_pages.at(page_idx), page, false ) ) {
 				CPPDEBUG( Tools::format( "reading from pos %d failed", page_idx * header.page_size ) );

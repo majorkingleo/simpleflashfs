@@ -11,6 +11,7 @@
 #include <format.h>
 #include "test_static_init.h"
 #include "test_static_open.h"
+#include "test_static_2pages.h"
 
 using namespace Tools;
 
@@ -59,25 +60,23 @@ int main( int argc, char **argv )
 #endif
 
 		std::vector<std::shared_ptr<TestCaseBase<bool>>> test_cases;
-/*
+
 		test_cases.push_back( test_case_init1() );
 		test_cases.push_back( test_case_init2() );
 		test_cases.push_back( test_case_init3() );
-*/
 
 		test_cases.push_back( test_case_static_open1() );
 		test_cases.push_back( test_case_static_open2() );
 		test_cases.push_back( test_case_static_open3() );
-		/*
-		test_cases.push_back( test_case_wrapper_fopen2() );
-		test_cases.push_back( test_case_wrapper_fopen3() );
-		test_cases.push_back( test_case_wrapper_fopen4() );
-		test_cases.push_back( test_case_wrapper_fopen5() );
+		test_cases.push_back( test_case_static_open4() );
 
-		test_cases.push_back( test_case_wrapper_fwrite1() );
-		test_cases.push_back( test_case_wrapper_fwrite2() );
-		test_cases.push_back( test_case_wrapper_fwrite3() );
-		*/
+		test_cases.push_back( test_case_static_write1() );
+
+		test_cases.push_back( test_case_static_2pages_write1() );
+
+		test_cases.push_back( test_case_static_TwoFace_write1() );
+		test_cases.push_back( test_case_static_TwoFace_write2() );
+		test_cases.push_back( test_case_static_TwoFace_write3() );
 
 		ColBuilder col;
 

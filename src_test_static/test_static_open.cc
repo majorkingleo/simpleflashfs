@@ -20,7 +20,7 @@ namespace {
 class TestCaseOpenBase : public TestCaseBase<bool>
 {
 protected:
-	std::optional<SimpleFsH7> fs;
+	std::optional<SimpleFsNoDel<ConfigH7>> fs;
 	std::optional<::SimpleFlashFs::SimPc::SimFlashFsFlashMemoryInterface> mem;
 
 public:
@@ -56,10 +56,10 @@ public:
 template <class RetType>
 class TestCaseFunc : public TestCaseOpenBase
 {
-	std::function<RetType(SimpleFsH7 & fs)> func;
+	std::function<RetType(SimpleFsNoDel<ConfigH7> & fs)> func;
 
 public:
-	TestCaseFunc( const std::string & name_, std::function<RetType(SimpleFsH7 & fs)>  func_ )
+	TestCaseFunc( const std::string & name_, std::function<RetType(SimpleFsNoDel<ConfigH7> & fs)>  func_ )
 	: TestCaseOpenBase( name_ ),
 	  func( func_ )
 	{
@@ -87,11 +87,12 @@ public:
 
 std::shared_ptr<TestCaseBase<bool>> test_case_static_open1()
 {
-	return std::make_shared<TestCaseFunc<bool>>("open1", [](SimpleFsH7 & fs) {
+	return std::make_shared<TestCaseFunc<bool>>(__FUNCTION__, [](SimpleFsNoDel<ConfigH7> & fs) {
 
 		auto f = fs.open("test.open1", std::ios_base::in );
 
 		if( !f ) {
+			CPPDEBUG( "cannot open file" );
 			return true;
 		}
 
@@ -101,11 +102,12 @@ std::shared_ptr<TestCaseBase<bool>> test_case_static_open1()
 
 std::shared_ptr<TestCaseBase<bool>> test_case_static_open2()
 {
-	return std::make_shared<TestCaseFunc<bool>>("open2", [](SimpleFsH7 & fs) {
+	return std::make_shared<TestCaseFunc<bool>>(__FUNCTION__, [](SimpleFsNoDel<ConfigH7> & fs) {
 
 		auto f = fs.open("test.open2", std::ios_base::in | std::ios_base::out );
 
 		if( !f ) {
+			CPPDEBUG( "cannot open file" );
 			return false;
 		}
 
@@ -115,11 +117,12 @@ std::shared_ptr<TestCaseBase<bool>> test_case_static_open2()
 
 std::shared_ptr<TestCaseBase<bool>> test_case_static_open3()
 {
-	return std::make_shared<TestCaseFunc<bool>>("open3", [](SimpleFsH7 & fs) {
+	return std::make_shared<TestCaseFunc<bool>>(__FUNCTION__, [](SimpleFsNoDel<ConfigH7> & fs) {
 
 		auto f = fs.open("test.open3", std::ios_base::in | std::ios_base::app );
 
 		if( !f ) {
+			CPPDEBUG( "cannot open file" );
 			return false;
 		}
 
@@ -127,3 +130,62 @@ std::shared_ptr<TestCaseBase<bool>> test_case_static_open3()
 	});
 }
 
+std::shared_ptr<TestCaseBase<bool>> test_case_static_open4()
+{
+	return std::make_shared<TestCaseFunc<bool>>(__FUNCTION__, [](SimpleFsNoDel<ConfigH7> & fs) {
+
+		{
+			auto f = fs.open("test.open4", std::ios_base::out | std::ios_base::trunc );
+
+			if( !f ) {
+				CPPDEBUG( "cannot open file" );
+				return false;
+			}
+
+			std::string_view sv( "test1" );
+
+			if( f.write( reinterpret_cast<const std::byte*>(sv.data()), sv.size() ) != sv.size() ) {
+				CPPDEBUG( "cannot write data to file" );
+				return false;
+			}
+		}
+
+		{
+			auto f = fs.open("test.open4", std::ios_base::out | std::ios_base::trunc );
+
+			if( !f ) {
+				CPPDEBUG( "cannot open file" );
+				return false;
+			}
+
+			if( f.file_size() != 0 ) {
+				CPPDEBUG( "file size is not 0" );
+				return false;
+			}
+		}
+
+		return true;
+	});
+}
+
+std::shared_ptr<TestCaseBase<bool>> test_case_static_write1()
+{
+	return std::make_shared<TestCaseFunc<bool>>(__FUNCTION__, [](SimpleFsNoDel<ConfigH7> & fs) {
+		auto f = fs.open("test.write1", std::ios_base::out | std::ios_base::trunc );
+
+		if( !f ) {
+			CPPDEBUG( "cannot open file" );
+			return false;
+		}
+
+		char buffer[1000] = { "Hello" };
+
+		std::size_t bytes_written = f.write( reinterpret_cast<std::byte*>(buffer), sizeof(buffer) );
+		if( bytes_written != sizeof(buffer) ) {
+			CPPDEBUG( format( "%d bytes written", bytes_written ) );
+			return false;
+		}
+
+		return true;
+	});
+}

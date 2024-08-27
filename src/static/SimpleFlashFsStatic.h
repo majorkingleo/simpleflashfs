@@ -12,20 +12,24 @@
 namespace SimpleFlashFs {
 namespace static_memory {
 
-template <size_t SFF_FILENAME_MAX, size_t SFF_PAGE_SIZE>
+template <size_t SFF_FILE_NAME_MAX, size_t SFF_PAGE_SIZE, size_t SFF_MAX_PAGES, size_t SFF_MAX_SIZE>
 struct Config
 {
 	using magic_string_type = Tools::static_string<MAGICK_STRING_LEN>;
-	using string_type = Tools::static_string<SFF_FILENAME_MAX>;
+	using string_type = Tools::static_string<SFF_FILE_NAME_MAX>;
 	using string_view_type = std::string_view;
 	using page_type = Tools::static_vector<std::byte,SFF_PAGE_SIZE>;
+	constexpr static size_t PAGE_SIZE = SFF_PAGE_SIZE;
+	constexpr static size_t MAX_PAGES = SFF_MAX_PAGES;
+	constexpr static size_t FILE_NAME_MAX = SFF_FILE_NAME_MAX;
+	constexpr static size_t MAX_SIZE = SFF_MAX_SIZE;
 
-	template<class T> class vector_type : public Tools::static_vector<T,SFF_PAGE_SIZE> {};
+	template<class T> class vector_type : public Tools::static_vector<T,SFF_MAX_PAGES> {};
 
 	template<class T>
-	class set_type : public Tools::static_list<T,SFF_PAGE_SIZE>
+	class set_type : public Tools::static_list<T,SFF_MAX_PAGES>
 	{
-		using base_t = Tools::static_list<T,SFF_PAGE_SIZE>;
+		using base_t = Tools::static_list<T,SFF_MAX_PAGES>;
 
 	public:
 		template< class InputIt >
@@ -37,22 +41,22 @@ struct Config
 
 		void insert( const T & value ) {
 
-			for( auto it = Tools::static_list<T,SFF_PAGE_SIZE>::begin();
-					  it != Tools::static_list<T,SFF_PAGE_SIZE>::end(); ++it ) {
+			for( auto it = base_t::begin();
+					  it !=base_t::end(); ++it ) {
 				if( *it == value ) {
 					return;
 				}
 			}
 
-			Tools::static_list<T,SFF_PAGE_SIZE>::push_back(value);
+			base_t::push_back(value);
 		}
 
 		base_t::size_type erase( const T & value ) {
 
-			for( auto it = Tools::static_list<T,SFF_PAGE_SIZE>::begin();
-					  it != Tools::static_list<T,SFF_PAGE_SIZE>::end(); ++it ) {
+			for( auto it = base_t::begin();
+					  it != base_t::end(); ++it ) {
 				if( *it == value ) {
-					Tools::static_list<T,SFF_PAGE_SIZE>::erase(it);
+					base_t::erase(it);
 					return 1;
 				}
 			}

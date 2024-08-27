@@ -13,3 +13,6 @@
 std::shared_ptr<TestCaseBase<bool>> test_case_static_open1();
 std::shared_ptr<TestCaseBase<bool>> test_case_static_open2();
 std::shared_ptr<TestCaseBase<bool>> test_case_static_open3();
+std::shared_ptr<TestCaseBase<bool>> test_case_static_open4();
+
+std::shared_ptr<TestCaseBase<bool>> test_case_static_write1();
