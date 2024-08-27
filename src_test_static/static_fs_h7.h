@@ -7,6 +7,7 @@
 #include <src/static/SimpleFlashFsStatic.h>
 #include "../src/crc/crc.h"
 #include <optional>
+#include <memory>
 #include <CpputilsDebug.h>
 #include <format.h>
 
@@ -23,12 +24,58 @@ struct ConfigH7 : public SimpleFlashFs::static_memory::Config<SFF_FILE_NAME_MAX,
 template<class Config>
 class SimpleFsNoDel : public SimpleFlashFs::static_memory::SimpleFlashFs<Config>
 {
+public:
 	using base_t = ::SimpleFlashFs::static_memory::SimpleFlashFs<Config>;
 
-	std::size_t stat_largest_file_size = 0; // in bytes
-	std::size_t stat_trash_size = 0; // in bytes
-	std::size_t stat_used_inodes = 0; // number of inodes in use
-	std::size_t stat_trash_inodes = 0; // number of inodes to delete
+protected:
+	class InodeVersionStore
+	{
+	public:
+
+		enum class add_ret_t
+		{
+			replaced,
+			inserted
+		};
+
+		struct InodeVersion
+		{
+			uint32_t inode;
+			uint32_t version;
+		};
+
+	protected:
+		typename Config::vector_type<InodeVersion> data;
+
+	public:
+
+		add_ret_t add( uint32_t inode, uint32_t version )
+		{
+			for( auto & iv : data ) {
+				if( iv.inode == inode ) {
+					iv.version = std::max( iv.version, version );
+					return add_ret_t::replaced;
+				}
+			}
+
+			data.push_back( InodeVersion{ inode, version } );
+			return add_ret_t::inserted;
+		}
+
+	};
+
+public:
+	struct Stat
+	{
+		std::size_t largest_file_size = 0; // in bytes
+		std::size_t trash_size = 0; // in bytes
+		std::size_t used_inodes = 0; // number of inodes in use
+		std::size_t trash_inodes = 0; // number of inodes to delete
+		std::size_t free_inodes = 0;
+	};
+
+protected:
+	Stat stat{};
 
 public:
 	SimpleFsNoDel( ::SimpleFlashFs::FlashMemoryInterface *mem_interface_ )
@@ -56,6 +103,10 @@ public:
 		return true;
 	}
 
+	const Stat & get_stat() const {
+		return stat;
+	}
+
 protected:
 	void read_all_free_data_pages();
 
@@ -64,55 +115,18 @@ protected:
 	}
 };
 
-template <class Config>
-class InodeVersionStore
-{
-public:
-
-	enum class add_ret_t
-	{
-		replaced,
-		inserted
-	};
-
-	struct InodeVersion
-	{
-		uint32_t inode;
-		uint32_t version;
-	};
-
-protected:
-	typename Config::vector_type<InodeVersion> data;
-
-public:
-
-	add_ret_t add( uint32_t inode, uint32_t version )
-	{
-		for( auto & iv : data ) {
-			if( iv.inode == inode ) {
-				iv.version = std::max( iv.version, version );
-				return add_ret_t::replaced;
-			}
-		}
-
-		data.push_back( InodeVersion{ inode, version } );
-		return add_ret_t::inserted;
-	}
-
-};
 
 template <class Config>
 void SimpleFsNoDel<Config>::read_all_free_data_pages()
 {
-	using iv_store_t = InodeVersionStore<Config>;
-
 	base_t::free_data_pages.clear();
+	stat = {};
 
 	for( unsigned i = base_t::header.max_inodes; i < base_t::header.filesystem_size; i++ ) {
 		base_t::free_data_pages.insert(i);
 	}
 
-	iv_store_t iv_store;
+	InodeVersionStore iv_store;
 
 	for( unsigned i = 0; i < base_t::header.max_inodes; i++ ) {
 
@@ -127,29 +141,31 @@ void SimpleFsNoDel<Config>::read_all_free_data_pages()
 			CPPDEBUG( Tools::format( "found inode %d,%d at page: %d",
 					inode.inode.inode_number, inode.inode.inode_version_number, i ) );
 
-			if( iv_store.add( inode.inode.inode_number, inode.inode.inode_version_number ) == iv_store_t::add_ret_t::replaced ) {
-				stat_trash_inodes++;
+			if( iv_store.add( inode.inode.inode_number, inode.inode.inode_version_number ) == InodeVersionStore::add_ret_t::replaced ) {
+				stat.trash_inodes++;
 			} else {
-				stat_used_inodes++;
+				stat.used_inodes++;
 			}
 
-			stat_largest_file_size = std::max( stat_largest_file_size, inode.file_size() );
+			stat.largest_file_size = std::max( stat.largest_file_size, inode.file_size() );
 
 			// remove used pages from free_data_pages list
 			for( auto page : inode.inode.data_pages ) {
-				stat_trash_size += base_t::header.page_size;
+				stat.trash_size += base_t::header.page_size;
 				base_t::free_data_pages.erase(page);
 			}
 		}
 	}
 
+	stat.free_inodes = base_t::header.max_inodes - stat.used_inodes - stat.trash_inodes;
+
 	CPPDEBUG( Tools::format( "free Data pages: %s", Tools::IterableToCommaSeparatedString(base_t::free_data_pages) ) );
-	CPPDEBUG( Tools::format( "largest file size: %dB", stat_largest_file_size ) );
-	CPPDEBUG( Tools::format( "trash size size: %dB", stat_largest_file_size ) );
+	CPPDEBUG( Tools::format( "largest file size: %dB", stat.largest_file_size ) );
+	CPPDEBUG( Tools::format( "trash size size: %dB", stat.largest_file_size ) );
 	CPPDEBUG( Tools::format( "used inodes: %d trash inodes: %d free inodes: %d",
-			stat_used_inodes,
-			stat_trash_inodes,
-			base_t::header.max_inodes - stat_used_inodes - stat_trash_inodes ));
+			stat.used_inodes,
+			stat.trash_inodes,
+			stat.free_inodes ));
 }
 
 template<class Config>
@@ -174,7 +190,53 @@ public:
 	{
 	}
 
+	~SimpleFs2FlashPages()
+	{
+
+	}
+
 	bool init()
+	{
+		if( !init_fs() ) {
+			return false;
+		}
+
+		should_cleanup();
+
+		return true;
+	}
+
+	base_t::file_handle_t open( const Config::string_view_type & name, std::ios_base::openmode mode )
+	{
+		return fs->open( name, mode );
+	}
+
+	bool should_cleanup( unsigned treshold_percentage = 80 )
+	{
+		const typename SimpleFsNoDel<Config>::base_t::Header & header = fs->get_header();
+		const unsigned all_data_pages = header.filesystem_size - header.max_inodes;
+		const unsigned data_pages_usage = 100 - (100.0 / all_data_pages * fs->get_number_of_free_data_pages());
+
+		CPPDEBUG( Tools::format( "data_pages_usage: %d%%", data_pages_usage ) );
+
+		const typename SimpleFsNoDel<Config>::Stat & stat = fs->get_stat();
+		const unsigned inode_usage = 100 - ( 100.0 / header.max_inodes * stat.free_inodes );
+
+		CPPDEBUG( Tools::format( "inode_usage:      %d%%", inode_usage ) );
+
+		if( inode_usage > treshold_percentage ) {
+			return true;
+		}
+
+		if( data_pages_usage > treshold_percentage ) {
+			return true;
+		}
+
+		return false;
+	}
+
+protected:
+	bool init_fs()
 	{
 		init( fs1, mem_interface1 );
 		init( fs2, mem_interface2 );
@@ -211,17 +273,6 @@ public:
 		return true;
 	}
 
-	base_t::file_handle_t open( const Config::string_view_type & name, std::ios_base::openmode mode )
-	{
-		return fs->open( name, mode );
-	}
-
-	bool should_cleanup()
-	{
-		return false;
-	}
-
-protected:
 	bool init( std::optional<SimpleFsNoDel<Config>> & fs, ::SimpleFlashFs::FlashMemoryInterface *mem )
 	{
 		fs.emplace(mem);
