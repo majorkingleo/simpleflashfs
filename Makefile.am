@@ -28,12 +28,10 @@ test_static_SOURCES=\
 		src_test_static/test_static_open.cc \
 		src_test_static/test_static_2pages.h \
 		src_test_static/test_static_2pages.cc \
-		tools_config.h				
+		tools_config.h
 		
 test_2face_SOURCES=\
 		src_test_static/test_2face.cc \
-		src_test_static/static_fs.cc \
-		src_test_static/static_fs.h \
 		src_test_static/static_fs_h7.cc \
 		src_test_static/static_fs_h7.h \
 		src_test_static/test_static_2pages.h \
@@ -54,7 +52,8 @@ noinst_LIBRARIES=cpputils/io/libcpputilsio.a \
 	cpputils/cpputilsshared/libcpputilsshared.a \
 	cpputils/cpputilsshared/cpputilsformat/libcpputilsformat.a \
 	common/libcommon.a \
-	src/libSimpleFlashFs.a
+	src/libSimpleFlashFs.a \
+	src/libSimpleFlashFsStatic.a
 	
 src_libSimpleFlashFs_a_SOURCES=\
 		src/crc/crc.c \
@@ -70,8 +69,18 @@ src_libSimpleFlashFs_a_SOURCES=\
 		src/SimpleFlashFsConstants.h \
 		src/SimpleFlashFsConstants.cc \
 		src/sim_pc/SimFlashMemoryInterfacePc.h \
+		src/sim_pc/SimFlashMemoryInterfacePc.cc			
+		
+src_libSimpleFlashFsStatic_a_SOURCES=\
+		src/crc/crc.c \
+		src/crc/crc.h \
+		src/dynamic/SimpleFlashFsBase.h \
+		src/SimpleFlashFsFlashMemoryInterface.h \
+		src/SimpleFlashFsConstants.h \
+		src/SimpleFlashFsConstants.cc \
+		src/sim_pc/SimFlashMemoryInterfacePc.h \
 		src/sim_pc/SimFlashMemoryInterfacePc.cc \
-		src/static/SimpleFlashFsStatic.h	
+		src/static/SimpleFlashFsStatic.h
 
 cpputils_io_libcpputilsio_a_SOURCES= \
 	cpputils/io/ColoredOutput.h \
@@ -156,14 +165,14 @@ test_dynamic_LDADD = \
 	cpputils/cpputilsshared/cpputilsformat/libcpputilsformat.a
 	
 test_static_LDADD = \
-	src/libSimpleFlashFs.a \
+	src/libSimpleFlashFsStatic.a \
 	cpputils/io/libcpputilsio.a \
 	cpputils/cpputilsshared/libcpputilsshared.a \
 	common/libcommon.a \
 	cpputils/cpputilsshared/cpputilsformat/libcpputilsformat.a	
 		 
 test_2face_LDADD = \
-	src/libSimpleFlashFs.a \
+	src/libSimpleFlashFsStatic.a \
 	cpputils/io/libcpputilsio.a \
 	cpputils/cpputilsshared/libcpputilsshared.a \
 	common/libcommon.a \
