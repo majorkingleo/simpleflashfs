@@ -214,6 +214,67 @@ public:
 	using config_t = Config;
 
 protected:
+	class InodeVersionStore
+	{
+	public:
+
+		enum class add_ret_t
+		{
+			replaced,
+			inserted
+		};
+
+		struct InodeVersion
+		{
+			uint32_t inode = 0;
+			uint32_t page = 0;
+			uint32_t version = 0;
+
+			InodeVersion() = default;
+			InodeVersion( const file_handle_t & file )
+			: inode( file.inode.inode_number ),
+			  page( file.page ),
+			  version( file.inode.inode_version_number )
+			{
+
+			}
+
+			InodeVersion & operator=( const file_handle_t & file )
+			{
+				inode = file.inode.inode_number;
+				page = file.page;
+				version = file.inode.inode_version_number;
+				return *this;
+			}
+		};
+
+	protected:
+		typename Config::vector_type<InodeVersion> data;
+
+	public:
+
+		add_ret_t add( const file_handle_t & file )
+		{
+			for( auto & iv : data ) {
+				if( iv.inode == file.inode.inode_number ) {
+					if( file.inode.inode_version_number > iv.version ) {
+						iv.version = file.inode.inode_version_number;
+						iv.page = file.page;
+					}
+					return add_ret_t::replaced;
+				}
+			}
+
+			data.push_back( InodeVersion( file ) );
+			return add_ret_t::inserted;
+		}
+
+		const typename Config::vector_type<InodeVersion> & get_data() const {
+			return data;
+		}
+	};
+
+protected:
 	header_t header {};
 	FlashMemoryInterface *mem;
 
@@ -301,7 +362,7 @@ protected:
 
 	Config::page_type inode2page( const Inode<Config> & inode );
 
-	file_handle_t find_file( const Config::string_view_type & name );
+	virtual file_handle_t find_file( const Config::string_view_type & name );
 
 	file_handle_t get_inode( const Config::page_type & data );
 
@@ -704,16 +765,32 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::open( co
 template <class Config>
 FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::find_file( const Config::string_view_type & name )
 {
+	typename InodeVersionStore::InodeVersion iv;
+
 	for( unsigned i = 0; i < header.max_inodes; i++ ) {
 
 		typename Config::page_type page(header.page_size);
 
 		if( read_page( i, page, true ) ) {
-			auto inode = get_inode( page );
-			if( inode.inode.file_name == name ) {
-				inode.page = i;
-				return inode;
+			auto file_handle = get_inode( page );
+			file_handle.page = i;
+
+			if( file_handle.inode.file_name == name ) {
+				CPPDEBUG( Tools::format( "found file: '%s' Version: '%d' at page %d",
+						name, file_handle.inode.inode_version_number, file_handle.page ));
+				if( iv.inode == 0 || file_handle.inode.inode_version_number > iv.version ) {
+					iv = file_handle;
+				}
 			}
+		}
+	}
+
+	if( iv.inode ) {
+		typename Config::page_type page(header.page_size);
+		if( read_page( iv.page, page, true ) ) {
+			auto file_handle = get_inode( page );
+			file_handle.page = iv.page;
+			return file_handle;
 		}
 	}
 
@@ -738,10 +815,8 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::get_inod
 	read( ret.inode.inode_version_number );
 	read( ret.inode.file_name_len );
 
-	std::vector<char> file_name(ret.inode.file_name_len+1);
-	std::memcpy(&file_name[0], &page[pos], ret.inode.file_name_len );
+	ret.inode.file_name = std::string_view( reinterpret_cast<const char*>(&page[pos]), ret.inode.file_name_len );
 	pos += ret.inode.file_name_len;
-	ret.inode.file_name = std::string_view( &file_name[0], ret.inode.file_name_len );
 
 	read( ret.inode.attributes );
 	read( ret.inode.file_len );

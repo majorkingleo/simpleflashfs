@@ -86,6 +86,7 @@ template <class Config>
 class SimpleFlashFs : public base::SimpleFlashFsBase<Config>
 {
 public:
+	using base_t = base::SimpleFlashFsBase<Config>;
 	using Header = base::Header<Config>;
 	using Inode = base::Inode<Config>;
 	using FileHandle = base::FileHandle<Config,base::SimpleFlashFsBase<Config>>;
@@ -135,6 +136,32 @@ public:
 		}
 
 		return base::SimpleFlashFsBase<Config>::init();
+	}
+
+	void list_files( typename Config::vector_type<typename Config::string_type> & file_names )
+	{
+		typename base_t::InodeVersionStore iv_store;
+
+		for( unsigned i = 0; i < base_t::header.max_inodes; i++ ) {
+			typename Config::page_type page(base_t::header.page_size);
+
+			if( base_t::read_page( i, page, true ) ) {
+				auto file_handle = base_t::get_inode( page );
+				file_handle.page = i;
+				iv_store.add( file_handle );
+			}
+		}
+
+		const auto & data = iv_store.get_data();
+
+		for( const auto & iv : data ) {
+			typename Config::page_type page(base_t::header.page_size);
+			if( base_t::read_page( iv.page, page, true ) ) {
+				auto file_handle = base_t::get_inode( page );
+				file_handle.page = iv.page;
+				file_names.push_back( file_handle.inode.file_name );
+			}
+		}
 	}
 
 

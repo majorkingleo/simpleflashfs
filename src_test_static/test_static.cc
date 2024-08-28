@@ -76,6 +76,7 @@ int main( int argc, char **argv )
 
 		test_cases.push_back( test_case_static_TwoFace_write1() );
 		test_cases.push_back( test_case_static_TwoFace_write2() );
+
 		test_cases.push_back( test_case_static_TwoFace_write3() );
 
 		ColBuilder col;

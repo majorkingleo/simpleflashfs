@@ -27,43 +27,6 @@ class SimpleFsNoDel : public SimpleFlashFs::static_memory::SimpleFlashFs<Config>
 public:
 	using base_t = ::SimpleFlashFs::static_memory::SimpleFlashFs<Config>;
 
-protected:
-	class InodeVersionStore
-	{
-	public:
-
-		enum class add_ret_t
-		{
-			replaced,
-			inserted
-		};
-
-		struct InodeVersion
-		{
-			uint32_t inode;
-			uint32_t version;
-		};
-
-	protected:
-		typename Config::vector_type<InodeVersion> data;
-
-	public:
-
-		add_ret_t add( uint32_t inode, uint32_t version )
-		{
-			for( auto & iv : data ) {
-				if( iv.inode == inode ) {
-					iv.version = std::max( iv.version, version );
-					return add_ret_t::replaced;
-				}
-			}
-
-			data.push_back( InodeVersion{ inode, version } );
-			return add_ret_t::inserted;
-		}
-
-	};
-
 public:
 	struct Stat
 	{
@@ -126,22 +89,20 @@ void SimpleFsNoDel<Config>::read_all_free_data_pages()
 		base_t::free_data_pages.insert(i);
 	}
 
-	InodeVersionStore iv_store;
+	typename base_t::InodeVersionStore iv_store;
 
 	for( unsigned i = 0; i < base_t::header.max_inodes; i++ ) {
 
 		typename base_t::config_t::page_type page(base_t::header.page_size);
 
-
-
 		if( base_t::read_page( i, page, true ) ) {
 			typename base_t::FileHandle inode = base_t::get_inode( page );
 			inode.page = i;
 			base_t::max_inode_number = std::max( base_t::max_inode_number, inode.inode.inode_number );
-			CPPDEBUG( Tools::format( "found inode %d,%d at page: %d",
-					inode.inode.inode_number, inode.inode.inode_version_number, i ) );
+			CPPDEBUG( Tools::format( "found inode %d,%d at page: %d name: '%s'",
+					inode.inode.inode_number, inode.inode.inode_version_number, i, inode.inode.file_name ) );
 
-			if( iv_store.add( inode.inode.inode_number, inode.inode.inode_version_number ) == InodeVersionStore::add_ret_t::replaced ) {
+			if( iv_store.add( inode ) == base_t::InodeVersionStore::add_ret_t::replaced ) {
 				stat.trash_inodes++;
 			} else {
 				stat.used_inodes++;
@@ -175,19 +136,35 @@ public:
 	using base_t = SimpleFsNoDel<Config>;
 
 protected:
-	std::optional<SimpleFsNoDel<Config>> fs1;
-	std::optional<SimpleFsNoDel<Config>> fs2;
+	struct Component
+	{
+		enum class Type
+		{
+			inactive,
+			active
+		};
 
-	::SimpleFlashFs::FlashMemoryInterface *mem_interface1;
-	::SimpleFlashFs::FlashMemoryInterface *mem_interface2;
+		std::optional<SimpleFsNoDel<Config>> fs;
+		::SimpleFlashFs::FlashMemoryInterface *mem = nullptr;
+
+		bool valid() const {
+			return !(!fs);
+		}
+
+		Component() = default;
+		Component( const Component & other ) = delete;
+	};
+
+	Component c1;
+	Component c2;
 
 	SimpleFsNoDel<Config> *fs = nullptr;
 public:
-	SimpleFs2FlashPages( ::SimpleFlashFs::FlashMemoryInterface *mem_interface1_,
-						 ::SimpleFlashFs::FlashMemoryInterface *mem_interface2_ )
-	: mem_interface1(mem_interface2_),
-	  mem_interface2(mem_interface2_)
+	SimpleFs2FlashPages( ::SimpleFlashFs::FlashMemoryInterface *mem_interface1,
+						 ::SimpleFlashFs::FlashMemoryInterface *mem_interface2 )
 	{
+		c1.mem = mem_interface1;
+		c2.mem = mem_interface2;
 	}
 
 	~SimpleFs2FlashPages()
@@ -201,7 +178,11 @@ public:
 			return false;
 		}
 
-		should_cleanup();
+		if( should_cleanup() ) {
+			cleanup();
+		}
+
+		CPPDEBUG( Tools::format( "active fs is: fs%d", c1.valid() ? 1 : 2 ) );
 
 		return true;
 	}
@@ -238,65 +219,144 @@ public:
 protected:
 	bool init_fs()
 	{
-		init( fs1, mem_interface1 );
-		init( fs2, mem_interface2 );
+		init_fs( c1 );
+		init_fs( c2 );
 
-		if( !fs1 && !fs2 ) {
-			if( !create( fs1, mem_interface1 ) ) {
+		if( !c1.valid() && !c2.valid() ) {
+			if( !create( c1 ) ) {
 				CPPDEBUG( "cannot create fs1" );
 				return false;
 			}
-			if( !create( fs2, mem_interface2 ) ) {
+			if( !create( c2 ) ) {
 				CPPDEBUG( "cannot create fs2" );
 				return false;
 			}
-		} else if( fs1 && !fs2 ) {
-			fs = &fs1.value();
+		} else if( c1.valid() && !c2.valid() ) {
+			fs = &c1.fs.value();
 			return true;
-		} else if( fs2 && !fs1 ) {
-			fs = &fs2.value();
+		} else if( c2.valid() && !c1.valid() ) {
+			fs = &c2.fs.value();
 			return true;
 		}
 
 		// both filesystems are valid choose the newest one
-		uint64_t m1 = fs1->get_max_inode_number();
-		uint64_t m2 = fs2->get_max_inode_number();
+		uint64_t m1 = c1.fs->get_max_inode_number();
+		uint64_t m2 = c2.fs->get_max_inode_number();
 
 		if( m1 > m2 ) {
-			fs2.reset();
-			fs = &fs1.value();
+			c2.fs.reset();
+			fs = &c1.fs.value();
 		} else {
-			fs1.reset();
-			fs = &fs2.value();
+			c1.fs.reset();
+			fs = &c2.fs.value();
 		}
 
 		return true;
 	}
 
-	bool init( std::optional<SimpleFsNoDel<Config>> & fs, ::SimpleFlashFs::FlashMemoryInterface *mem )
+	bool init_fs( Component & component )
 	{
-		fs.emplace(mem);
-		if( !fs->init() ) {
-			fs.reset();
+		component.fs.emplace(component.mem);
+		if( !component.fs->init() ) {
+			component.fs.reset();
 			return false;
 		}
 
 		return true;
 	}
 
-	bool create( std::optional<SimpleFsNoDel<Config>> & fs, ::SimpleFlashFs::FlashMemoryInterface *mem )
+	bool create( Component & component )
 	{
-		mem->erase( 0, mem->size() );
-		fs.emplace(mem);
+		component.mem->erase( 0, component.mem->size() );
+		component.fs.emplace(component.mem);
 
-		if( !fs->create() ) {
-			fs.reset();
+		if( !component.fs->create() ) {
+			component.fs.reset();
 			return false;
 		}
 
-		if( !fs->init() ) {
-			fs.reset();
+		if( !component.fs->init() ) {
+			component.fs.reset();
 			return false;
+		}
+
+		return true;
+	}
+
+	Component & get_component( Component::Type type )
+	{
+		switch( type )
+		{
+		case Component::Type::active:
+			if( c1.valid() ) {
+				return c1;
+			} else {
+				return c2;
+			}
+			break;
+
+		case Component::Type::inactive:
+			if( !c1.valid() ) {
+				return c1;
+			} else {
+				return c2;
+			}
+			break;
+		}
+
+		throw std::out_of_range("should never been reached");
+	}
+
+	bool cleanup()
+	{
+		Component & inactive_component = get_component( Component::Type::inactive );
+		Component & active_component = get_component( Component::Type::active );
+
+		if( !create( inactive_component ) ) {
+			CPPDEBUG( "cannot recreate fs!" );
+			return false;
+		}
+
+		inactive_component.fs->set_max_inode_number( active_component.fs->get_max_inode_number() + 1 );
+
+		typename Config::vector_type<typename Config::string_type> file_names;
+		active_component.fs->list_files( file_names );
+
+		for( auto & file_name : file_names ) {
+			auto file_source = active_component.fs->open( file_name, std::ios_base::in | std::ios_base::binary );
+			auto file_target = inactive_component.fs->open( file_name, std::ios_base::out | std::ios_base::trunc | std::ios_base::app | std::ios_base::binary );
+
+			if( !copy( file_source, file_target ) ) {
+				CPPDEBUG( "cannot recreate fs by copying files!" );
+				return false;
+			}
+		}
+
+		// active, becomes now inactive
+		// inactive is already active, so nothing todo
+		active_component.fs.reset();
+
+		return true;
+	}
+
+	bool copy( base_t::base_t::FileHandle & source,  base_t::base_t::FileHandle & target )
+	{
+		std::size_t data_already_read = 0;
+		typename Config::page_type buffer;
+
+		for( size_t data_already_read = 0; data_already_read < source.file_size(); ) {
+			const int32_t max_read = std::min( source.file_size() - data_already_read, buffer.capacity() );
+			buffer.resize(max_read);
+
+			size_t data_read = source.read(&buffer[0],buffer.size());
+			buffer.resize(data_read);
+			data_already_read += data_read;
+
+			size_t data_written = target.write( buffer.data(), buffer.size() );
+			if( data_written != buffer.size() ) {
+				CPPDEBUG( "failed writing data" );
+				return false;
+			}
 		}
 
 		return true;
