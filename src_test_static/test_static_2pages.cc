@@ -187,7 +187,6 @@ std::shared_ptr<TestCaseBase<bool>> test_case_static_TwoFace_delete1()
 {
 	return std::make_shared<TestCaseFuncNoInp<bool>>(__FUNCTION__, true, []() {
 
-		CPPDEBUG( "xxxxxxxxxxxxx creating file" );
 		// test deleting a file
 		{
 			auto f1 = H7TwoFace::open( "2Face.delete1", std::ios_base::out );
@@ -198,7 +197,6 @@ std::shared_ptr<TestCaseBase<bool>> test_case_static_TwoFace_delete1()
 			}
 		}
 
-		CPPDEBUG( "\nxxxxxxxxxxxxx deleting file" );
 		{
 			auto f2 = H7TwoFace::open( "2Face.delete1", std::ios_base::in );
 
@@ -208,12 +206,10 @@ std::shared_ptr<TestCaseBase<bool>> test_case_static_TwoFace_delete1()
 				return false;
 			}
 
-			CPPDEBUG( "\nxxxxxxxxxxxxx start deleting file" );
 			if( !f2->delete_file() ) {
 				return false;
 			}
 
-			CPPDEBUG( "xxxxxxxxxxxxx end deleting file\n" );
 		}
 
 		{
@@ -221,6 +217,62 @@ std::shared_ptr<TestCaseBase<bool>> test_case_static_TwoFace_delete1()
 
 			if( !f2 ) {
 				return true;
+			}
+		}
+
+		return true;
+	});
+}
+
+std::shared_ptr<TestCaseBase<bool>> test_case_static_TwoFace_rename1()
+{
+	return std::make_shared<TestCaseFuncNoInp<bool>>(__FUNCTION__, true, []() {
+
+		// test renaming a file
+		{
+			auto f1 = H7TwoFace::open( "2Face.rename1", std::ios_base::out );
+
+			if( !f1 ) {
+				CPPDEBUG( "cannot open file" );
+				return false;
+			}
+		}
+
+		{
+			auto f2 = H7TwoFace::open( "2Face.rename1", std::ios_base::in );
+
+			// should work, because instance "2Face.rename1" is still there
+			if( !f2 ) {
+				CPPDEBUG( "cannot open file" );
+				return false;
+			}
+
+			CPPDEBUG( "\n XXXXXXXXXXXXXX rename start XXXXXXXXXXXXX \n");
+			if( !f2->rename_file("2Face.rename1.hias") ) {
+				return false;
+			}
+			CPPDEBUG( "\n XXXXXXXXXXXXXX rename end XXXXXXXXXXXXX \n");
+		}
+
+		{
+			auto f2 = H7TwoFace::open( "2Face.rename1", std::ios_base::in );
+
+			if( !f2 ) {
+
+			} else {
+				CPPDEBUG( "file not renamed" );
+				return false;
+			}
+		}
+
+		CPPDEBUG( "\n XXXXXXXXXXXXXX searching for file XXXXXXXXXXXXX \n");
+		{
+			auto f2 = H7TwoFace::open( "2Face.rename1.hias", std::ios_base::in );
+			CPPDEBUG( "\n XXXXXXXXXXXXXX searching ended XXXXXXXXXXXXX \n");
+
+			if( !f2 ) {
+				CPPDEBUG( "file not renamed" );
+				return false;
 			}
 		}
 

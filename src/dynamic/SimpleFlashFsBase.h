@@ -735,6 +735,9 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::open( co
 {
 	auto handle = find_file( name );
 
+
+	CPPDEBUG( "here1 ");
+
 	if( !handle ) {
 		// file does not exists
 		if( !(mode & std::ios_base::out) && !(mode & std::ios_base::app)) {
@@ -783,14 +786,19 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::open( co
 		return new_handle;
 	}
 
+	CPPDEBUG( "file found" );
+
 	return handle;
 }
 
 template <class Config>
 FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::find_file( const Config::string_view_type & name )
 {
-	typename InodeVersionStore::InodeVersion iv;
+	InodeVersionStore iv_storage;
 
+	// find the latest version of all inodes
+	// we have top do this, because only the last version of each
+	// inode has it's last valid name
 	for( unsigned i = 0; i < header.max_inodes; i++ ) {
 
 		typename Config::page_type page(header.page_size);
@@ -799,22 +807,35 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::find_fil
 			auto file_handle = get_inode( page );
 			file_handle.page = i;
 
-			if( file_handle.inode.file_name == name ) {
-				CPPDEBUG( Tools::format( "found file: '%s' Version: '%d' at page %d",
-						name, file_handle.inode.inode_version_number, file_handle.page ));
-				if( iv.inode == 0 || file_handle.inode.inode_version_number > iv.version ) {
-					iv = file_handle;
-				}
-			}
+			iv_storage.add(file_handle);
 		}
 	}
 
-	if( iv.inode ) {
+	for( auto & iv : iv_storage.get_data() ) {
+
 		typename Config::page_type page(header.page_size);
 		if( read_page( iv.page, page, true ) ) {
 			auto file_handle = get_inode( page );
 			file_handle.page = iv.page;
-			return file_handle;
+
+			// deleted file
+			if( file_handle.inode.file_name.empty() ) {
+				continue;
+			}
+
+			CPPDEBUG( Tools::format( "%d,%d at page: %d '%s', searching for '%s'", iv.inode, iv.version, iv.page,
+					file_handle.inode.file_name, name ) );
+
+			CPPDEBUG( Tools::format("'%s'(%d) %s '%s'(%d)",
+					file_handle.inode.file_name, file_handle.inode.file_name.size(),
+					file_handle.inode.file_name == name ? "==" : "!=",
+					name, name.size() ) );
+
+			if( file_handle.inode.file_name == name ) {
+				CPPDEBUG( Tools::format( "found file: '%s' Version: '%d' at page %d",
+							name, file_handle.inode.inode_version_number, file_handle.page ));
+				return file_handle;
+			}
 		}
 	}
 
@@ -921,7 +942,11 @@ bool SimpleFlashFsBase<Config>::flush( file_handle_t* file )
 	auto page = inode2page(file->inode);
 	add_page_checksum(page);
 
-	CPPDEBUG( Tools::format( "writing page %d", file->page ));
+	CPPDEBUG( Tools::format( "writing inode %d,%d page %d (%s)",
+			file->inode.inode_number,
+			file->inode.inode_version_number,
+			file->page,
+			file->inode.file_name ));
 
 	if( !write_page(file, page, true, file->page ) ) {
 		CPPDEBUG( Tools::format( "cannot write inode %d,%d page %d",

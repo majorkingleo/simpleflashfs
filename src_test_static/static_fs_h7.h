@@ -122,7 +122,8 @@ void SimpleFsNoDel<Config>::read_all_free_data_pages()
 
 	stat.free_inodes = base_t::header.max_inodes - stat.used_inodes - stat.trash_inodes;
 
-	CPPDEBUG( Tools::format( "free Data pages: %s", Tools::IterableToCommaSeparatedString(base_t::free_data_pages) ) );
+//	CPPDEBUG( Tools::format( "free Data pages: %s", Tools::IterableToCommaSeparatedString(base_t::free_data_pages) ) );
+	CPPDEBUG( Tools::format( "free Data pages: %d", base_t::free_data_pages.size() ) );
 	CPPDEBUG( Tools::format( "largest file size: %dB", stat.largest_file_size ) );
 	CPPDEBUG( Tools::format( "trash size size: %dB", stat.largest_file_size ) );
 	CPPDEBUG( Tools::format( "used inodes: %d trash inodes: %d free inodes: %d",
@@ -139,7 +140,12 @@ bool SimpleFsNoDel<Config>::rename_file( base_t::FileHandle* file, const std::st
 	if( new_file_name.empty() ) {
 		file->inode.file_name.clear();
 		file->inode.file_name_len = 0;
+
+		file->inode.pages = 0;
+		file->inode.data_pages.clear();
+		file->inode.inode_data.clear();
 		file->modified = true;
+
 		if( !file->flush() ) {
 			return false;
 		}
@@ -159,6 +165,8 @@ bool SimpleFsNoDel<Config>::rename_file( base_t::FileHandle* file, const std::st
 	file->inode.file_name = new_file_name;
 	file->inode.file_name_len = file->inode.file_name.size();
 	file->modified = true;
+
+	file->flush();
 
 	return true;
 }

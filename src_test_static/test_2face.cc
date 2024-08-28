@@ -63,7 +63,8 @@ int main( int argc, char **argv )
 		test_cases.push_back( test_case_static_TwoFace_write2() );
 		test_cases.push_back( test_case_static_TwoFace_write3() );
 		*/
-		test_cases.push_back( test_case_static_TwoFace_delete1() );
+		//test_cases.push_back( test_case_static_TwoFace_delete1() );
+		test_cases.push_back( test_case_static_TwoFace_rename1() );
 
 		ColBuilder col;
 
