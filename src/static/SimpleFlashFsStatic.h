@@ -159,6 +159,12 @@ public:
 			if( base_t::read_page( iv.page, page, true ) ) {
 				auto file_handle = base_t::get_inode( page );
 				file_handle.page = iv.page;
+
+				// files witout a name are deleted files
+				if( file_handle.inode.file_name.empty() ) {
+					continue;
+				}
+
 				file_names.push_back( file_handle.inode.file_name );
 			}
 		}

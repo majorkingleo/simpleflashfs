@@ -81,6 +81,14 @@ public:
 		void open( const std::string_view & name, std::ios_base::openmode mode ) {
 			 file.emplace( (*fs_instance)->get_fs().open(name, mode) );
 		}
+
+		bool delete_file() override {
+			return file->delete_file();
+		}
+
+		bool rename_file( const std::string_view & new_file_name ) override {
+			return file->rename_file( new_file_name );
+		}
 	};
 
 private:

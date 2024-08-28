@@ -181,3 +181,49 @@ std::shared_ptr<TestCaseBase<bool>> test_case_static_TwoFace_write3()
 		return true;
 	});
 }
+
+
+std::shared_ptr<TestCaseBase<bool>> test_case_static_TwoFace_delete1()
+{
+	return std::make_shared<TestCaseFuncNoInp<bool>>(__FUNCTION__, true, []() {
+
+		CPPDEBUG( "xxxxxxxxxxxxx creating file" );
+		// test deleting a file
+		{
+			auto f1 = H7TwoFace::open( "2Face.delete1", std::ios_base::out );
+
+			if( !f1 ) {
+				CPPDEBUG( "cannot open file" );
+				return false;
+			}
+		}
+
+		CPPDEBUG( "\nxxxxxxxxxxxxx deleting file" );
+		{
+			auto f2 = H7TwoFace::open( "2Face.delete1", std::ios_base::in );
+
+			// s	hould not work, because instance f1 is still there
+			if( !f2 ) {
+				CPPDEBUG( "cannot open file" );
+				return false;
+			}
+
+			CPPDEBUG( "\nxxxxxxxxxxxxx start deleting file" );
+			if( !f2->delete_file() ) {
+				return false;
+			}
+
+			CPPDEBUG( "xxxxxxxxxxxxx end deleting file\n" );
+		}
+
+		{
+			auto f2 = H7TwoFace::open( "2Face.delete1", std::ios_base::in );
+
+			if( !f2 ) {
+				return true;
+			}
+		}
+
+		return true;
+	});
+}

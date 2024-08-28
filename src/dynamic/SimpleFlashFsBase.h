@@ -202,6 +202,22 @@ public:
 
 		return ret;
 	}
+
+	bool delete_file() override {
+		return rename_file( "" );
+	}
+
+	bool rename_file( const std::string_view & new_file_name ) override {
+		return fs->rename_file( this, new_file_name );
+	}
+
+	void disconnect() {
+		fs = nullptr;
+	}
+
+	bool valid() const {
+		return fs != nullptr;
+	}
 };
 
 template <class Config>
@@ -306,6 +322,8 @@ public:
 	std::size_t read( file_handle_t* file, std::byte *data, std::size_t size );
 
 	bool flush( file_handle_t* file );
+
+	virtual bool rename_file( file_handle_t* file, const std::string_view & new_file_name );
 
 	uint64_t get_max_inode_number() const {
 		return max_inode_number;
@@ -750,6 +768,12 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::open( co
 	else if( mode & std::ios_base::trunc ) {
 
 		auto new_handle = allocate_free_inode_page();
+
+		if( !new_handle ) {
+			CPPDEBUG( "cannot allocate new inode page" );
+			return {};
+		}
+
 		new_handle.inode = handle.inode;
 		new_handle.inode.file_len = 0;
 		new_handle.inode.pages = 0;
@@ -1274,6 +1298,39 @@ std::size_t SimpleFlashFsBase<Config>::read( file_handle_t* file, std::byte *dat
 	return bytes_readen;
 }
 
+template <class Config>
+bool SimpleFlashFsBase<Config>::rename_file( file_handle_t* file, const std::string_view & new_file_name )
+{
+	throw std::out_of_range( "not implemented yet" );
+
+	if( new_file_name.empty() ) {
+		// just delete it
+		auto new_handle = allocate_free_inode_page();
+
+		if( !new_handle ) {
+			CPPDEBUG( "cannot allocate new inode page" );
+			return {};
+		}
+
+		new_handle.inode = file->inode;
+		new_handle.inode.file_len = 0;
+		new_handle.inode.pages = 0;
+		new_handle.inode.data_pages.clear();
+		new_handle.inode.inode_data.clear();
+
+		erase_inode_and_unused_pages( *file, new_handle );
+		file->page = new_handle.page;
+		file->inode = new_handle.inode;
+		file->modified = false;
+
+		// disconnect
+		new_handle.disconnect();
+
+		return true;
+	}
+
+	return false;
+}
 
 } // namespace base
 

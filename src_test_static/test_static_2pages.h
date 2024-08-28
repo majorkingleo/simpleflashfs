@@ -15,3 +15,5 @@ std::shared_ptr<TestCaseBase<bool>> test_case_static_2pages_write1();
 std::shared_ptr<TestCaseBase<bool>> test_case_static_TwoFace_write1();
 std::shared_ptr<TestCaseBase<bool>> test_case_static_TwoFace_write2();
 std::shared_ptr<TestCaseBase<bool>> test_case_static_TwoFace_write3();
+
+std::shared_ptr<TestCaseBase<bool>> test_case_static_TwoFace_delete1();

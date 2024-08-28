@@ -30,6 +30,10 @@ public:
 	virtual bool eof() const = 0;
 
 	virtual void seek( std::size_t pos_ ) = 0;
+
+	virtual bool delete_file() = 0;
+
+	virtual bool rename_file( const std::string_view & new_file_name ) = 0;
 };
 
 
