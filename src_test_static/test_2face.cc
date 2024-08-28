@@ -9,8 +9,6 @@
 #include <OutDebug.h>
 #include <memory>
 #include <format.h>
-#include "test_static_init.h"
-#include "test_static_open.h"
 #include "test_static_2pages.h"
 
 using namespace Tools;
@@ -61,18 +59,9 @@ int main( int argc, char **argv )
 
 		std::vector<std::shared_ptr<TestCaseBase<bool>>> test_cases;
 
-		test_cases.push_back( test_case_init1() );
-		test_cases.push_back( test_case_init2() );
-		test_cases.push_back( test_case_init3() );
-
-		test_cases.push_back( test_case_static_open1() );
-		test_cases.push_back( test_case_static_open2() );
-		test_cases.push_back( test_case_static_open3() );
-		test_cases.push_back( test_case_static_open4() );
-
-		test_cases.push_back( test_case_static_write1() );
-
-		test_cases.push_back( test_case_static_2pages_write1() );
+		test_cases.push_back( test_case_static_TwoFace_write1() );
+		test_cases.push_back( test_case_static_TwoFace_write2() );
+		test_cases.push_back( test_case_static_TwoFace_write3() );
 
 		ColBuilder col;
 
