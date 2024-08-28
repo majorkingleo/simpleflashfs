@@ -41,7 +41,6 @@ public:
 				auto save_ptr = fs_instance;
 				fs_instance = nullptr;
 				save_ptr->reset();
-
 			}
 		}
 
@@ -114,7 +113,7 @@ public:
 
 	~H7TwoFaceImplPc()
 	{
-		CPPDEBUG(__FUNCTION__);
+
 	}
 
 	File & open( std::optional<H7TwoFaceImplPc> * fs_instance, const std::string_view & name, std::ios_base::openmode mode ) {
@@ -135,6 +134,7 @@ H7TwoFace::file_handle_t H7TwoFace::open( const std::string_view & name, std::io
 	static std::optional<H7TwoFaceImplPc> fs_impl;
 
 	if( fs_impl ) {
+		CPPDEBUG( "An other FS instance is already open" );
 		return {};
 	}
 
@@ -142,6 +142,7 @@ H7TwoFace::file_handle_t H7TwoFace::open( const std::string_view & name, std::io
 	H7TwoFaceImplPc::File & f = fs_impl->open( &fs_impl, name, mode );
 
 	if( !f ) {
+		fs_impl.reset();
 		return {};
 	}
 

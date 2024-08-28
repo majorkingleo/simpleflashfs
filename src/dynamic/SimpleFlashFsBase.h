@@ -735,9 +735,6 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::open( co
 {
 	auto handle = find_file( name );
 
-
-	CPPDEBUG( "here1 ");
-
 	if( !handle ) {
 		// file does not exists
 		if( !(mode & std::ios_base::out) && !(mode & std::ios_base::app)) {
@@ -822,14 +819,6 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::find_fil
 			if( file_handle.inode.file_name.empty() ) {
 				continue;
 			}
-
-			CPPDEBUG( Tools::format( "%d,%d at page: %d '%s', searching for '%s'", iv.inode, iv.version, iv.page,
-					file_handle.inode.file_name, name ) );
-
-			CPPDEBUG( Tools::format("'%s'(%d) %s '%s'(%d)",
-					file_handle.inode.file_name, file_handle.inode.file_name.size(),
-					file_handle.inode.file_name == name ? "==" : "!=",
-					name, name.size() ) );
 
 			if( file_handle.inode.file_name == name ) {
 				CPPDEBUG( Tools::format( "found file: '%s' Version: '%d' at page %d",

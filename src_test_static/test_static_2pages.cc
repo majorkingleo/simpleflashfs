@@ -247,28 +247,25 @@ std::shared_ptr<TestCaseBase<bool>> test_case_static_TwoFace_rename1()
 				return false;
 			}
 
-			CPPDEBUG( "\n XXXXXXXXXXXXXX rename start XXXXXXXXXXXXX \n");
 			if( !f2->rename_file("2Face.rename1.hias") ) {
+				CPPDEBUG( "rename failed" );
 				return false;
 			}
-			CPPDEBUG( "\n XXXXXXXXXXXXXX rename end XXXXXXXXXXXXX \n");
 		}
 
 		{
-			auto f2 = H7TwoFace::open( "2Face.rename1", std::ios_base::in );
+			auto f3 = H7TwoFace::open( "2Face.rename1", std::ios_base::in );
 
-			if( !f2 ) {
-
+			if( !f3 ) {
+				CPPDEBUG( "ok" );
 			} else {
 				CPPDEBUG( "file not renamed" );
 				return false;
 			}
 		}
 
-		CPPDEBUG( "\n XXXXXXXXXXXXXX searching for file XXXXXXXXXXXXX \n");
 		{
 			auto f2 = H7TwoFace::open( "2Face.rename1.hias", std::ios_base::in );
-			CPPDEBUG( "\n XXXXXXXXXXXXXX searching ended XXXXXXXXXXXXX \n");
 
 			if( !f2 ) {
 				CPPDEBUG( "file not renamed" );
