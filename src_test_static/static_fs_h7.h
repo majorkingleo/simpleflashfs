@@ -70,8 +70,6 @@ public:
 		return stat;
 	}
 
-	bool rename_file( base_t::FileHandle* file, const std::string_view & new_file_name ) override;
-
 protected:
 	void read_all_free_data_pages();
 
@@ -132,44 +130,6 @@ void SimpleFsNoDel<Config>::read_all_free_data_pages()
 			stat.free_inodes ));
 }
 
-template <class Config>
-bool SimpleFsNoDel<Config>::rename_file( base_t::FileHandle* file, const std::string_view & new_file_name )
-{
-	// delete it by setting the filename to an empty string
-	// next cleanup process will skip it
-	if( new_file_name.empty() ) {
-		file->inode.file_name.clear();
-		file->inode.file_name_len = 0;
-
-		file->inode.pages = 0;
-		file->inode.data_pages.clear();
-		file->inode.inode_data.clear();
-		file->modified = true;
-
-		if( !file->flush() ) {
-			return false;
-		}
-
-		// invalidate the handle
-		file->disconnect();
-
-		return true;
-	}
-
-	auto other_file = base_t::find_file( new_file_name );
-
-	if( other_file.valid() ) {
-		other_file.delete_file();
-	}
-
-	file->inode.file_name = new_file_name;
-	file->inode.file_name_len = file->inode.file_name.size();
-	file->modified = true;
-
-	file->flush();
-
-	return true;
-}
 
 template<class Config>
 class SimpleFs2FlashPages

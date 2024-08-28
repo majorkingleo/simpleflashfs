@@ -204,7 +204,7 @@ public:
 	}
 
 	bool delete_file() override {
-		return rename_file( "" );
+		return fs->delete_file( this );
 	}
 
 	bool rename_file( const std::string_view & new_file_name ) override {
@@ -323,7 +323,9 @@ public:
 
 	bool flush( file_handle_t* file );
 
-	virtual bool rename_file( file_handle_t* file, const std::string_view & new_file_name );
+	bool delete_file( file_handle_t* file );
+
+	bool rename_file( file_handle_t* file, const std::string_view & new_file_name );
 
 	uint64_t get_max_inode_number() const {
 		return max_inode_number;
@@ -1313,37 +1315,43 @@ std::size_t SimpleFlashFsBase<Config>::read( file_handle_t* file, std::byte *dat
 }
 
 template <class Config>
-bool SimpleFlashFsBase<Config>::rename_file( file_handle_t* file, const std::string_view & new_file_name )
+bool SimpleFlashFsBase<Config>::delete_file( file_handle_t* file )
 {
-	throw std::out_of_range( "not implemented yet" );
+	// delete it by setting the filename to an empty string
+	// next cleanup process will skip it
+	file->inode.file_name.clear();
+	file->inode.file_name_len = 0;
 
-	if( new_file_name.empty() ) {
-		// just delete it
-		auto new_handle = allocate_free_inode_page();
+	file->inode.pages = 0;
+	file->inode.data_pages.clear();
+	file->inode.inode_data.clear();
+	file->modified = true;
 
-		if( !new_handle ) {
-			CPPDEBUG( "cannot allocate new inode page" );
-			return {};
-		}
-
-		new_handle.inode = file->inode;
-		new_handle.inode.file_len = 0;
-		new_handle.inode.pages = 0;
-		new_handle.inode.data_pages.clear();
-		new_handle.inode.inode_data.clear();
-
-		erase_inode_and_unused_pages( *file, new_handle );
-		file->page = new_handle.page;
-		file->inode = new_handle.inode;
-		file->modified = false;
-
-		// disconnect
-		new_handle.disconnect();
-
-		return true;
+	if( !file->flush() ) {
+		return false;
 	}
 
-	return false;
+	// invalidate the handle
+	file->disconnect();
+
+	return true;
+}
+
+template <class Config>
+bool SimpleFlashFsBase<Config>::rename_file( file_handle_t* file, const std::string_view & new_file_name )
+{
+	auto other_file = find_file( new_file_name );
+
+	if( other_file.valid() ) {
+		other_file.delete_file();
+	}
+
+	file->inode.file_name = new_file_name;
+	file->inode.file_name_len = file->inode.file_name.size();
+	file->modified = true;
+	file->flush();
+
+	return true;
 }
 
 } // namespace base
