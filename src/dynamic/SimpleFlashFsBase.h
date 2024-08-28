@@ -1120,7 +1120,7 @@ std::size_t SimpleFlashFsBase<Config>::write( file_handle_t* file, const std::by
 
 		memcpy( file->inode.inode_data.data() + file->pos, data, size );
 		file->pos += size;
-		file->inode.file_len = std::max( file->pos, file->inode.file_len);
+		file->inode.file_len = std::max(static_cast<decltype(file->inode.file_len)>(file->pos), file->inode.file_len);
 		file->modified = true;
 
 		// the read write will occur during flush
@@ -1228,7 +1228,7 @@ std::size_t SimpleFlashFsBase<Config>::write( file_handle_t* file, const std::by
 	} // while
 
 	file->modified = true;
-	file->inode.file_len = std::max(file->pos, file->inode.file_len) ;
+	file->inode.file_len = std::max( static_cast<decltype(file->inode.file_len)>(file->pos), file->inode.file_len) ;
 
 	return bytes_written;
 }
@@ -1254,7 +1254,7 @@ std::size_t SimpleFlashFsBase<Config>::read( file_handle_t* file, std::byte *dat
 	if( space_inside_the_inode > file->pos + size &&
 		file->inode.file_len < space_inside_the_inode ) {
 
-		std::size_t len = std::min( file->inode.file_len - file->pos, size );
+		std::size_t len = std::min( static_cast<decltype(size)>(file->inode.file_len - file->pos), size );
 		memcpy( data, file->inode.inode_data.data() + file->pos, len );
 		return len;
 	}
