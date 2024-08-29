@@ -84,15 +84,17 @@ void SimpleFsNoDel<Config>::read_all_free_data_pages()
 	typename base_t::InodeVersionStore iv_store;
 
 	for( unsigned i = 0; i < base_t::header.max_inodes; i++ ) {
-
 		typename base_t::config_t::page_type page(base_t::header.page_size);
 
 		if( base_t::read_page( i, page, true ) ) {
 			typename base_t::FileHandle inode = base_t::get_inode( page );
 			inode.page = i;
 			base_t::max_inode_number = std::max( base_t::max_inode_number, inode.inode.inode_number );
+
+/*
 			CPPDEBUG( Tools::format( "found inode %d,%d at page: %d name: '%s'",
 					inode.inode.inode_number, inode.inode.inode_version_number, i, inode.inode.file_name ) );
+*/
 
 			if( iv_store.add( inode ) == base_t::InodeVersionStore::add_ret_t::replaced ) {
 				stat.trash_inodes++;
@@ -113,6 +115,7 @@ void SimpleFsNoDel<Config>::read_all_free_data_pages()
 	stat.free_inodes = base_t::header.max_inodes - stat.used_inodes - stat.trash_inodes;
 
 //	CPPDEBUG( Tools::format( "free Data pages: %s", Tools::IterableToCommaSeparatedString(base_t::free_data_pages) ) );
+	/*
 	CPPDEBUG( Tools::format( "free Data pages: %d", base_t::free_data_pages.size() ) );
 	CPPDEBUG( Tools::format( "largest file size: %dB", stat.largest_file_size ) );
 	CPPDEBUG( Tools::format( "trash size size: %dB", stat.largest_file_size ) );
@@ -120,6 +123,7 @@ void SimpleFsNoDel<Config>::read_all_free_data_pages()
 			stat.used_inodes,
 			stat.trash_inodes,
 			stat.free_inodes ));
+			*/
 }
 
 } // namespace SimpleFlashFs::static_memory

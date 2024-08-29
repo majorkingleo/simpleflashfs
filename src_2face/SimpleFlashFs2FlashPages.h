@@ -79,12 +79,10 @@ public:
 		const unsigned all_data_pages = header.filesystem_size - header.max_inodes;
 		const unsigned data_pages_usage = 100 - (100.0 / all_data_pages * fs->get_number_of_free_data_pages());
 
-		CPPDEBUG( Tools::format( "data_pages_usage: %d%%", data_pages_usage ) );
-
 		const typename SimpleFsNoDel<Config>::Stat & stat = fs->get_stat();
 		const unsigned inode_usage = 100 - ( 100.0 / header.max_inodes * stat.free_inodes );
 
-		CPPDEBUG( Tools::format( "inode_usage:      %d%%", inode_usage ) );
+		CPPDEBUG( Tools::format( "data_pages_usage: %d%%, inode_usage: %d%%", data_pages_usage, inode_usage ) );
 
 		if( inode_usage > treshold_percentage ) {
 			return true;
@@ -226,7 +224,6 @@ protected:
 
 	bool copy( base_t::base_t::FileHandle & source,  base_t::base_t::FileHandle & target )
 	{
-		std::size_t data_already_read = 0;
 		typename Config::page_type buffer;
 
 		for( size_t data_already_read = 0; data_already_read < source.file_size(); ) {
