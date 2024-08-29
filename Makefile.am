@@ -46,7 +46,8 @@ AM_CPPFLAGS = -I$(top_srcdir)/tools \
 	-I$(top_srcdir)/src \
 	-std=gnu++20 \
 	-D_GLIBCXX_USE_CXX11_ABI=1 \
-	-D_XOPEN_SOURCE=700 # for cyggwin fileno()
+	-D_XOPEN_SOURCE=700 # for cyggwin fileno() \
+	-fstack-protector
 
 noinst_LIBRARIES=cpputils/io/libcpputilsio.a \
 	cpputils/cpputilsshared/libcpputilsshared.a \
