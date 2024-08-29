@@ -27,9 +27,9 @@ struct Config
 	template<class T> class vector_type : public Tools::static_vector<T,SFF_MAX_PAGES> {};
 
 	template<class T>
-	class set_type : public Tools::static_list<T,SFF_MAX_PAGES>
+	class set_type : public Tools::static_vector<T,SFF_MAX_PAGES>
 	{
-		using base_t = Tools::static_list<T,SFF_MAX_PAGES>;
+		using base_t = Tools::static_vector<T,SFF_MAX_PAGES>;
 
 	public:
 		template< class InputIt >
