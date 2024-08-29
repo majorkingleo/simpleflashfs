@@ -870,8 +870,15 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::get_inod
 	 */
 	else if( ret.inode.pages == 0 && ret.inode.file_len > 0 ) {
 		file_handle_t *handle = &ret;
-		ret.inode.inode_data.resize(get_inode_data_space_size(handle));
-		std::memcpy( ret.inode.inode_data.data(), page.data() + pos, ret.inode.file_len );
+		const std::size_t inode_space = get_inode_data_space_size(handle);
+
+		if( ret.inode.file_len <= inode_space ) {
+			ret.inode.inode_data.resize(inode_space);
+			std::memcpy( ret.inode.inode_data.data(), page.data() + pos, ret.inode.file_len );
+		} else {
+			CPPDEBUG( Tools::format( "inode with file length > inode space found, but no data pages" ) );
+			ret.inode.file_len = 0;
+		}
 	}
 
 	return ret;
@@ -1325,6 +1332,7 @@ bool SimpleFlashFsBase<Config>::delete_file( file_handle_t* file )
 	file->inode.pages = 0;
 	file->inode.data_pages.clear();
 	file->inode.inode_data.clear();
+	file->inode.file_len = 0;
 	file->modified = true;
 
 	if( !file->flush() ) {
