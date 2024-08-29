@@ -1168,7 +1168,7 @@ std::size_t SimpleFlashFsBase<Config>::write( file_handle_t* file, const std::by
 			return 0;
 		}
 
-		const std::size_t len = std::min( size, header.page_size - data_start_at_page );
+		const std::size_t len = std::min( size, static_cast<size_t>(header.page_size - data_start_at_page) );
 		memcpy( &page[data_start_at_page], data, len );
 
 		if( !write_page( file, page, target_page_is_a_new_allocated_one, file->inode.data_pages.at(page_idx) ) ) {
@@ -1278,7 +1278,7 @@ std::size_t SimpleFlashFsBase<Config>::read( file_handle_t* file, std::byte *dat
 			return bytes_readen;
 		}
 
-		const std::size_t len = std::min( size, header.page_size - data_start_at_page );
+		const std::size_t len = std::min( size, static_cast<size_t>(header.page_size - data_start_at_page) );
 		memcpy( data + bytes_readen, &page[data_start_at_page], len );
 
 		bytes_readen += len;
