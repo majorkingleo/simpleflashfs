@@ -59,7 +59,7 @@ noinst_LIBRARIES=cpputils/io/libcpputilsio.a \
 src_libSimpleFlashFs_a_SOURCES=\
 		src/crc/crc.c \
 		src/crc/crc.h \
-		src/dynamic/SimpleFlashFsBase.h \
+		src/base/SimpleFlashFsBase.h \
 		src/dynamic/SimpleFlashFsDynamic.h \
 		src/dynamic/SimpleFlashFsDynamic.cc \
 		src/dynamic/SimpleFlashFsDynamicInstanceHandler.h \
@@ -75,7 +75,7 @@ src_libSimpleFlashFs_a_SOURCES=\
 src_libSimpleFlashFsStatic_a_SOURCES=\
 		src/crc/crc.c \
 		src/crc/crc.h \
-		src/dynamic/SimpleFlashFsBase.h \
+		src/base/SimpleFlashFsBase.h \
 		src/SimpleFlashFsFlashMemoryInterface.h \
 		src/SimpleFlashFsConstants.h \
 		src/SimpleFlashFsConstants.cc \

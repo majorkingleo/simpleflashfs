@@ -6,7 +6,7 @@
 #ifndef SRC_DYNAMIC_SIMPLEFLASHFSDYNAMIC_H_
 #define SRC_DYNAMIC_SIMPLEFLASHFSDYNAMIC_H_
 
-#include "SimpleFlashFsBase.h"
+#include "../base/SimpleFlashFsBase.h"
 #include <memory>
 #include <list>
 #include <set>

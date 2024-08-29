@@ -4,7 +4,7 @@
  */
 #pragma once
 
-#include "../dynamic/SimpleFlashFsBase.h"
+#include "../base/SimpleFlashFsBase.h"
 #include <static_vector.h>
 #include <static_string.h>
 #include <static_list.h>
