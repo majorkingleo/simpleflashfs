@@ -589,8 +589,6 @@ template <class Config>
 bool SimpleFlashFsBase<Config>::read_page( std::size_t idx, std::byte *page, std::size_t size, bool check_crc )
 {
 	std::size_t offset = header.page_size + idx * header.page_size;
-
-
 	if( std::size_t len_read; (len_read = mem->read(offset, page, size )) != size ) {
 		CPPDEBUG( "cannot read all data" );
 		CPPDEBUG( Tools::format( "cannot read all data from page: %d size: %d len_read: %d offset: %d", idx, size, len_read, offset ) );
@@ -785,8 +783,6 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::open( co
 		return new_handle;
 	}
 
-	CPPDEBUG( "file found" );
-
 	return handle;
 }
 
@@ -823,8 +819,10 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::find_fil
 			}
 
 			if( file_handle.inode.file_name == name ) {
+				/*
 				CPPDEBUG( Tools::format( "found file: '%s' Version: '%d' at page %d",
 							name, file_handle.inode.inode_version_number, file_handle.page ));
+							*/
 				return file_handle;
 			}
 		}
