@@ -176,6 +176,6 @@ public:
 
 
 
-} // namespace dynamic
+} // namespace static_memory
 } // namespace SimpleFlashFs
 

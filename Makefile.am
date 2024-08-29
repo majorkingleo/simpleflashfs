@@ -22,20 +22,24 @@ test_static_SOURCES=\
 		src_test_static/test_static_init.cc \
 		src_test_static/static_fs.cc \
 		src_test_static/static_fs.h \
-		src_test_static/static_fs_h7.cc \
-		src_test_static/static_fs_h7.h \
 		src_test_static/test_static_open.h \
 		src_test_static/test_static_open.cc \
 		src_test_static/test_static_2pages.h \
 		src_test_static/test_static_2pages.cc \
+		src_2face/H7TwoFace.h \
+		src_2face/H7TwoFaceConfig.h \
+		src_2face/H7TwoFace.cc \
 		tools_config.h
 		
 test_2face_SOURCES=\
+		src_2face/H7TwoFace.h \
+		src_2face/H7TwoFaceConfig.h \
+		src_2face/H7TwoFace.cc \
+		src_2face/SimpleFlashFs2FlashPages.h \
+		src_2face/SimpleFlashFsNoDel.h \
 		src_test_static/test_2face.cc \
-		src_test_static/static_fs_h7.cc \
-		src_test_static/static_fs_h7.h \
-		src_test_static/test_static_2pages.h \
-		src_test_static/test_static_2pages.cc \
+		src_test_static/test_H7TwoFace.h \
+		src_test_static/test_H7TwoFace.cc \
 		tools_config.h				
 
 AM_CPPFLAGS = -I$(top_srcdir)/tools \

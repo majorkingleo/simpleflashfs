@@ -5,13 +5,14 @@
  *      Author: martin.oberzalek
  */
 #include "test_static_open.h"
-#include "static_fs_h7.h"
+#include "../src_2face/H7TwoFaceConfig.h"
+#include "../src_2face/SimpleFlashFsNoDel.h"
 #include <sim_pc/SimFlashMemoryInterfacePc.h>
 #include <stderr_exception.h>
 #include <format.h>
+#include <memory>
 
 using namespace Tools;
-using namespace SimpleFlashFs;
 using namespace SimpleFlashFs::static_memory;
 using namespace ::SimpleFlashFs::SimPc;
 

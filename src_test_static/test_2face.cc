@@ -9,7 +9,7 @@
 #include <OutDebug.h>
 #include <memory>
 #include <format.h>
-#include "test_static_2pages.h"
+#include "test_H7TwoFace.h"
 
 using namespace Tools;
 
