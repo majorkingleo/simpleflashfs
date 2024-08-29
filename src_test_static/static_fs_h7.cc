@@ -127,12 +127,12 @@ public:
 	}
 };
 
+static std::optional<H7TwoFaceImplPc> fs_impl;
+
 } // namespace
 
 H7TwoFace::file_handle_t H7TwoFace::open( const std::string_view & name, std::ios_base::openmode mode )
 {
-	static std::optional<H7TwoFaceImplPc> fs_impl;
-
 	if( fs_impl ) {
 		CPPDEBUG( "An other FS instance is already open" );
 		return {};
@@ -147,5 +147,29 @@ H7TwoFace::file_handle_t H7TwoFace::open( const std::string_view & name, std::io
 	}
 
 	return H7TwoFace::file_handle_t(&f);
+}
+
+std::span<std::string_view> H7TwoFace::list_files()
+{
+	if( fs_impl ) {
+		CPPDEBUG( "An other FS instance is already open" );
+		return {};
+	}
+
+	fs_impl.emplace();
+
+	static ConfigH7::vector_type<ConfigH7::string_type> file_list;
+	static ConfigH7::vector_type<std::string_view> v_file_list;
+	file_list.clear();
+	v_file_list.clear();
+
+	fs_impl->get_fs().get_current_fs()->list_files( file_list );
+	fs_impl.reset();
+
+	v_file_list.insert( v_file_list.end(), file_list.begin(), file_list.end() );
+
+	std::span<std::string_view> ret( v_file_list.data(), v_file_list.size() );
+
+	return 	ret;
 }
 

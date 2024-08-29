@@ -8,6 +8,7 @@
 #include "../src/crc/crc.h"
 #include <optional>
 #include <memory>
+#include <span>
 #include <CpputilsDebug.h>
 #include <format.h>
 
@@ -218,6 +219,10 @@ public:
 		return false;
 	}
 
+	SimpleFsNoDel<Config>* get_current_fs() {
+		return fs;
+	}
+
 protected:
 	bool init_fs()
 	{
@@ -381,4 +386,5 @@ public:
 
 public:
 	static file_handle_t open( const std::string_view & name, std::ios_base::openmode mode );
+	static std::span<std::string_view> list_files();
 };

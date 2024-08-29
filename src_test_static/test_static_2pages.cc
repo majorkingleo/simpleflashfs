@@ -276,3 +276,51 @@ std::shared_ptr<TestCaseBase<bool>> test_case_static_TwoFace_rename1()
 		return true;
 	});
 }
+
+static void clear_fs()
+{
+	auto file_names = H7TwoFace::list_files();
+
+	for( auto & file_name : file_names ) {
+		 auto file = H7TwoFace::open( file_name, std::ios_base::in );
+		 file->delete_file();
+	}
+}
+
+std::shared_ptr<TestCaseBase<bool>> test_case_static_TwoFace_max_files1()
+{
+	return std::make_shared<TestCaseFuncNoInp<bool>>(__FUNCTION__, true, []() {
+
+
+		return true;
+	});
+}
+
+
+std::shared_ptr<TestCaseBase<bool>> test_case_static_TwoFace_list_files1()
+{
+	return std::make_shared<TestCaseFuncNoInp<bool>>(__FUNCTION__, true, []() {
+		clear_fs();
+
+		std::set<std::string> file_names;
+
+		for( unsigned i = 0; i < 10; i++ ) {
+			file_names.insert( Tools::format( "file#%02d.txt", i ) );
+		}
+
+		for( auto & file_name : file_names ) {
+			auto file = H7TwoFace::open( file_name, std::ios_base::out );
+		}
+
+		auto file_names_in_fs = H7TwoFace::list_files();
+
+		for( auto & file_name_in_fs : file_names_in_fs ) {
+			if( !file_names.count( std::string(file_name_in_fs) ) ) {
+				CPPDEBUG( Tools::format( "file '%s' not found") );
+				return false;
+			}
+		}
+
+		return true;
+	});
+}
