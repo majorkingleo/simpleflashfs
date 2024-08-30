@@ -34,6 +34,12 @@ public:
 	virtual bool delete_file() = 0;
 
 	virtual bool rename_file( const std::string_view & new_file_name ) = 0;
+
+	// comfort functions
+
+	bool valid() const {
+		return !operator!();
+	}
 };
 
 

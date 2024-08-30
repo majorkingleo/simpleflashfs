@@ -146,6 +146,7 @@ static void info_fs( SimpleFlashFs::dynamic::SimpleFlashFs & fs )
 		const int INODE      = co.addCol("Inode");
 		const int PAGE       = co.addCol("Page");
 		const int FILENAME   = co.addCol("Filename");
+		const int ATTRIBUTES = co.addCol("Attributes");
 		const int SIZE       = co.addCol("Size");
 		const int DATA_PAGES = co.addCol("Data pages");
 
@@ -155,6 +156,16 @@ static void info_fs( SimpleFlashFs::dynamic::SimpleFlashFs & fs )
 			co.addColData(FILENAME,   inode->inode.file_name);
 			co.addColData(SIZE,       x2s(inode->inode.file_len));
 			co.addColData(DATA_PAGES, IterableToCommaSeparatedString(inode->inode.data_pages));
+
+			std::string sattr;
+
+			if( inode->inode.attributes & static_cast<decltype(inode->inode.attributes)>(::SimpleFlashFs::base::InodeAttribute::SPECIAL) ) {
+				sattr = "SPECIAL";
+			}
+
+			if( !sattr.empty() ) {
+				co.addColData(ATTRIBUTES, sattr);
+			}
 		}
 
 		std::cout << co.toString() << std::endl;

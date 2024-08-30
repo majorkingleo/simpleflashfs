@@ -254,6 +254,7 @@ static void clear_fs()
 	auto file_names = H7TwoFace::list_files();
 
 	for( auto & file_name : file_names ) {
+		 CPPDEBUG( Tools::format( "deleting file '%s'", file_name ) );
 		 auto file = H7TwoFace::open( file_name, std::ios_base::in );
 		 file->delete_file();
 	}
@@ -282,6 +283,10 @@ std::shared_ptr<TestCaseBase<bool>> test_case_static_TwoFace_list_files1()
 
 		for( auto & file_name : file_names ) {
 			auto file = H7TwoFace::open( file_name, std::ios_base::out );
+			if( !file ) {
+				CPPDEBUG( Tools::format( "cannot create file '%s'", file_name ) );
+				return false;
+			}
 		}
 
 		auto file_names_in_fs = H7TwoFace::list_files();

@@ -83,6 +83,15 @@ struct Config
 };
 
 template <class Config>
+class FileFilter
+{
+public:
+	virtual ~FileFilter() {}
+
+	virtual bool operator()( const base::FileHandle<Config,base::SimpleFlashFsBase<Config>> & handle ) = 0;
+};
+
+template <class Config>
 class SimpleFlashFs : public base::SimpleFlashFsBase<Config>
 {
 public:
@@ -90,6 +99,9 @@ public:
 	using Header = base::Header<Config>;
 	using Inode = base::Inode<Config>;
 	using FileHandle = base::FileHandle<Config,base::SimpleFlashFsBase<Config>>;
+
+protected:
+	FileFilter<Config> *file_filter = nullptr;
 
 public:
 
@@ -165,11 +177,18 @@ public:
 					continue;
 				}
 
+				if( file_filter && !((*file_filter)( file_handle )) ) {
+					continue;
+				}
+
 				file_names.push_back( file_handle.inode.file_name );
 			}
 		}
 	}
 
+	void set_file_filter( FileFilter<Config> *filter ) {
+		file_filter = filter;
+	}
 
 	friend class base::FileHandle<Config,SimpleFlashFs>;
 };

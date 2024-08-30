@@ -16,6 +16,9 @@ class SimpleFs2FlashPages
 public:
 	using base_t = SimpleFsNoDel<Config>;
 
+	static constexpr std::string_view COPY_COMPLETED_FILE_NAME = ".FS_COPY_COMPLETED";
+	static constexpr std::string_view FILESYSTEM_SEALED_FILE_NAME = ".FS_SEALED";
+
 protected:
 	struct Component
 	{
@@ -27,22 +30,42 @@ protected:
 
 		std::optional<SimpleFsNoDel<Config>> fs;
 		::SimpleFlashFs::FlashMemoryInterface *mem = nullptr;
+		const std::string_view name;
 
 		bool valid() const {
 			return !(!fs);
 		}
 
-		Component() = default;
+		Component( const std::string_view name_ )
+		: name( name_ )
+		{}
+
 		Component( const Component & other ) = delete;
+	};
+
+
+	class SpecialFilesFileFilter : public FileFilter<Config>
+	{
+	public:
+		bool operator()( const base::FileHandle<Config,base::SimpleFlashFsBase<Config>> & handle ) override {
+			if( handle.inode.attributes & static_cast<decltype(handle.inode.attributes)>(base::InodeAttribute::SPECIAL) ) {
+				return false;
+			}
+
+			return true;
+		}
 	};
 
 	Component c1;
 	Component c2;
+	SpecialFilesFileFilter special_file_filter;
 
 	SimpleFsNoDel<Config> *fs = nullptr;
 public:
 	SimpleFs2FlashPages( ::SimpleFlashFs::FlashMemoryInterface *mem_interface1,
 						 ::SimpleFlashFs::FlashMemoryInterface *mem_interface2 )
+	: c1("fs1"),
+	  c2("fs2")
 	{
 		c1.mem = mem_interface1;
 		c2.mem = mem_interface2;
@@ -59,11 +82,22 @@ public:
 			return false;
 		}
 
+		{
+			Component & c = get_component(Component::Type::active);
+			fs = &c.fs.value();
+			CPPDEBUG( Tools::format( "active fs is: %s", c.name ) );
+		}
+
+
 		if( should_cleanup() ) {
 			cleanup();
 		}
 
-		CPPDEBUG( Tools::format( "active fs is: fs%d", c1.valid() ? 1 : 2 ) );
+		{
+			Component & c = get_component(Component::Type::active);
+			fs = &c.fs.value();
+			CPPDEBUG( Tools::format( "active fs is: %s", c.name ) );
+		}
 
 		return true;
 	}
@@ -115,23 +149,57 @@ protected:
 				return false;
 			}
 		} else if( c1.valid() && !c2.valid() ) {
-			fs = &c1.fs.value();
 			return true;
 		} else if( c2.valid() && !c1.valid() ) {
-			fs = &c2.fs.value();
+			return true;
+		}
+
+		auto fs1_file_copy_completed = c1.fs->open( COPY_COMPLETED_FILE_NAME, std::ios_base::in );
+		auto fs1_file_sealed = c1.fs->open( FILESYSTEM_SEALED_FILE_NAME, std::ios_base::in );
+
+		auto fs2_file_copy_completed = c2.fs->open( COPY_COMPLETED_FILE_NAME, std::ios_base::in );
+		auto fs2_file_sealed = c2.fs->open( FILESYSTEM_SEALED_FILE_NAME, std::ios_base::in );
+
+		CPPDEBUG( Tools::format( "FS1: %s %s",
+				!fs1_file_copy_completed ? "" : COPY_COMPLETED_FILE_NAME,
+				!fs1_file_sealed ? "" : FILESYSTEM_SEALED_FILE_NAME ));
+
+		CPPDEBUG( Tools::format( "FS2: %s %s",
+				!fs2_file_copy_completed ? "" : COPY_COMPLETED_FILE_NAME,
+				!fs2_file_sealed ? "" : FILESYSTEM_SEALED_FILE_NAME ));
+
+		// conversion from fs2 to fs1 completed
+		if( fs1_file_copy_completed.valid() && fs2_file_sealed.valid() ) {
+			c2.fs.reset();
+			return true;
+		}
+		// conversion from fs1 to fs2 completed
+		else if( fs2_file_copy_completed.valid() && fs1_file_sealed.valid() ) {
+			c1.fs.reset();
+			return true;
+		}
+		// copying from fs2 to fs1 didn't finished
+		else if( !fs1_file_copy_completed && fs2_file_sealed.valid() ) {
+			// stay on fs2
+			c1.fs.reset();
+			return true;
+		}
+		// copying from fs1 to fs2 didn't finished
+		else if( !fs2_file_copy_completed && fs1_file_sealed.valid() ) {
+			// stay on fs1
+			c2.fs.reset();
 			return true;
 		}
 
 		// both filesystems are valid choose the newest one
+		// this happens on a fresh created filesystem
 		uint64_t m1 = c1.fs->get_max_inode_number();
 		uint64_t m2 = c2.fs->get_max_inode_number();
 
 		if( m1 > m2 ) {
 			c2.fs.reset();
-			fs = &c1.fs.value();
 		} else {
 			c1.fs.reset();
-			fs = &c2.fs.value();
 		}
 
 		return true;
@@ -144,6 +212,8 @@ protected:
 			component.fs.reset();
 			return false;
 		}
+
+		component.fs->set_file_filter(&special_file_filter);
 
 		return true;
 	}
@@ -162,6 +232,8 @@ protected:
 			component.fs.reset();
 			return false;
 		}
+
+		component.fs->set_file_filter(&special_file_filter);
 
 		return true;
 	}
@@ -192,8 +264,23 @@ protected:
 
 	bool cleanup()
 	{
+		CPPDEBUG( "============ cleaning up =====================" );
+
 		Component & inactive_component = get_component( Component::Type::inactive );
 		Component & active_component = get_component( Component::Type::active );
+
+		// seal fs
+		{
+			auto fs_sealed = active_component.fs->open( FILESYSTEM_SEALED_FILE_NAME, std::ios_base::out | std::ios_base::trunc );
+
+			if( !fs_sealed ) {
+				CPPDEBUG( "cannot seal fs");
+				return false;
+			}
+
+			fs_sealed.inode.attributes |= static_cast<decltype(fs_sealed.inode.attributes)>(base::InodeAttribute::SPECIAL);
+			fs_sealed.modified = true;
+		}
 
 		if( !create( inactive_component ) ) {
 			CPPDEBUG( "cannot recreate fs!" );
@@ -206,6 +293,7 @@ protected:
 		active_component.fs->list_files( file_names );
 
 		for( auto & file_name : file_names ) {
+
 			auto file_source = active_component.fs->open( file_name, std::ios_base::in | std::ios_base::binary );
 			auto file_target = inactive_component.fs->open( file_name, std::ios_base::out | std::ios_base::trunc | std::ios_base::app | std::ios_base::binary );
 
@@ -213,11 +301,27 @@ protected:
 				CPPDEBUG( "cannot recreate fs by copying files!" );
 				return false;
 			}
+
+			CPPDEBUG( Tools::format( "copied file: '%s' to '%s'", file_name, inactive_component.name ) );
+		}
+
+		{
+			// copy process complete create a file to notify
+			auto copy_completed = inactive_component.fs->open( COPY_COMPLETED_FILE_NAME, std::ios_base::out | std::ios_base::trunc | std::ios_base::app | std::ios_base::binary );
+			copy_completed.inode.attributes |= static_cast<decltype(copy_completed.inode.attributes)>(base::InodeAttribute::SPECIAL);
+			copy_completed.modified = true;
+
+			if( !copy_completed ) {
+				CPPDEBUG( "cannot create copy complete file name" );
+				return false;
+			}
 		}
 
 		// active, becomes now inactive
-		// inactive is already active, so nothing todo
+		// inactive is already active, so nothing to do
 		active_component.fs.reset();
+
+		fs = &inactive_component.fs.value();
 
 		return true;
 	}
@@ -243,6 +347,7 @@ protected:
 
 		return true;
 	}
+
 };
 
 

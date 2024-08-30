@@ -65,6 +65,12 @@ struct Header
 	CRC_CHECKSUM				crc_checksum_type{CRC_CHECKSUM::CRC32};
 };
 
+enum class InodeAttribute
+{
+	NONE    = 0,
+	SPECIAL = 1,
+};
+
 /**
  * Inode struct
  */
@@ -634,6 +640,10 @@ Config::page_type SimpleFlashFsBase<Config>::inode2page( const Inode<Config> & i
 	std::memcpy(&page[pos], &inode.file_name[0], inode.file_name_len );
 	pos += inode.file_name_len;
 
+	CPPDEBUG( Tools::format( "Xxxxxxxxxxxxxxx '%s' Attribute: %d",
+			inode.file_name,
+			inode.attributes ) );
+
 	write( inode.attributes );
 	write( inode.file_len );
 
@@ -914,13 +924,13 @@ bool SimpleFlashFsBase<Config>::flush( file_handle_t* file )
 	if( file->inode.inode_number == 0) {
 		file->inode.inode_number = max_inode_number + 1;
 		max_inode_number = file->inode.inode_number;
-
+/*
 		CPPDEBUG( Tools::format( "writing new inode %d,%d at page %d, data pages: %s",
 				file->inode.inode_number,
 				file->inode.inode_version_number,
 				file->page,
 				Tools::IterableToCommaSeparatedString( file->inode.data_pages )));
-
+*/
 		auto page = inode2page(file->inode);
 		add_page_checksum(page);
 
@@ -939,13 +949,13 @@ bool SimpleFlashFsBase<Config>::flush( file_handle_t* file )
 
 	auto page = inode2page(file->inode);
 	add_page_checksum(page);
-
+/*
 	CPPDEBUG( Tools::format( "writing inode %d,%d page %d (%s)",
 			file->inode.inode_number,
 			file->inode.inode_version_number,
 			file->page,
 			file->inode.file_name ));
-
+*/
 	if( !write_page(file, page, true, file->page ) ) {
 		CPPDEBUG( Tools::format( "cannot write inode %d,%d page %d",
 				file->inode.inode_number, file->inode.inode_version_number, file->page ));
