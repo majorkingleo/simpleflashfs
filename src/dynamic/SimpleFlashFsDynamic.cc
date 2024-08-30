@@ -92,8 +92,9 @@ void SimpleFlashFs::read_all_free_data_pages()
 			FileHandle inode = get_inode( page );
 			inode.page = i;
 			max_inode_number = std::max( max_inode_number, inode.inode.inode_number );
-			CPPDEBUG( format( "found inode %d,%d at page: %d",
-					inode.inode.inode_number, inode.inode.inode_version_number, i ) );
+			CPPDEBUG( format( "found inode %d,%d at page: %d (%s) attributes: %d",
+					inode.inode.inode_number, inode.inode.inode_version_number, i,
+					inode.inode.file_name, static_cast<uint64_t>(inode.inode.attributes)) );
 
 			auto dyn_inode = std::shared_ptr<FileHandle>(new FileHandle(std::move(inode)));
 			inodes[inode.inode.inode_number].push_back(dyn_inode);
@@ -142,6 +143,10 @@ std::list<std::shared_ptr<::SimpleFlashFs::dynamic::SimpleFlashFs::FileHandle>> 
 
 			auto inode = get_inode( page );
 			inode.page = i;
+
+			CPPDEBUG( format( "found inode %d,%d at page: %d (%s) attributes: %d",
+								inode.inode.inode_number, inode.inode.inode_version_number, i,
+								inode.inode.file_name, static_cast<uint64_t>(inode.inode.attributes)) );
 
 			auto dyn_inode = std::shared_ptr<FileHandle>(new FileHandle(std::move(inode)));
 			ret.push_back(dyn_inode);
