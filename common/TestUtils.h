@@ -88,7 +88,6 @@ public:
 	}
 };
 
-template<class t_std_string=std::string>
 class TestCaseFuncNoInp : public TestCaseBase<bool>
 {
 	typedef std::function<bool()> Func;

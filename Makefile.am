@@ -40,6 +40,8 @@ test_2face_SOURCES=\
 		src_test_static/test_2face.cc \
 		src_test_static/test_H7TwoFace.h \
 		src_test_static/test_H7TwoFace.cc \
+		src_test_static/test_pageset.h \
+		src_test_static/test_pageset.cc \
 		tools_config.h				
 
 AM_CPPFLAGS = -I$(top_srcdir)/tools \

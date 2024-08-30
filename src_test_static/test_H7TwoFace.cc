@@ -288,7 +288,7 @@ std::shared_ptr<TestCaseBase<bool>> test_case_static_TwoFace_list_files1()
 
 		for( auto & file_name_in_fs : file_names_in_fs ) {
 			if( !file_names.count( std::string(file_name_in_fs) ) ) {
-				CPPDEBUG( Tools::format( "file '%s' not found") );
+				CPPDEBUG( Tools::format( "file '%s' not found", file_name_in_fs ) );
 				return false;
 			}
 		}

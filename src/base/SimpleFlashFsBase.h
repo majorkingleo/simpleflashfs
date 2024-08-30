@@ -12,6 +12,7 @@
 #include "../SimpleFlashFsConstants.h"
 #include "../SimpleFlashFsFlashMemoryInterface.h"
 #include "../SimpleFlashFsFileInterface.h"
+#include "SimpleFlashFsPageSet.h"
 #include <CpputilsDebug.h>
 #include <format.h>
 #include <string_utils.h>
@@ -220,6 +221,7 @@ public:
 	}
 };
 
+
 template <class Config>
 class SimpleFlashFsBase
 {
@@ -295,8 +297,8 @@ protected:
 	FlashMemoryInterface *mem;
 
 	// to be replaced by a static version later
-	typename Config::set_type<uint32_t> allocated_unwritten_pages;
-	typename Config::set_type<uint32_t> free_data_pages;
+	PageSet<Config> allocated_unwritten_pages;
+	PageSet<Config> free_data_pages;
 
 	uint64_t max_inode_number = 0;
 
@@ -987,7 +989,7 @@ uint32_t SimpleFlashFsBase<Config>::allocate_free_data_page()
 	}
 
 	auto it = free_data_pages.begin();
-	auto ret = *it;
+	uint32_t ret = *it;
 	free_data_pages.erase(it);
 
 	return ret;

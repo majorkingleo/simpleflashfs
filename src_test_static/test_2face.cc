@@ -10,6 +10,8 @@
 #include <memory>
 #include <format.h>
 #include "test_H7TwoFace.h"
+#include "test_pageset.h"
+#include <limits>
 
 using namespace Tools;
 
@@ -67,6 +69,16 @@ int main( int argc, char **argv )
 		test_cases.push_back( test_case_static_TwoFace_rename1() );
 
 		test_cases.push_back( test_case_static_TwoFace_list_files1() );
+
+		test_cases.push_back( test_case_pageset1() );
+		test_cases.push_back( test_case_pageset2() );
+		test_cases.push_back( test_case_pageset3() );
+		test_cases.push_back( test_case_pageset4() );
+		test_cases.push_back( test_case_pageset5() );
+		test_cases.push_back( test_case_pageset6() );
+		test_cases.push_back( test_case_pageset7() );
+		test_cases.push_back( test_case_pageset8() );
+		test_cases.push_back( test_case_pageset9() );
 
 		ColBuilder col;
 

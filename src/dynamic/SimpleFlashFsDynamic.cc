@@ -125,7 +125,7 @@ void SimpleFlashFs::read_all_free_data_pages()
 		}
 	}
 
-	CPPDEBUG( format( "free Data pages: %s", IterableToCommaSeparatedString(free_data_pages) ) );
+	CPPDEBUG( format( "free Data pages: %s", IterableToCommaSeparatedString(free_data_pages.get_sorted_data()) ) );
 }
 
 
