@@ -307,6 +307,66 @@ std::shared_ptr<TestCaseBase<bool>> test_case_static_TwoFace_max_files1()
 	});
 }
 
+std::shared_ptr<TestCaseBase<bool>> test_case_static_TwoFace_max_files2()
+{
+	return std::make_shared<TestCaseH7FuncNoInp>(__FUNCTION__, true, []() {
+
+		auto stat = H7TwoFace::get_stat();
+		std::string last_file_name;
+
+		for( unsigned i = 0; i < stat.max_number_of_files; ++i ) {
+			std::string file_name = format( "file#%03d", i );
+			last_file_name = file_name;
+			auto file = H7TwoFace::open( file_name, std::ios_base::out );
+			if( !file ) {
+				CPPDEBUG( Tools::format( "cannot create file: '%s", file_name ) );
+				return false;
+			}
+		}
+
+		{
+			// should fail
+			std::string file_name = "xx";
+			auto file = H7TwoFace::open( file_name, std::ios_base::out );
+			if( !file ) {
+
+			} else {
+				CPPDEBUG( Tools::format("could open file '%s' unexpected", file_name ));
+				return false;
+			}
+		}
+
+		// delete something
+		{
+			auto file = H7TwoFace::open( last_file_name, std::ios_base::in );
+			if( !file ) {
+				CPPDEBUG( Tools::format( "opening file '%s' failed", last_file_name ));
+				return false;
+			}
+
+			if( !file->delete_file() ) {
+				CPPDEBUG( Tools::format( "delete file '%s' failed", last_file_name ));
+				return false;
+			}
+
+			// CPPDEBUG( Tools::format( "deleting succeeded with file: '%s",  last_file_name ));
+		}
+
+		{
+			// should succeed
+			std::string file_name = "xx";
+			auto file = H7TwoFace::open( file_name, std::ios_base::out );
+			if( !file ) {
+				CPPDEBUG( Tools::format( "opening file '%s' failed", file_name ));
+				return false;
+			}
+		}
+
+
+		return true;
+	});
+}
+
 
 std::shared_ptr<TestCaseBase<bool>> test_case_static_TwoFace_list_files1()
 {

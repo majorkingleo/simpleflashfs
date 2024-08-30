@@ -131,6 +131,21 @@ static std::optional<SimpleFlashFs::FlashMemoryInterface*> fs_mem1;
 static std::optional<SimpleFlashFs::FlashMemoryInterface*> fs_mem2;
 static std::optional<H7TwoFaceImpl> fs_impl;
 
+class AutoFreeFs
+{
+	bool is_disabled = false;
+public:
+	~AutoFreeFs() {
+		if( !is_disabled ) {
+			fs_impl.reset();
+		}
+	}
+
+	void disable() {
+		is_disabled = true;
+	}
+};
+
 } // namespace
 
 
@@ -148,11 +163,16 @@ H7TwoFace::file_handle_t H7TwoFace::open( const std::string_view & name, std::io
 		return {};
 	}
 
+	AutoFreeFs autofree;
+
 	fs_impl.emplace(fs_mem1.value(),fs_mem2.value());
 
 	// CPPDEBUG( Tools::format( "free inodes: %d", fs_impl->get_fs().get_current_fs()->get_stat().free_inodes  ));
-
-	if( fs_impl->get_fs().get_current_fs()->get_stat().free_inodes <= 3 ) {
+	if( (mode & std::ios_base::trunc) && fs_impl->get_fs().get_current_fs()->get_stat().free_inodes > 2) {
+		// ok
+	} else if( mode == std::ios_base::in ) {
+		// read only is also ok
+	} else if( fs_impl->get_fs().get_current_fs()->get_stat().free_inodes <= 3 ) {
 		CPPDEBUG( "no free inode left" );
 		return {};
 	}
@@ -160,10 +180,10 @@ H7TwoFace::file_handle_t H7TwoFace::open( const std::string_view & name, std::io
 	H7TwoFaceImpl::File & f = fs_impl->open( &fs_impl, name, mode );
 
 	if( !f ) {
-		fs_impl.reset();
 		return {};
 	}
 
+	autofree.disable();
 	return H7TwoFace::file_handle_t(&f);
 }
 
@@ -175,6 +195,8 @@ std::span<std::string_view> H7TwoFace::list_files()
 	}
 
 	fs_impl.emplace(fs_mem1.value(),fs_mem2.value());
+
+	AutoFreeFs autofree;
 
 	static ConfigH7::vector_type<ConfigH7::string_type> file_list;
 	static ConfigH7::vector_type<std::string_view> v_file_list;
@@ -188,6 +210,7 @@ std::span<std::string_view> H7TwoFace::list_files()
 
 	std::span<std::string_view> ret( v_file_list.data(), v_file_list.size() );
 
+	autofree.disable();
 	return 	ret;
 }
 
@@ -205,6 +228,8 @@ H7TwoFace::Stat H7TwoFace::get_stat()
 	}
 
 	fs_impl.emplace(fs_mem1.value(),fs_mem2.value());
+
+	AutoFreeFs autofree;
 
 	const auto & stat = fs_impl->get_fs().get_current_fs()->get_stat();
 	const auto & header = fs_impl->get_fs().get_current_fs()->get_header();
@@ -227,8 +252,6 @@ H7TwoFace::Stat H7TwoFace::get_stat()
 	ret.max_file_size = (header.page_size * (header.filesystem_size - 1)) - (header.max_inodes * header.page_size);
 	ret.max_path_len = header.max_path_len;
 	ret.free_space = fs_impl->get_fs().get_current_fs()->get_number_of_free_data_pages() + ret.trash_size;
-
-	fs_impl.reset();
 
 	return ret;
 }

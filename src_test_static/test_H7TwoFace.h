@@ -18,6 +18,7 @@ std::shared_ptr<TestCaseBase<bool>> test_case_static_TwoFace_delete1();
 std::shared_ptr<TestCaseBase<bool>> test_case_static_TwoFace_rename1();
 
 std::shared_ptr<TestCaseBase<bool>> test_case_static_TwoFace_max_files1();
+std::shared_ptr<TestCaseBase<bool>> test_case_static_TwoFace_max_files2();
 
 std::shared_ptr<TestCaseBase<bool>> test_case_static_TwoFace_list_files1();
 

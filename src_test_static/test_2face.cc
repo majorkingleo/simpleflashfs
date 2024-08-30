@@ -60,7 +60,7 @@ int main( int argc, char **argv )
 #endif
 
 		std::vector<std::shared_ptr<TestCaseBase<bool>>> test_cases;
-/*
+
 		test_cases.push_back( test_case_static_TwoFace_write1() );
 		test_cases.push_back( test_case_static_TwoFace_write2() );
 		test_cases.push_back( test_case_static_TwoFace_write3() );
@@ -81,8 +81,9 @@ int main( int argc, char **argv )
 		test_cases.push_back( test_case_pageset9() );
 
 		test_cases.push_back( test_case_static_TwoFace_open_speacial1() );
-*/
+
 		test_cases.push_back( test_case_static_TwoFace_max_files1() );
+		test_cases.push_back( test_case_static_TwoFace_max_files2() );
 
 		ColBuilder col;
 
