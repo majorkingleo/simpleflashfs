@@ -143,13 +143,20 @@ H7TwoFace::file_handle_t H7TwoFace::open( const std::string_view & name, std::io
 		}
 	}
 
-
 	if( fs_impl ) {
 		CPPDEBUG( "An other FS instance is already open" );
 		return {};
 	}
 
 	fs_impl.emplace(fs_mem1.value(),fs_mem2.value());
+
+	// CPPDEBUG( Tools::format( "free inodes: %d", fs_impl->get_fs().get_current_fs()->get_stat().free_inodes  ));
+
+	if( fs_impl->get_fs().get_current_fs()->get_stat().free_inodes <= 3 ) {
+		CPPDEBUG( "no free inode left" );
+		return {};
+	}
+
 	H7TwoFaceImpl::File & f = fs_impl->open( &fs_impl, name, mode );
 
 	if( !f ) {
@@ -189,6 +196,43 @@ void H7TwoFace::set_memory_interface( SimpleFlashFs::FlashMemoryInterface *mem1,
 	fs_mem1 = mem1;
 	fs_mem2 = mem2;
 }
+
+H7TwoFace::Stat H7TwoFace::get_stat()
+{
+	if( fs_impl ) {
+		CPPDEBUG( "An other FS instance is already open" );
+		return {};
+	}
+
+	fs_impl.emplace(fs_mem1.value(),fs_mem2.value());
+
+	const auto & stat = fs_impl->get_fs().get_current_fs()->get_stat();
+	const auto & header = fs_impl->get_fs().get_current_fs()->get_header();
+
+	Stat ret;
+	ret.free_inodes = stat.free_inodes;
+	ret.largest_file_size = stat.largest_file_size;
+	ret.trash_inodes = stat.trash_inodes;
+	ret.trash_size = stat.trash_size;
+	ret.used_inodes = stat.used_inodes;
+
+	ConfigH7::vector_type<ConfigH7::string_type> file_list;
+	fs_impl->get_fs().get_current_fs()->list_files( file_list );
+
+	ret.number_of_files = file_list.size();
+
+	// some special files required for copying fs to second flash page
+	// minus 1 inode to delete something
+	ret.max_number_of_files = header.max_inodes  - 1 - SimpleFlashFs::static_memory::SimpleFs2FlashPages<ConfigH7>::RESERVED_NAMES.size();
+	ret.max_file_size = (header.page_size * (header.filesystem_size - 1)) - (header.max_inodes * header.page_size);
+	ret.max_path_len = header.max_path_len;
+	ret.free_space = fs_impl->get_fs().get_current_fs()->get_number_of_free_data_pages() + ret.trash_size;
+
+	fs_impl.reset();
+
+	return ret;
+}
+
 
 
 
