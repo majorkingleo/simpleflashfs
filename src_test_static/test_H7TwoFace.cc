@@ -11,6 +11,7 @@
 #include <sim_pc/SimFlashMemoryInterfacePc.h>
 #include <stderr_exception.h>
 #include <format.h>
+#include <filesystem>
 
 using namespace Tools;
 
@@ -21,21 +22,38 @@ class TestCaseH7Base : public TestCaseBase<bool>
 protected:
 	std::optional<::SimpleFlashFs::SimPc::SimFlashFsFlashMemoryInterface> mem1;
 	std::optional<::SimpleFlashFs::SimPc::SimFlashFsFlashMemoryInterface> mem2;
+	std::string file_name;
 
 public:
 	TestCaseH7Base( const std::string & name_,
 			bool expected_result_ = true,
-			bool exception_ = false )
-	: TestCaseBase<bool>( name_, expected_result_, exception_ )
+			bool exception_ = false,
+			const std::string_view & file_name_ = std::string_view() )
+	: TestCaseBase<bool>( name_, expected_result_, exception_ ),
+	  file_name( file_name_ )
 	{
-
+		if( file_name.empty() ) {
+			file_name = "." + name;
+		}
 	}
 
 
 	void init()
 	{
-		const std::string file1 = "test_h7_page1.bin";
-		const std::string file2 = "test_h7_page2.bin";
+		auto clear = []( const std::string_view & file ) {
+			if( std::filesystem::exists( file ) ) {
+				if( !std::filesystem::remove( file ) ) {
+					throw STDERR_EXCEPTION( format( "cannot delete %s", file ) );
+				}
+			}
+		};
+
+		const std::string file1 = file_name + "_page1.bin";
+		const std::string file2 = file_name + "_page2.bin";
+
+		clear( file1 );
+		clear( file2 );
+
 		mem1.emplace(file1,SFF_MAX_SIZE);
 		mem2.emplace(file2,SFF_MAX_SIZE);
 		H7TwoFace::set_memory_interface(&mem1.value(),&mem2.value());
@@ -265,8 +283,27 @@ std::shared_ptr<TestCaseBase<bool>> test_case_static_TwoFace_max_files1()
 {
 	return std::make_shared<TestCaseH7FuncNoInp>(__FUNCTION__, true, []() {
 
+		auto stat = H7TwoFace::get_stat();
 
-		return true;
+		for( unsigned i = 0; i < stat.max_number_of_files; ++i ) {
+			std::string file_name = format( "file#%03d", i );
+			auto file = H7TwoFace::open( file_name, std::ios_base::out );
+			if( !file ) {
+				CPPDEBUG( Tools::format( "cannot create file: '%s", file_name ) );
+				return false;
+			}
+		}
+
+		// should fail
+		std::string file_name = "xx";
+		auto file = H7TwoFace::open( file_name, std::ios_base::out );
+		if( !file ) {
+			return true;
+		}
+
+		CPPDEBUG( "could create more files than expected" );
+
+		return false;
 	});
 }
 
