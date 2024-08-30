@@ -147,7 +147,7 @@ public:
 			return false;
 		}
 
-		return base::SimpleFlashFsBase<Config>::init();
+		return this->init();
 	}
 
 	void list_files( typename Config::vector_type<typename Config::string_type> & file_names )
