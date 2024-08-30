@@ -69,9 +69,10 @@ int main( int argc, char **argv )
 		test_cases.push_back( test_case_static_open2() );
 		test_cases.push_back( test_case_static_open3() );
 		test_cases.push_back( test_case_static_open4() );
+		test_cases.push_back( test_case_static_open5() );
+
 
 		test_cases.push_back( test_case_static_write1() );
-
 		test_cases.push_back( test_case_static_2pages_write1() );
 
 		ColBuilder col;

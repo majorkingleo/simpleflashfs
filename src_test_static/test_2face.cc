@@ -60,16 +60,16 @@ int main( int argc, char **argv )
 #endif
 
 		std::vector<std::shared_ptr<TestCaseBase<bool>>> test_cases;
-/*
+
 		test_cases.push_back( test_case_static_TwoFace_write1() );
 		test_cases.push_back( test_case_static_TwoFace_write2() );
 		test_cases.push_back( test_case_static_TwoFace_write3() );
 
 		test_cases.push_back( test_case_static_TwoFace_delete1() );
 		test_cases.push_back( test_case_static_TwoFace_rename1() );
-*/
+
 		test_cases.push_back( test_case_static_TwoFace_list_files1() );
-/*
+
 		test_cases.push_back( test_case_pageset1() );
 		test_cases.push_back( test_case_pageset2() );
 		test_cases.push_back( test_case_pageset3() );
@@ -79,7 +79,7 @@ int main( int argc, char **argv )
 		test_cases.push_back( test_case_pageset7() );
 		test_cases.push_back( test_case_pageset8() );
 		test_cases.push_back( test_case_pageset9() );
-*/
+
 		ColBuilder col;
 
 		const int COL_IDX 		= col.addCol( "Idx" );

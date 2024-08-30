@@ -169,6 +169,39 @@ std::shared_ptr<TestCaseBase<bool>> test_case_static_open4()
 	});
 }
 
+std::shared_ptr<TestCaseBase<bool>> test_case_static_open5()
+{
+	return std::make_shared<TestCaseFunc<bool>>(__FUNCTION__, [](SimpleFsNoDel<ConfigH7> & fs) {
+
+		{
+			auto f = fs.open("test.open5", std::ios_base::out | std::ios_base::trunc );
+			f.inode.attributes |= static_cast<decltype(f.inode.attributes)>(::SimpleFlashFs::base::InodeAttribute::SPECIAL);
+
+			if( !f ) {
+				CPPDEBUG( "cannot open file" );
+				return false;
+			}
+		}
+		{
+			auto f = fs.open("test.open5", std::ios_base::in );
+
+			if( !f ) {
+				CPPDEBUG( "cannot open file" );
+				return false;
+			}
+
+			CPPDEBUG( Tools::format( "attr: %d",
+					static_cast<decltype(f.inode.attributes)>(::SimpleFlashFs::base::InodeAttribute::SPECIAL) ) );
+
+			if( !(f.inode.attributes & static_cast<decltype(f.inode.attributes)>(::SimpleFlashFs::base::InodeAttribute::SPECIAL) ) ) {
+				return false;
+			}
+		}
+
+		return true;
+	});
+}
+
 std::shared_ptr<TestCaseBase<bool>> test_case_static_write1()
 {
 	return std::make_shared<TestCaseFunc<bool>>(__FUNCTION__, [](SimpleFsNoDel<ConfigH7> & fs) {
