@@ -154,6 +154,15 @@ std::shared_ptr<TestCaseBase<bool>> test_case_static_TwoFace_write3()
 {
 	return std::make_shared<TestCaseH7FuncNoInp>(__FUNCTION__, true, []() {
 
+		{
+			auto f = H7TwoFace::open( "2Face.write1", std::ios_base::in | std::ios_base::out );
+
+			if( !f ) {
+				CPPDEBUG( "cannot open file" );
+				return false;
+			}
+		}
+
 		// test opening another handle later
 		auto f1 = H7TwoFace::open( "2Face.write1", std::ios_base::in );
 
@@ -161,6 +170,7 @@ std::shared_ptr<TestCaseBase<bool>> test_case_static_TwoFace_write3()
 			CPPDEBUG( "cannot open file" );
 			return false;
 		}
+
 
 		auto f2 = H7TwoFace::open( "2Face.write2", std::ios_base::in );
 
