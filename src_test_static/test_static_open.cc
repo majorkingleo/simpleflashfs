@@ -11,6 +11,7 @@
 #include <stderr_exception.h>
 #include <format.h>
 #include <memory>
+#include <filesystem>
 
 using namespace Tools;
 using namespace SimpleFlashFs::static_memory;
@@ -23,27 +24,37 @@ class TestCaseOpenBase : public TestCaseBase<bool>
 protected:
 	std::optional<SimpleFsNoDel<ConfigH7>> fs;
 	std::optional<::SimpleFlashFs::SimPc::SimFlashFsFlashMemoryInterface> mem;
+	std::string file_name;
 
 public:
 	TestCaseOpenBase( const std::string & name_,
 			bool expected_result_ = true,
-			bool exception_ = false )
-	: TestCaseBase<bool>( name_, expected_result_, exception_ )
+			bool exception_ = false,
+			const std::string_view & file_name_ = std::string_view() )
+	: TestCaseBase<bool>( name_, expected_result_, exception_ ),
+	  file_name( file_name_ )
 	{
-
+		if( file_name.empty() ) {
+			file_name = "." + name + ".bin";
+		}
 	}
 
 
 	void init()
 	{
-		const std::string file = "test_h7.bin";
-		mem.emplace(file,SFF_MAX_SIZE);
+		if( std::filesystem::exists( file_name ) ) {
+			if( !std::filesystem::remove( file_name ) ) {
+				throw STDERR_EXCEPTION( format( "cannot delete %s", file_name ) );
+			}
+		}
+
+		mem.emplace(file_name,SFF_MAX_SIZE);
 		fs.emplace(&mem.value());
 
 		if( !fs->init() ) {
-			CPPDEBUG( format( "recreating fs %s", file ) );
+			CPPDEBUG( format( "recreating fs %s", file_name ) );
 			if( !fs->create() ) {
-				throw STDERR_EXCEPTION( format( "cannot create %s", file ) );
+				throw STDERR_EXCEPTION( format( "cannot create %s", file_name ) );
 			}
 		}
 	}
