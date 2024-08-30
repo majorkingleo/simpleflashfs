@@ -746,7 +746,7 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::open( co
 	if( !handle ) {
 		// file does not exists
 		if( !(mode & std::ios_base::out) && !(mode & std::ios_base::app)) {
-			CPPDEBUG( "no out mode" );
+			// CPPDEBUG( "no out mode" );
 			return {};
 		}
 
