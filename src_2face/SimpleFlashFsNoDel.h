@@ -78,7 +78,7 @@ void SimpleFsNoDel<Config>::read_all_free_data_pages()
 	stat = {};
 
 	for( unsigned i = base_t::header.max_inodes; i < base_t::header.filesystem_size; i++ ) {
-		base_t::free_data_pages.insert(i);
+		base_t::free_data_pages.unordered_insert(i);
 	}
 
 	typename base_t::InodeVersionStore iv_store;
@@ -112,10 +112,12 @@ void SimpleFsNoDel<Config>::read_all_free_data_pages()
 		}
 	}
 
+	// CPPDEBUG( Tools::format( "max_inodes: %d", base_t::header.max_inodes ) );
+
 	stat.free_inodes = base_t::header.max_inodes - stat.used_inodes - stat.trash_inodes;
 
 //	CPPDEBUG( Tools::format( "free Data pages: %s", Tools::IterableToCommaSeparatedString(base_t::free_data_pages) ) );
-	/*
+/*
 	CPPDEBUG( Tools::format( "free Data pages: %d", base_t::free_data_pages.size() ) );
 	CPPDEBUG( Tools::format( "largest file size: %dB", stat.largest_file_size ) );
 	CPPDEBUG( Tools::format( "trash size size: %dB", stat.largest_file_size ) );
@@ -123,7 +125,7 @@ void SimpleFsNoDel<Config>::read_all_free_data_pages()
 			stat.used_inodes,
 			stat.trash_inodes,
 			stat.free_inodes ));
-			*/
+*/
 }
 
 } // namespace SimpleFlashFs::static_memory
