@@ -1048,8 +1048,8 @@ void SimpleFlashFsBase<Config>::erase_inode_and_unused_pages( file_handle_t & in
 
 	// assume to erase all old pages
 	//typename Config::set_type<uint32_t> pages_to_erase( dp.begin(), dp.end() );
-	typename Config::set_type<uint32_t> pages_to_erase;
-	pages_to_erase.insert( dp.begin(), dp.end() );
+	PageSet<Config> pages_to_erase;
+	pages_to_erase.unordered_insert( dp.begin(), dp.end() );
 
 	// now remove all pages from the inode in the next version
 	for( auto page : next_inode_version.inode.data_pages ) {
@@ -1059,7 +1059,7 @@ void SimpleFlashFsBase<Config>::erase_inode_and_unused_pages( file_handle_t & in
 	// add the inode self too
 	pages_to_erase.insert(inode_to_erase.page);
 
-	for( auto page : pages_to_erase ) {
+	for( auto page : pages_to_erase.get_data() ) {
 		CPPDEBUG( Tools::format( "erasing page: %d", page ) );
 
 		std::size_t address = header.page_size + page * header.page_size;

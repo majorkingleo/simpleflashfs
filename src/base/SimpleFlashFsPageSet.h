@@ -141,6 +141,13 @@ public:
 		return data;
 	}
 
+	const typename Config::vector_type<uint32_t> & get_data() {
+		if( unsorted || unshrinked ) {
+			sort();
+		}
+		return data;
+	}
+
 	typename Config::vector_type<uint32_t> get_sorted_data() const {
 		typename Config::vector_type<uint32_t> ret( data );
 		std::sort( ret.begin(), ret.end() );

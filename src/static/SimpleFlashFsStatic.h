@@ -26,59 +26,6 @@ struct Config
 
 	template<class T> class vector_type : public Tools::static_vector<T,SFF_MAX_PAGES> {};
 
-	template<class T>
-	class set_type : public Tools::static_vector<T,SFF_MAX_PAGES>
-	{
-		using base_t = Tools::static_vector<T,SFF_MAX_PAGES>;
-
-	public:
-		template< class InputIt >
-		void insert( InputIt first, InputIt last ) {
-			for( InputIt it = first; it != last; ++it ) {
-				insert( *it );
-			}
-		}
-
-		void insert( const T & value ) {
-
-			for( auto it = base_t::begin();
-					  it !=base_t::end(); ++it ) {
-				if( *it == value ) {
-					return;
-				}
-			}
-
-			base_t::push_back(value);
-		}
-
-		base_t::size_type erase( const T & value ) {
-
-			for( auto it = base_t::begin();
-					  it != base_t::end(); ++it ) {
-				if( *it == value ) {
-					base_t::erase(it);
-					return 1;
-				}
-			}
-
-			return 0;
-		}
-
-		base_t::iterator erase( base_t::const_iterator it ) {
-			return base_t::erase(it);
-		}
-
-		base_t::size_type count(const T & member) const {
-			for( auto it = base_t::begin(); it != base_t::end(); ++it ) {
-				if( *it == member ) {
-					return 1;
-				}
-			}
-
-			return 0;
-		}
-	};
-
 	static uint32_t crc32( const std::byte *bytes, size_t len );
 };
 
