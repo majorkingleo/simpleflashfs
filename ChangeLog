@@ -1,3 +1,117 @@
+commit 66846fcb235f00a9ad0c0d7881fb3755839a0f1d
+Author: Martin, Oberzalek <martin.oberzalek@anton-paar.com>
+Date:   Fri Aug 30 14:15:50 2024 +0200
+
+    test cases for special files
+
+commit 54cf13a9c9a73a423d340576fbf5837f4044f04e
+Author: Martin, Oberzalek <martin.oberzalek@anton-paar.com>
+Date:   Fri Aug 30 14:15:32 2024 +0200
+
+    updated changeLog
+
+commit 5c199fe7442ec48d39a8ccc65a5a068abc0e635b
+Author: Martin, Oberzalek <martin.oberzalek@anton-paar.com>
+Date:   Fri Aug 30 14:00:25 2024 +0200
+
+    use special files for filesystem copy
+
+commit bfc847aad9da7403fb02f62ac6869be534c0a0b9
+Author: Martin, Oberzalek <martin.oberzalek@anton-paar.com>
+Date:   Fri Aug 30 11:28:45 2024 +0200
+
+    Implemented SimpleFlashFsPageSet() class
+    
+    as replacement of a hash set.
+
+commit 564e0a20548dd54ac2ab8c3673acd554812dd57e
+Author: Martin, Oberzalek <martin.oberzalek@anton-paar.com>
+Date:   Thu Aug 29 15:50:35 2024 +0200
+
+    reduced debugging messages
+
+commit 49403e96744cb741882141ae43ee85e103b3c587
+Author: Martin, Oberzalek <martin.oberzalek@anton-paar.com>
+Date:   Thu Aug 29 15:49:53 2024 +0200
+
+    switch to vector since it's faster for now
+
+commit 4ff298ae8420678eec136bf8cee4c7656bdb46c2
+Author: Martin, Oberzalek <martin.oberzalek@anton-paar.com>
+Date:   Thu Aug 29 15:49:09 2024 +0200
+
+    removed debugging messages
+    
+    since they are slow on the microcontroller
+
+commit 78d3eca4834ae2c2061fb2c4639f10090c165773
+Author: Martin, Oberzalek <martin.oberzalek@anton-paar.com>
+Date:   Thu Aug 29 13:46:25 2024 +0200
+
+    fixed compiling on microcontroller
+
+commit 815e7068cd2887813b35cdf3944d9b09dd8de385
+Author: Martin, Oberzalek <martin.oberzalek@anton-paar.com>
+Date:   Thu Aug 29 11:47:23 2024 +0200
+
+    restructured project
+
+commit b1654a9add6cfc2c6a45c3b34d94af1e74f56a34
+Author: Martin, Oberzalek <martin.oberzalek@anton-paar.com>
+Date:   Thu Aug 29 10:39:02 2024 +0200
+
+    moved base to base directory
+
+commit e1b436a424e272508172cbcce00007d035e9b53b
+Author: Martin, Oberzalek <martin.oberzalek@anton-paar.com>
+Date:   Thu Aug 29 10:34:55 2024 +0200
+
+    enabled all test cases
+
+commit 9e44d96728a206e833fa6ddc120809131f605086
+Author: Martin, Oberzalek <martin.oberzalek@anton-paar.com>
+Date:   Thu Aug 29 08:58:59 2024 +0200
+
+    test case for list files
+
+commit ffd42b31f232d5be656f09664652c3466d6af2dc
+Author: Martin, Oberzalek <martin.oberzalek@anton-paar.com>
+Date:   Thu Aug 29 08:58:11 2024 +0200
+
+    enabled stack protector
+
+commit de2536793db7ba16637a07081a6fdecf901ad895
+Author: Martin, Oberzalek <martin.oberzalek@anton-paar.com>
+Date:   Thu Aug 29 08:57:40 2024 +0200
+
+    fixed invalid inodes
+
+commit 6c63269b97d6de4e44866de1f8b5bdb7f69a96a3
+Author: Martin, Oberzalek <martin.oberzalek@anton-paar.com>
+Date:   Wed Aug 28 16:53:39 2024 +0200
+
+    move rename and delete function to base class
+
+commit b530cb5303b1353bde64dc193ca2dbc6c12ca156
+Author: Martin Oberzalek <martin.oberzalek@anton-paar.com>
+Date:   Wed Aug 28 16:14:53 2024 +0200
+
+    fixed 32bit issue
+
+commit 69a9dbf480ca1545da2f5558239681792f7b5581
+Author: Martin, Oberzalek <martin.oberzalek@anton-paar.com>
+Date:   Wed Aug 28 15:55:32 2024 +0200
+
+    splittet up libs
+
+commit de2133ddbe9d57cfb01ab7bbb3e2efff7eb32895
+Author: Martin, Oberzalek <martin.oberzalek@anton-paar.com>
+Date:   Wed Aug 28 15:48:42 2024 +0200
+
+    fixed open instance
+    
+    in case of non existing file
+
 commit 8a5f7114f31f510d11e997d9b36890c2ceeb9f94
 Author: Martin, Oberzalek <martin.oberzalek@anton-paar.com>
 Date:   Wed Aug 28 14:18:19 2024 +0200
