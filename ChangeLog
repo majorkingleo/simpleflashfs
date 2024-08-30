@@ -1,3 +1,374 @@
+commit 8a5f7114f31f510d11e997d9b36890c2ceeb9f94
+Author: Martin, Oberzalek <martin.oberzalek@anton-paar.com>
+Date:   Wed Aug 28 14:18:19 2024 +0200
+
+    test renaming files
+
+commit 25c8031df7f1a5dacac6830096a1c6b5c3befac2
+Author: Martin, Oberzalek <martin.oberzalek@anton-paar.com>
+Date:   Wed Aug 28 13:04:20 2024 +0200
+
+    implementing deleting a file
+
+commit ca6726c9a511a93c9f959c085573e97af8d20862
+Author: Martin, Oberzalek <martin.oberzalek@anton-paar.com>
+Date:   Wed Aug 28 10:40:48 2024 +0200
+
+    splitted 2face fs into an extra test program (test_2face)
+
+commit 561ea24f26a04aaa899db3003dbda7237e0d5139
+Author: Martin, Oberzalek <martin.oberzalek@anton-paar.com>
+Date:   Wed Aug 28 10:34:33 2024 +0200
+
+    switching to 2nd page if full
+
+commit 60ab3dcff8132cccc93385421f4ebda7786d13e4
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Tue Aug 27 22:00:39 2024 +0200
+
+    implemented stats
+
+commit afc0e0dd1a09b8d62bfed2bd4bd2fb18e822ea5f
+Author: Martin, Oberzalek <martin.oberzalek@anton-paar.com>
+Date:   Tue Aug 27 17:33:25 2024 +0200
+
+    fixed typo
+
+commit 52ecbe6ba0d870ff9e6786808c1745f01e3c2dea
+Author: Martin, Oberzalek <martin.oberzalek@anton-paar.com>
+Date:   Tue Aug 27 17:32:39 2024 +0200
+
+    fixes modules url
+
+commit 72552212a4dd60e2045ef7921cbbca950ea36107
+Author: Martin, Oberzalek <martin.oberzalek@anton-paar.com>
+Date:   Tue Aug 27 17:32:22 2024 +0200
+
+    fixes for static version
+
+commit 9f7250eb436423fa06b1fad61ac030e3eeae2bc4
+Author: Martin, Oberzalek <martin.oberzalek@anton-paar.com>
+Date:   Mon Aug 26 17:32:58 2024 +0200
+
+    static version compiles
+
+commit 1b622e7143095b0c572d8b8a3a7fe3e457e588c8
+Author: Martin, Oberzalek <martin.oberzalek@anton-paar.com>
+Date:   Mon Aug 26 17:31:30 2024 +0200
+
+    fixed of cpputils
+
+commit 3524943193a73c9e9a265d54c458dc135325c0ba
+Merge: 76226e2 135213e
+Author: Martin, Oberzalek <martin.oberzalek@anton-paar.com>
+Date:   Mon Aug 26 09:09:26 2024 +0200
+
+    Merge branch 'main' of https://github.com/majorkingleo/simpleflashfs
+
+commit 135213efbb4001b44b577698c2ae054aa76054b4
+Author: Martin, Oberzalek <kingleo@gmx.at>
+Date:   Mon Aug 12 17:39:48 2024 +0200
+
+    remove std::set from base class
+
+commit 76226e21efaa6689ed80e27d6bea643cb835ed4e
+Author: Martin, Oberzalek <kingleo@gmx.at>
+Date:   Mon Aug 12 17:39:48 2024 +0200
+
+    remove std::set from base class
+
+commit 6f2fcb0200c1fd7440dbab6b637b2f3ace858282
+Merge: 2069443 e432ba4
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Fri Aug 9 21:54:33 2024 +0200
+
+    Merge branch 'main' of personal:majorkingleo/simpleflashfs
+
+commit 20694439744a8cdd58c20f876dd2209ce1cf4349
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Fri Aug 9 21:41:18 2024 +0200
+
+    started static implementation
+
+commit e432ba4ffbb14ff58c973558c00075f415418413
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Fri Aug 9 21:41:18 2024 +0200
+
+    started static implementation
+
+commit 778f973820e3bc319fc3f3505740c4c8652ccf49
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Fri Aug 9 21:39:28 2024 +0200
+
+    added to new cpputils
+
+commit f9ea8b46e0c5e19313d4f9d5cde6d6e8136b2b97
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Fri Aug 9 14:48:53 2024 +0200
+
+    moved most things in a base class
+
+commit 16bb83599934716e85ecd48feda1387770a6a36e
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Wed Aug 7 21:23:38 2024 +0200
+
+    started base template class
+    
+    So a static memory implementation, can use it too.
+
+commit e0b06291658bff80ec3b338fb23cb3ad63b154e1
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Wed Aug 7 15:16:21 2024 +0200
+
+    fixed comment
+
+commit 0826a2e649c3a0ffc6c6fb9254cb6709cbc7fec5
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Sat Jun 1 07:50:56 2024 +0200
+
+    fixed bug when allocating more data pages, then the index fits in an
+    inode
+
+commit aed85c3b05727e9d3b9ce464e2cdb82e15cfae9a
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Sat Jun 1 07:09:37 2024 +0200
+
+    search for a bug, invalid write access
+
+commit 2032a85fd8265dad794829981615a4cb6ce3632f
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Sat Jun 1 07:09:09 2024 +0200
+
+    additional test cases
+
+commit 7f3f10397f37fbd4923bc23e3c76bfd6329104c2
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Wed May 22 22:28:57 2024 +0200
+
+    reenabled all testcases
+
+commit c4cdff06be8a77fe7dc7b0a45bf3484778066c41
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Wed May 22 22:27:40 2024 +0200
+
+    added unit column
+
+commit ceb274e558490f931488d4d2be7a23a66e8c148d
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Wed May 22 22:27:21 2024 +0200
+
+    fixed writing data pages
+
+commit b80611e5d1ab17c184baff6db23cc2a3f20c7be9
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Wed May 22 22:26:57 2024 +0200
+
+    corrected header
+
+commit 24c359137a4073fc90613fd3f87f777d121013a4
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Wed May 22 22:26:31 2024 +0200
+
+    first test cases for fwrite()
+
+commit 8ea54ad3906e3fc98041e818f791a53260e84ee8
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Wed Jan 3 23:24:09 2024 +0100
+
+    fixed fopen handling
+
+commit 4e4e83747c7f183ba7efe940d9e06087b9df144a
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Wed Jan 3 22:15:15 2024 +0100
+
+    added fopen testcases
+
+commit eecda44c66fbf7742d10eda88ecef12da00e09da
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Wed Jan 3 20:32:49 2024 +0100
+
+    Added testcases for wrapper functions
+
+commit 8418151299407efb005243e4c1ed821fbbac0438
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Wed Jan 3 20:32:09 2024 +0100
+
+    added register/deregister functions
+
+commit 17c5207111d9049429866a6cba0bd2c4e2c6a7df
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Tue Jan 2 23:30:56 2024 +0100
+
+    bugfix init with too small values
+
+commit e098f40b5d60b37091666241eb24155f103c5b66
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Tue Jan 2 23:30:43 2024 +0100
+
+    started testsuite
+
+commit b43cddbb36b8b051b9620816cc4912975374b508
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Tue Jan 2 22:41:13 2024 +0100
+
+    added wrapper function for C style interface
+
+commit 23d108d3c790ab9aa34b34669ed285fb1c0e6e82
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Tue Jan 2 20:16:49 2024 +0100
+
+    Added notes
+
+commit 465c313e1b34678cec99d28674120a35ae945a8e
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Mon Jan 1 16:40:26 2024 +0100
+
+    fixed page access
+
+commit 1d166a7d1d63c33555b31e457037ea306b7cab1e
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Sun Dec 31 00:38:16 2023 +0100
+
+    Store small data inside the inode itself
+
+commit 16e698009467be5af52dafdcb67b8a81f9a3cd89
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Sat Dec 30 23:03:38 2023 +0100
+
+    fixed correct file size
+
+commit 087ef07aca82e93ba4a75478d0eba672bb119f40
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Sat Dec 30 22:43:47 2023 +0100
+
+    first extract implementation
+
+commit be05b2fce762037f8267e358ce34a3a9584073f2
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Sat Dec 30 16:18:33 2023 +0100
+
+    give info about the inodes
+
+commit fa5964fe7fd650ab2c9def676aab1cdef59f8b43
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Sat Dec 30 15:08:07 2023 +0100
+
+    cleanup ivalid inodes and it's pages
+
+commit b0c04a5d0042f70deddcd99369a458520d869d40
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Fri Dec 29 21:37:13 2023 +0100
+
+    fixed reading inode pages
+
+commit 0bd83e36cc503abca9fd189fb1ca45d6b89b764e
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Fri Dec 29 21:26:46 2023 +0100
+
+    give additional info
+
+commit 3b774a3fde803c700f0a22b71a0a12c35e9c7ee6
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Fri Dec 29 19:09:28 2023 +0100
+
+    write first data to file
+
+commit 24adfdd401fc5bdbee1e6aff255583f4f8799b58
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Wed Dec 27 10:33:48 2023 +0100
+
+    open a file
+
+commit 3eac2a6081932ce75e908e8ef69f64c3a0b47966
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Wed Dec 27 00:19:10 2023 +0100
+
+    started with adding files
+
+commit b5c264386dbc64f5e73efc703de103896c17821f
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Tue Dec 26 22:47:54 2023 +0100
+
+    added minum page size
+
+commit c780391250a46db54befce8e90817b561d1b7155
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Tue Dec 26 22:47:22 2023 +0100
+
+    print header
+
+commit 868ce7c9226cda9c13021ef2ef307298007385f7
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Tue Dec 26 16:51:13 2023 +0100
+
+    added CRC checksum type, as a checksum at the header page
+
+commit 1080c705facd036546e0eb6f505dbee32f8ff03b
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Tue Dec 26 16:50:57 2023 +0100
+
+    create a fs on pc
+
+commit 49b45f26dae0bbbd65243bd04b1eaf48d3570a32
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Tue Dec 26 16:48:42 2023 +0100
+
+    added extern "C"s
+
+commit 771833ca00b026676f67bb69e87878db59af654f
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Mon Dec 25 08:25:52 2023 +0100
+
+    added crc library
+
+commit 1675332b6164249a9b2cc15b05fbffa30705053d
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Mon Dec 25 05:39:56 2023 +0100
+
+    removed cpputils test cases
+
+commit 050598bab1aed6e27d39321eb23cd3dadbcf4742
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Mon Dec 25 05:39:23 2023 +0100
+
+    added Worp 1 description
+
+commit 20b5c6d4ee30379cc3bd1b64e6c7455ae354266a
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Mon Dec 25 05:39:08 2023 +0100
+
+    first test program
+
+commit d663aa6052d7f3c843065e7200a180d40cc9e297
+Author: Martin Oberzalek <76852670+majorkingleo@users.noreply.github.com>
+Date:   Sat Dec 23 19:39:30 2023 +0100
+
+    Update Readme.md
+
+commit 5653dd46731ecce407ad993adc6a46b543bfa9db
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Fri Dec 22 23:39:47 2023 +0100
+
+    Added readme
+
+commit c7a9d9091dd442ed7c1488f4c6bfd6475407fba6
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Wed Dec 20 20:38:38 2023 +0100
+
+    Added Changelog
+
+commit 4baaaadd16e972b3d246578a8e53a69828b689cf
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Wed Dec 20 20:38:16 2023 +0100
+
+    new file in cpputils
+
+commit 834d042335a54c44fcbd1c50dbc1d82ec5266f6a
+Author: Martin Oberzalek <kingleo@gmx.at>
+Date:   Wed Dec 20 20:37:50 2023 +0100
+
+    new fixes
+
 commit 88c8befc5364236933fdcef319b53377d7bc8e01
 Author: Martin Oberzalek <kingleo@gmx.at>
 Date:   Wed Nov 8 21:34:52 2023 +0100
