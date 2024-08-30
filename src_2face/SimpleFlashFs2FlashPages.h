@@ -120,12 +120,15 @@ public:
 
 		CPPDEBUG( Tools::format( "data_pages_usage: %d%%, inode_usage: %d%%", data_pages_usage, inode_usage ) );
 
-		if( inode_usage > treshold_percentage ) {
-			return true;
-		}
+		// cleanup makes only sense, if we have something to free from trash
+		if( stat.trash_inodes > 0 || stat.trash_size > 0 ) {
+			if( inode_usage > treshold_percentage ) {
+				return true;
+			}
 
-		if( data_pages_usage > treshold_percentage ) {
-			return true;
+			if( data_pages_usage > treshold_percentage ) {
+				return true;
+			}
 		}
 
 		return false;
