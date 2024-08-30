@@ -136,6 +136,14 @@ static std::optional<H7TwoFaceImpl> fs_impl;
 
 H7TwoFace::file_handle_t H7TwoFace::open( const std::string_view & name, std::ios_base::openmode mode )
 {
+	for( const auto & reserved_name : SimpleFlashFs::static_memory::SimpleFs2FlashPages<ConfigH7>::RESERVED_NAMES ) {
+		if( reserved_name == name ) {
+			CPPDEBUG( "cannot open or create a special file" );
+			return {};
+		}
+	}
+
+
 	if( fs_impl ) {
 		CPPDEBUG( "An other FS instance is already open" );
 		return {};

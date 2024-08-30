@@ -7,6 +7,7 @@
 #pragma once
 
 #include "SimpleFlashFsNoDel.h"
+#include <span>
 
 namespace SimpleFlashFs::static_memory {
 
@@ -18,6 +19,7 @@ public:
 
 	static constexpr std::string_view COPY_COMPLETED_FILE_NAME = ".FS_COPY_COMPLETED";
 	static constexpr std::string_view FILESYSTEM_SEALED_FILE_NAME = ".FS_SEALED";
+	static constexpr std::array<std::string_view,2> RESERVED_NAMES = { COPY_COMPLETED_FILE_NAME, FILESYSTEM_SEALED_FILE_NAME };
 
 protected:
 	struct Component

@@ -7,6 +7,7 @@
 #include "test_H7TwoFace.h"
 #include "../src_2face/H7TwoFace.h"
 #include "../src_2face/H7TwoFaceConfig.h"
+#include "../src_2face/SimpleFlashFs2FlashPages.h"
 #include <sim_pc/SimFlashMemoryInterfacePc.h>
 #include <stderr_exception.h>
 #include <format.h>
@@ -296,6 +297,23 @@ std::shared_ptr<TestCaseBase<bool>> test_case_static_TwoFace_list_files1()
 				CPPDEBUG( Tools::format( "file '%s' not found", file_name_in_fs ) );
 				return false;
 			}
+		}
+
+		return true;
+	});
+}
+
+std::shared_ptr<TestCaseBase<bool>> test_case_static_TwoFace_open_speacial1()
+{
+	return std::make_shared<TestCaseH7FuncNoInp>(__FUNCTION__, true, []() {
+
+		for( const auto & reserved_name : SimpleFlashFs::static_memory::SimpleFs2FlashPages<ConfigH7>::RESERVED_NAMES ) {
+			auto file = H7TwoFace::open( reserved_name, std::ios_base::out );
+
+			if( !file ) {
+				continue;
+			}
+			return false;
 		}
 
 		return true;
