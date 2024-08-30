@@ -163,9 +163,7 @@ static void info_fs( SimpleFlashFs::dynamic::SimpleFlashFs & fs )
 				sattr = "SPECIAL";
 			}
 
-			if( !sattr.empty() ) {
-				co.addColData(ATTRIBUTES, sattr);
-			}
+			co.addColData(ATTRIBUTES, sattr);
 		}
 
 		std::cout << co.toString() << std::endl;
