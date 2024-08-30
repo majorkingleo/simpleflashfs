@@ -640,10 +640,6 @@ Config::page_type SimpleFlashFsBase<Config>::inode2page( const Inode<Config> & i
 	std::memcpy(&page[pos], &inode.file_name[0], inode.file_name_len );
 	pos += inode.file_name_len;
 
-	CPPDEBUG( Tools::format( "Xxxxxxxxxxxxxxx '%s' Attribute: %d",
-			inode.file_name,
-			inode.attributes ) );
-
 	write( inode.attributes );
 	write( inode.file_len );
 

@@ -160,6 +160,7 @@ protected:
 		auto fs2_file_copy_completed = c2.fs->open( COPY_COMPLETED_FILE_NAME, std::ios_base::in );
 		auto fs2_file_sealed = c2.fs->open( FILESYSTEM_SEALED_FILE_NAME, std::ios_base::in );
 
+		/*
 		CPPDEBUG( Tools::format( "FS1: %s %s",
 				!fs1_file_copy_completed ? "" : COPY_COMPLETED_FILE_NAME,
 				!fs1_file_sealed ? "" : FILESYSTEM_SEALED_FILE_NAME ));
@@ -167,6 +168,7 @@ protected:
 		CPPDEBUG( Tools::format( "FS2: %s %s",
 				!fs2_file_copy_completed ? "" : COPY_COMPLETED_FILE_NAME,
 				!fs2_file_sealed ? "" : FILESYSTEM_SEALED_FILE_NAME ));
+		*/
 
 		// conversion from fs2 to fs1 completed
 		if( fs1_file_copy_completed.valid() && fs2_file_sealed.valid() ) {
@@ -264,7 +266,7 @@ protected:
 
 	bool cleanup()
 	{
-		CPPDEBUG( "============ cleaning up =====================" );
+		// CPPDEBUG( "============ cleaning up =====================" );
 
 		Component & inactive_component = get_component( Component::Type::inactive );
 		Component & active_component = get_component( Component::Type::active );
@@ -302,7 +304,7 @@ protected:
 				return false;
 			}
 
-			CPPDEBUG( Tools::format( "copied file: '%s' to '%s'", file_name, inactive_component.name ) );
+			// CPPDEBUG( Tools::format( "copied file: '%s' to '%s'", file_name, inactive_component.name ) );
 		}
 
 		{
