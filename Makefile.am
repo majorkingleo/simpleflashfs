@@ -76,7 +76,9 @@ src_libSimpleFlashFs_a_SOURCES=\
 		src/SimpleFlashFsConstants.h \
 		src/SimpleFlashFsConstants.cc \
 		src/sim_pc/SimFlashMemoryPc.h \
-		src/sim_pc/SimFlashMemoryPc.cc			
+		src/sim_pc/SimFlashMemoryPc.cc \
+		src/sim_pc/SimSTM32InternalFlashPc.cc \
+		src/sim_pc/SimSTM32InternalFlashPc.h
 		
 src_libSimpleFlashFsStatic_a_SOURCES=\
 		src/crc/crc.c \
@@ -87,6 +89,8 @@ src_libSimpleFlashFsStatic_a_SOURCES=\
 		src/SimpleFlashFsConstants.cc \
 		src/sim_pc/SimFlashMemoryPc.h \
 		src/sim_pc/SimFlashMemoryPc.cc \
+		src/sim_pc/SimSTM32InternalFlashPc.cc \
+		src/sim_pc/SimSTM32InternalFlashPc.h \
 		src/static/SimpleFlashFsStatic.h
 
 cpputils_io_libcpputilsio_a_SOURCES= \

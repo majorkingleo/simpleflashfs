@@ -18,6 +18,7 @@ namespace SimPc {
 
 class SimFlashFsFlashMemory : public FlashMemoryInterface
 {
+protected:
 	std::string filename;
 	std::fstream file;
 	std::size_t file_size;
