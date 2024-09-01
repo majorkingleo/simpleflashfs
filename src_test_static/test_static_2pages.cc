@@ -8,9 +8,9 @@
 #include "../src_2face/H7TwoFaceConfig.h"
 #include "../src_2face/SimpleFlashFs2FlashPages.h"
 #include "../src_2face/H7TwoFace.h"
-#include <sim_pc/SimFlashMemoryInterfacePc.h>
 #include <stderr_exception.h>
 #include <format.h>
+#include "../src/sim_pc/SimFlashMemoryPc.h"
 
 using namespace Tools;
 using namespace SimpleFlashFs;
@@ -23,8 +23,8 @@ class TestCaseOpenBase : public TestCaseBase<bool>
 {
 protected:
 	std::optional<SimpleFs2FlashPages<ConfigH7>> fs;
-	std::optional<::SimpleFlashFs::SimPc::SimFlashFsFlashMemoryInterface> mem1;
-	std::optional<::SimpleFlashFs::SimPc::SimFlashFsFlashMemoryInterface> mem2;
+	std::optional<::SimpleFlashFs::SimPc::SimFlashFsFlashMemory> mem1;
+	std::optional<::SimpleFlashFs::SimPc::SimFlashFsFlashMemory> mem2;
 
 public:
 	TestCaseOpenBase( const std::string & name_,

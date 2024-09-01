@@ -7,11 +7,11 @@
 #include "test_static_open.h"
 #include "../src_2face/H7TwoFaceConfig.h"
 #include "../src_2face/SimpleFlashFsNoDel.h"
-#include <sim_pc/SimFlashMemoryInterfacePc.h>
 #include <stderr_exception.h>
 #include <format.h>
 #include <memory>
 #include <filesystem>
+#include "../src/sim_pc/SimFlashMemoryPc.h"
 
 using namespace Tools;
 using namespace SimpleFlashFs::static_memory;
@@ -23,7 +23,7 @@ class TestCaseOpenBase : public TestCaseBase<bool>
 {
 protected:
 	std::optional<SimpleFsNoDel<ConfigH7>> fs;
-	std::optional<::SimpleFlashFs::SimPc::SimFlashFsFlashMemoryInterface> mem;
+	std::optional<::SimpleFlashFs::SimPc::SimFlashFsFlashMemory> mem;
 	std::string file_name;
 
 public:

@@ -4,17 +4,17 @@
  *  Created on: 25.12.2023
  *      Author: martin
  */
-#include "SimFlashMemoryInterfacePc.h"
 #include <filesystem>
 #include <vector>
 #include <stderr_exception.h>
 #include <format.h>
 #include <CpputilsDebug.h>
+#include "SimFlashMemoryPc.h"
 
 using namespace Tools;
 using namespace SimpleFlashFs::SimPc;
 
-SimFlashFsFlashMemoryInterface::SimFlashFsFlashMemoryInterface( const std::string & filename_, std::size_t file_size_ )
+SimFlashFsFlashMemory::SimFlashFsFlashMemory( const std::string & filename_, std::size_t file_size_ )
 : filename( filename_ ),
   file(),
   file_size( file_size_ )
@@ -27,7 +27,7 @@ SimFlashFsFlashMemoryInterface::SimFlashFsFlashMemoryInterface( const std::strin
 	file.open( filename.c_str(), std::ios_base::binary | std::ios_base::in | std::ios_base::out );
 }
 
-SimFlashFsFlashMemoryInterface::SimFlashFsFlashMemoryInterface( const std::string & filename_ )
+SimFlashFsFlashMemory::SimFlashFsFlashMemory( const std::string & filename_ )
 : filename( filename_ ),
   file(),
   file_size( 0 )
@@ -41,14 +41,14 @@ SimFlashFsFlashMemoryInterface::SimFlashFsFlashMemoryInterface( const std::strin
 }
 
 
-std::size_t SimFlashFsFlashMemoryInterface::write( std::size_t address, const std::byte *data, std::size_t size )
+std::size_t SimFlashFsFlashMemory::write( std::size_t address, const std::byte *data, std::size_t size )
 {
 	file.seekg(address);
 	file.write(reinterpret_cast<const char*>(data), size);
 	return size;
 }
 
-std::size_t SimFlashFsFlashMemoryInterface::read( std::size_t address, std::byte *data, std::size_t size )
+std::size_t SimFlashFsFlashMemory::read( std::size_t address, std::byte *data, std::size_t size )
 {
 	file.seekg(address);
 	file.clear();
@@ -57,7 +57,7 @@ std::size_t SimFlashFsFlashMemoryInterface::read( std::size_t address, std::byte
 	return data_read;
 }
 
-void SimFlashFsFlashMemoryInterface::erase( std::size_t address, std::size_t size )
+void SimFlashFsFlashMemory::erase( std::size_t address, std::size_t size )
 {
 	file.seekg(address);
 	std::vector<std::byte> data(size,static_cast<std::byte>(0xFF));

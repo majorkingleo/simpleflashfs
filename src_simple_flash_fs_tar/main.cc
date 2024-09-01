@@ -11,12 +11,12 @@
 #include <format.h>
 #include <ColBuilder.h>
 #include <dynamic/SimpleFlashFsDynamic.h>
-#include <sim_pc/SimFlashMemoryInterfacePc.h>
 #include <stderr_exception.h>
 #include <SimpleFlashFsConstants.h>
 #include <string_utils.h>
 #include <filesystem>
 #include <optional>
+#include "../src/sim_pc/SimFlashMemoryPc.h"
 
 using namespace Tools;
 using namespace SimpleFlashFs;
@@ -314,7 +314,7 @@ int main( int argc, char **argv )
 			const std::size_t size = 100*1024;
 
 			std::string file = o_create.getValues()->at(0);
-			SimFlashFsFlashMemoryInterface mem(file,size);
+			SimFlashFsFlashMemory mem(file,size);
 			SimpleFlashFs::dynamic::SimpleFlashFs fs(&mem);
 
 			const std::size_t page_size = 528;
@@ -327,7 +327,7 @@ int main( int argc, char **argv )
 		if( o_fs_info.isSet() ) {
 			std::string file = o_fs_info.getValues()->at(0);
 
-			SimFlashFsFlashMemoryInterface mem(file);
+			SimFlashFsFlashMemory mem(file);
 			SimpleFlashFs::dynamic::SimpleFlashFs fs(&mem);
 
 			if( !fs.init() ) {
@@ -343,7 +343,7 @@ int main( int argc, char **argv )
 
 			std::string file = values->at(0);
 
-			SimFlashFsFlashMemoryInterface mem(file);
+			SimFlashFsFlashMemory mem(file);
 			SimpleFlashFs::dynamic::SimpleFlashFs fs(&mem);
 
 			if( !fs.init() ) {
@@ -361,7 +361,7 @@ int main( int argc, char **argv )
 				throw STDERR_EXCEPTION( "missing archive file name");
 			}
 
-			SimFlashFsFlashMemoryInterface mem(*archive_file_name);
+			SimFlashFsFlashMemory mem(*archive_file_name);
 			SimpleFlashFs::dynamic::SimpleFlashFs fs(&mem);
 
 			if( !fs.init() ) {
@@ -379,7 +379,7 @@ int main( int argc, char **argv )
 				throw STDERR_EXCEPTION( "missing archive file name");
 			}
 
-			SimFlashFsFlashMemoryInterface mem(*archive_file_name);
+			SimFlashFsFlashMemory mem(*archive_file_name);
 			SimpleFlashFs::dynamic::SimpleFlashFs fs(&mem);
 
 			if( !fs.init() ) {

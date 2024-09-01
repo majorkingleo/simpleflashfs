@@ -1,9 +1,9 @@
 #include "test_dynamic_init.h"
 
 #include <src/dynamic/SimpleFlashFsDynamic.h>
-#include <sim_pc/SimFlashMemoryInterfacePc.h>
 #include <stderr_exception.h>
 #include <format.h>
+#include "../src/sim_pc/SimFlashMemoryPc.h"
 
 using namespace Tools;
 using namespace SimpleFlashFs;
@@ -35,7 +35,7 @@ public:
 	bool init()
 	{
 		const std::string file = "test.bin";
-		SimFlashFsFlashMemoryInterface mem(file,size);
+		SimFlashFsFlashMemory mem(file,size);
 		SimpleFlashFs::dynamic::SimpleFlashFs fs(&mem);
 
 		if( !fs.create(fs.create_default_header(page_size, size/page_size)) ) {

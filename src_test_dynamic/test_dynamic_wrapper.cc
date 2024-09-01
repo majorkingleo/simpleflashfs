@@ -3,11 +3,11 @@
 
 #include <src/dynamic/SimpleFlashFsDynamic.h>
 #include <src/dynamic/SimpleFlashFsDynamicInstanceHandler.h>
-#include <sim_pc/SimFlashMemoryInterfacePc.h>
 #include <stderr_exception.h>
 #include <format.h>
 #include <src/dynamic/SimpleFlashFsDynamicWrapper.h>
 #include <CpputilsDebug.h>
+#include "../src/sim_pc/SimFlashMemoryPc.h"
 
 #define fopen( path, mode ) SimpleFlashFs_dynamic_fopen( path, mode )
 #define fclose( file ) SimpleFlashFs_dynamic_fclose( file)
@@ -28,7 +28,7 @@ class TestCaseWrapperBase : public TestCaseBase<bool>
 {
 	std::size_t page_size;
 	std::size_t size;
-	std::shared_ptr<SimFlashFsFlashMemoryInterface> mem;
+	std::shared_ptr<SimFlashFsFlashMemory> mem;
 	std::shared_ptr<SimpleFlashFs::dynamic::SimpleFlashFs> fs;
 	const std::string instance_name;
 
@@ -57,7 +57,7 @@ public:
 
 		const std::string file = instance_name;
 
-		mem = std::make_shared<SimFlashFsFlashMemoryInterface>(file,size);
+		mem = std::make_shared<SimFlashFsFlashMemory>(file,size);
 		fs = std::make_shared<SimpleFlashFs::dynamic::SimpleFlashFs>(mem.get());
 
 		instance_handler.register_instance(instance_name, fs );
