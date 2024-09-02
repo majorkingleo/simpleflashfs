@@ -23,6 +23,19 @@ public:
 	virtual std::size_t read( std::size_t address, std::byte *data, std::size_t size ) = 0;
 
 	virtual void erase( std::size_t address, std::size_t size ) = 0;
+
+	/**
+	 * returns true if the flash memory is mapped into the address space,
+	 * so for reading we can simple get an address pointer
+	 */
+	virtual bool can_map_read() const {
+		return false;
+	}
+
+	/**
+	 * converts the address to a in memory mapped address
+	 */
+	virtual const std::byte* map_read( std::size_t address ) { return nullptr; }
 };
 
 

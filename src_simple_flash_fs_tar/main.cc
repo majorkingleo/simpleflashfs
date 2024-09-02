@@ -16,6 +16,7 @@
 #include <string_utils.h>
 #include <filesystem>
 #include <optional>
+#include <set>
 #include "../src/sim_pc/SimFlashMemoryPc.h"
 
 using namespace Tools;

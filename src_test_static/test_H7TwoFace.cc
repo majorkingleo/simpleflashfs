@@ -11,7 +11,8 @@
 #include <stderr_exception.h>
 #include <format.h>
 #include <filesystem>
-#include "../src/sim_pc/SimFlashMemoryPc.h"
+#include "../src/sim_pc/SimSTM32InternalFlashPc.h"
+#include <set>
 
 using namespace Tools;
 
@@ -22,7 +23,13 @@ class TestCaseH7Base : public TestCaseBase<bool>
 protected:
 	std::optional<::SimpleFlashFs::SimPc::SimFlashFsFlashMemory> mem1;
 	std::optional<::SimpleFlashFs::SimPc::SimFlashFsFlashMemory> mem2;
+
+	std::optional<::SimpleFlashFs::SimPc::SimSTM32InternalFlashPc> mem_mapped1;
+	std::optional<::SimpleFlashFs::SimPc::SimSTM32InternalFlashPc> mem_mapped2;
+
 	std::string file_name;
+	std::string file1;
+	std::string file2;
 
 public:
 	TestCaseH7Base( const std::string & name_,
@@ -35,22 +42,14 @@ public:
 		if( file_name.empty() ) {
 			file_name = "." + name;
 		}
+
+		file1 = file_name + "_page1.bin";
+		file2 = file_name + "_page2.bin";
 	}
 
 
 	void init()
 	{
-		auto clear = []( const std::string_view & file ) {
-			if( std::filesystem::exists( file ) ) {
-				if( !std::filesystem::remove( file ) ) {
-					throw STDERR_EXCEPTION( format( "cannot delete %s", file ) );
-				}
-			}
-		};
-
-		const std::string file1 = file_name + "_page1.bin";
-		const std::string file2 = file_name + "_page2.bin";
-
 		clear( file1 );
 		clear( file2 );
 
@@ -64,6 +63,32 @@ public:
 		mem1.reset();
 		mem2.reset();
 	}
+
+
+	void init_mapped()
+	{
+		clear( file1 );
+		clear( file2 );
+
+		mem_mapped1.emplace(file1,SFF_MAX_SIZE);
+		mem_mapped2.emplace(file2,SFF_MAX_SIZE);
+		H7TwoFace::set_memory_interface(&mem_mapped1.value(),&mem_mapped2.value());
+	}
+
+	void deinit_mapped() {
+		H7TwoFace::set_memory_interface(nullptr,nullptr);
+		mem_mapped1.reset();
+		mem_mapped2.reset();
+	}
+
+protected:
+	void clear( const std::string_view & file ) {
+		if( std::filesystem::exists( file ) ) {
+			if( !std::filesystem::remove( file ) ) {
+				throw STDERR_EXCEPTION( format( "cannot delete %s", file ) );
+			}
+		}
+	};
 };
 
 
@@ -83,9 +108,20 @@ public:
 	bool run() override {
 		try {
 			init();
-			bool ret = func();
+			bool ret1 = func();
 			deinit();
-			return ret;
+
+			CPPDEBUG( "calling mapped memory interface" );
+			init_mapped();
+			bool ret2 = func();
+			deinit_mapped();
+
+
+			if( ret1 != ret2 ) {
+				return !expected_result;
+			}
+
+			return ret1;
 
 		} catch( const std::exception & error ) {
 			deinit();

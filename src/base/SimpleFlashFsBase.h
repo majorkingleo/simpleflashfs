@@ -17,7 +17,8 @@
 #include <format.h>
 #include <string_utils.h>
 #include <bit>
-#include <set>
+#include <span>
+#include <optional>
 
 namespace SimpleFlashFs {
 
@@ -388,19 +389,50 @@ protected:
 
 	bool read_page( std::size_t idx, std::byte *data, std::size_t size, bool check_crc = false );
 
+	std::optional<std::span<const std::byte>> read_page_mapped( std::size_t idx, std::size_t size, bool check_crc = false );
+
 	Config::page_type inode2page( const Inode<Config> & inode );
 
-	virtual file_handle_t find_file( const Config::string_view_type & name );
+	file_handle_t find_file( const Config::string_view_type & name ) {
+		if( mem->can_map_read() ) {
+			return find_file_mapped(name);
+		}
+		return find_file_unmapped(name);
+	}
 
-	file_handle_t get_inode( const Config::page_type & data );
+	file_handle_t find_file_mapped( const Config::string_view_type & name );
+	file_handle_t find_file_unmapped( const Config::string_view_type & name );
 
-	file_handle_t allocate_free_inode_page();
+	file_handle_t get_inode( const Config::page_type & data ) {
+		return get_inode( std::span<const std::byte>(data.data(),data.size()) );
+	}
+
+	file_handle_t get_inode( const std::span<const std::byte> & data );
+
+	file_handle_t allocate_free_inode_page() {
+		if( mem->can_map_read() ) {
+			return allocate_free_inode_page_mapped();
+		}
+		return allocate_free_inode_page_unmapped();
+	}
+
+	file_handle_t allocate_free_inode_page_mapped();
+	file_handle_t allocate_free_inode_page_unmapped();
 
 	void free_unwritten_pages( uint32_t page ) {
 		allocated_unwritten_pages.erase(page);
 	}
 
-	uint32_t allocate_free_inode_page_number();
+	uint32_t allocate_free_inode_page_number() {
+		if( mem->can_map_read() ) {
+			return allocate_free_inode_page_number_mapped();
+		}
+		return allocate_free_inode_page_number_unmapped();
+	}
+
+	uint32_t allocate_free_inode_page_number_mapped();
+	uint32_t allocate_free_inode_page_number_unmapped();
+
 	uint32_t allocate_free_data_page();
 	uint32_t allocate_free_data_page( const file_handle_t *file );
 
@@ -613,6 +645,30 @@ bool SimpleFlashFsBase<Config>::read_page( std::size_t idx, std::byte *page, std
 	return true;
 }
 
+template <class Config>
+std::optional<std::span<const std::byte>> SimpleFlashFsBase<Config>::read_page_mapped( std::size_t idx, std::size_t size, bool check_crc )
+{
+	std::size_t offset = header.page_size + idx * header.page_size;
+
+	const std::byte* addr = mem->map_read(offset);
+
+	if( addr == nullptr ) {
+		CPPDEBUG( "cannot read all data" );
+		return {};
+	}
+
+	if( check_crc ) {
+		if( get_page_checksum( addr, size ) != calc_page_checksum(addr, size) ) {
+			//CPPDEBUG( "checksum failed" );
+			return {};
+		}
+	}
+
+	std::span<const std::byte> ret( addr, size );
+
+	return ret;
+}
+
 
 template <class Config>
 Config::page_type SimpleFlashFsBase<Config>::inode2page( const Inode<Config> & inode )
@@ -795,7 +851,7 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::open( co
 }
 
 template <class Config>
-FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::find_file( const Config::string_view_type & name )
+FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::find_file_unmapped( const Config::string_view_type & name )
 {
 	InodeVersionStore iv_storage;
 
@@ -839,8 +895,51 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::find_fil
 	return {};
 }
 
+
 template <class Config>
-FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::get_inode( const Config::page_type & page )
+FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::find_file_mapped( const Config::string_view_type & name )
+{
+	InodeVersionStore iv_storage;
+
+	// find the latest version of all inodes
+	// we have top do this, because only the last version of each
+	// inode has it's last valid name
+	for( unsigned i = 0; i < header.max_inodes; i++ ) {
+		auto page = read_page_mapped( i, header.page_size, true );
+
+		if( page ) {
+			auto file_handle = get_inode( *page );
+			file_handle.page = i;
+
+			iv_storage.add(file_handle);
+		}
+	}
+
+	for( auto & iv : iv_storage.get_data() ) {
+
+		auto page = read_page_mapped( iv.page, header.page_size, true );
+
+		if( page ) {
+			auto file_handle = get_inode( *page );
+			file_handle.page = iv.page;
+
+			// deleted file
+			if( file_handle.inode.file_name.empty() ) {
+				continue;
+			}
+
+			if( file_handle.inode.file_name == name ) {
+				return file_handle;
+			}
+		}
+	}
+
+	return {};
+}
+
+
+template <class Config>
+FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::get_inode( const std::span<const std::byte> & page )
 {
 	file_handle_t ret(this);
 
@@ -891,13 +990,33 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::get_inod
 }
 
 template <class Config>
-FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::allocate_free_inode_page()
+FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::allocate_free_inode_page_unmapped()
 {
 	for( unsigned i = 0; i < header.max_inodes; i++ ) {
 
 		typename Config::page_type page(header.page_size);
 
 		if( !read_page( i, page, true ) ) {
+			if( allocated_unwritten_pages.count(i) == 0 ) {
+				file_handle_t ret(this);
+				ret.page = i;
+				allocated_unwritten_pages.insert(i);
+				return ret;
+			}
+		}
+	}
+
+	return {};
+}
+
+template <class Config>
+FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::allocate_free_inode_page_mapped()
+{
+	for( unsigned i = 0; i < header.max_inodes; i++ ) {
+
+		auto page = read_page_mapped( i, header.page_size, true );
+
+		if( !page ) {
 			if( allocated_unwritten_pages.count(i) == 0 ) {
 				file_handle_t ret(this);
 				ret.page = i;
@@ -966,7 +1085,7 @@ bool SimpleFlashFsBase<Config>::flush( file_handle_t* file )
 }
 
 template <class Config>
-uint32_t SimpleFlashFsBase<Config>::allocate_free_inode_page_number()
+uint32_t SimpleFlashFsBase<Config>::allocate_free_inode_page_number_unmapped()
 {
 	typename Config::page_type page;
 	page.reserve(header.page_size);
@@ -976,6 +1095,24 @@ uint32_t SimpleFlashFsBase<Config>::allocate_free_inode_page_number()
 		page.resize(header.page_size);
 
 		if( !read_page( i, page, true ) ) {
+			if( allocated_unwritten_pages.count(i) == 0 ) {
+				allocated_unwritten_pages.insert(i);
+				return i;
+			}
+		}
+	}
+
+	return {};
+}
+
+template <class Config>
+uint32_t SimpleFlashFsBase<Config>::allocate_free_inode_page_number_mapped()
+{
+	for( unsigned i = 0; i < header.max_inodes; i++ ) {
+
+		auto page = read_page_mapped( i, header.page_size, true );
+
+		if( !page ) {
 			if( allocated_unwritten_pages.count(i) == 0 ) {
 				allocated_unwritten_pages.insert(i);
 				return i;

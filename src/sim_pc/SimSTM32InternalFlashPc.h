@@ -40,6 +40,22 @@ public:
 
 	void erase( std::size_t address, std::size_t size ) override;
 
+
+	/**
+	 * returns true if the flash memory is mapped into the address space,
+	 * so for reading we can simple get an address pointer
+	 */
+	virtual bool can_map_read() const {
+		return true;
+	}
+
+	/**
+	 * converts the address to a in memory mapped address
+	 */
+	virtual const std::byte* map_read( std::size_t address ) {
+		return &mem.at(address);
+	}
+
 protected:
 	void init();
 
