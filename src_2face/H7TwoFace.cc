@@ -253,7 +253,7 @@ H7TwoFace::Stat H7TwoFace::get_stat()
 	ret.max_number_of_files = header.max_inodes  - 1 - SimpleFlashFs::static_memory::SimpleFs2FlashPages<ConfigH7>::RESERVED_NAMES.size();
 	ret.max_file_size = (header.page_size * (header.filesystem_size - 1)) - (header.max_inodes * header.page_size);
 	ret.max_path_len = header.max_path_len;
-	ret.free_space = fs_impl->get_fs().get_current_fs()->get_number_of_free_data_pages() + ret.trash_size;
+	ret.free_space = (fs_impl->get_fs().get_current_fs()->get_number_of_free_data_pages() * header.page_size) + ret.trash_size;
 
 	return ret;
 }
@@ -263,6 +263,20 @@ void H7TwoFace::set_crc32_func( std::function<uint32_t(const std::byte* data, si
 	fs_crc32_func = crc32_func;
 }
 
+
+bool H7TwoFace::recreate()
+{
+	if( fs_impl ) {
+		CPPDEBUG( "An other FS instance is already open" );
+		return false;
+	}
+
+	fs_impl.emplace(fs_mem1.value(),fs_mem2.value());
+
+	AutoFreeFs autofree;
+
+	return fs_impl->get_fs().recreate();
+}
 
 
 

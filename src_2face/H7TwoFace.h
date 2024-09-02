@@ -51,5 +51,6 @@ public:
 
 	static void set_memory_interface( SimpleFlashFs::FlashMemoryInterface *mem1, SimpleFlashFs::FlashMemoryInterface *mem2 );
 	static void set_crc32_func( std::function<uint32_t(const std::byte* data, size_t len)> fs_crc32_func );
+	static bool recreate();
 };
 
