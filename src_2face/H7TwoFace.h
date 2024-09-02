@@ -10,6 +10,7 @@
 #include <span>
 #include <string>
 #include <memory>
+#include <functional>
 
 #include "../src/SimpleFlashFsFileInterface.h"
 #include "../src/SimpleFlashFsFlashMemoryInterface.h"
@@ -49,5 +50,6 @@ public:
 	static Stat get_stat();
 
 	static void set_memory_interface( SimpleFlashFs::FlashMemoryInterface *mem1, SimpleFlashFs::FlashMemoryInterface *mem2 );
+	static void set_crc32_func( std::function<uint32_t(const std::byte* data, size_t len)> fs_crc32_func );
 };
 

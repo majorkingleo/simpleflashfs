@@ -13,13 +13,6 @@
 
 using namespace Tools;
 
-
-uint32_t ConfigH7::crc32( const std::byte *bytes, size_t len )
-{
-	return crcFast( reinterpret_cast<unsigned const char*>(bytes), len );
-}
-
-
 namespace {
 
 class H7TwoFaceImpl
@@ -130,6 +123,9 @@ public:
 static std::optional<SimpleFlashFs::FlashMemoryInterface*> fs_mem1;
 static std::optional<SimpleFlashFs::FlashMemoryInterface*> fs_mem2;
 static std::optional<H7TwoFaceImpl> fs_impl;
+static std::function<uint32_t(const std::byte* data, size_t len)> fs_crc32_func = [](const std::byte* data, size_t len) {
+	return crcFast( reinterpret_cast<unsigned char const*>(data), len );
+};
 
 class AutoFreeFs
 {
@@ -147,6 +143,12 @@ public:
 };
 
 } // namespace
+
+
+uint32_t ConfigH7::crc32( const std::byte *bytes, size_t len )
+{
+	return fs_crc32_func( bytes, len );
+}
 
 
 H7TwoFace::file_handle_t H7TwoFace::open( const std::string_view & name, std::ios_base::openmode mode )
@@ -255,6 +257,13 @@ H7TwoFace::Stat H7TwoFace::get_stat()
 
 	return ret;
 }
+
+void H7TwoFace::set_crc32_func( std::function<uint32_t(const std::byte* data, size_t len)> crc32_func )
+{
+	fs_crc32_func = crc32_func;
+}
+
+
 
 
 
