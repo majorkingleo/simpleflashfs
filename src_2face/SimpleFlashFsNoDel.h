@@ -84,31 +84,48 @@ void SimpleFsNoDel<Config>::read_all_free_data_pages()
 	typename base_t::InodeVersionStore iv_store;
 
 	for( unsigned i = 0; i < base_t::header.max_inodes; i++ ) {
-		typename base_t::config_t::page_type page(base_t::header.page_size);
 
-		if( base_t::read_page( i, page, true ) ) {
-			typename base_t::FileHandle inode = base_t::get_inode( page );
-			inode.page = i;
-			base_t::max_inode_number = std::max( base_t::max_inode_number, inode.inode.inode_number );
+		typename base_t::FileHandle inode;
+
+		if( this->mem->can_map_read() ) {
+
+			auto page = this->read_page_mapped( i, this->header.page_size, true );
+			if( !page ) {
+				continue;
+			}
+			inode = base_t::get_inode( *page );
+
+
+		} else {
+
+			typename base_t::config_t::page_type page(base_t::header.page_size);
+			if( !base_t::read_page( i, page, true ) ) {
+				continue;
+			}
+			inode = base_t::get_inode( page );
+
+		}
+
+		inode.page = i;
+		base_t::max_inode_number = std::max( base_t::max_inode_number, inode.inode.inode_number );
 
 /*
-			CPPDEBUG( Tools::format( "found inode %d,%d at page: %d name: '%s'",
-					inode.inode.inode_number, inode.inode.inode_version_number, i, inode.inode.file_name ) );
+		CPPDEBUG( Tools::format( "found inode %d,%d at page: %d name: '%s'",
+				inode.inode.inode_number, inode.inode.inode_version_number, i, inode.inode.file_name ) );
 */
 
-			if( iv_store.add( inode ) == base_t::InodeVersionStore::add_ret_t::replaced ) {
-				stat.trash_inodes++;
-			} else {
-				stat.used_inodes++;
-			}
+		if( iv_store.add( inode ) == base_t::InodeVersionStore::add_ret_t::replaced ) {
+			stat.trash_inodes++;
+		} else {
+			stat.used_inodes++;
+		}
 
-			stat.largest_file_size = std::max( stat.largest_file_size, inode.file_size() );
+		stat.largest_file_size = std::max( stat.largest_file_size, inode.file_size() );
 
-			// remove used pages from free_data_pages list
-			for( auto page : inode.inode.data_pages ) {
-				stat.trash_size += base_t::header.page_size;
-				base_t::free_data_pages.erase(page);
-			}
+		// remove used pages from free_data_pages list
+		for( auto page : inode.inode.data_pages ) {
+			stat.trash_size += base_t::header.page_size;
+			base_t::free_data_pages.erase(page);
 		}
 	}
 
