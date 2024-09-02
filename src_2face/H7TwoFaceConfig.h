@@ -10,7 +10,7 @@
 #include "../src/static/SimpleFlashFsStatic.h"
 
 static constexpr const std::size_t SFF_FILE_NAME_MAX = 30;
-static constexpr const std::size_t SFF_PAGE_SIZE = 1024;
+static constexpr const std::size_t SFF_PAGE_SIZE = 512;
 static constexpr const std::size_t SFF_MAX_SIZE = 128*1024;
 static constexpr const std::size_t SFF_MAX_PAGES = 1024;
 

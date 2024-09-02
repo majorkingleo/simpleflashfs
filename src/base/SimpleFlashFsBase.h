@@ -777,6 +777,12 @@ bool SimpleFlashFsBase<Config>::init()
 		return false;
 	}
 
+	if( Config::PAGE_SIZE > 0 && h.page_size > Config::PAGE_SIZE ) {
+		CPPDEBUG( Tools::format( "invalid page size '%d'", h.page_size ));
+		return false;
+	}
+
+
 	// now reread the whole page
 	page.resize(h.page_size);
 	mem->read(0, page.data(), page.size());

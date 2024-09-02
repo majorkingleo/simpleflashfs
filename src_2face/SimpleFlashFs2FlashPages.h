@@ -138,6 +138,22 @@ public:
 		return fs;
 	}
 
+	bool recreate() {
+		c1.fs.reset();
+		c2.fs.reset();
+
+		if( !create( c1 ) ) {
+			CPPDEBUG( "cannot create fs1" );
+			return false;
+		}
+		if( !create( c2 ) ) {
+			CPPDEBUG( "cannot create fs2" );
+			return false;
+		}
+
+		return init();
+	}
+
 protected:
 	bool init_fs()
 	{
