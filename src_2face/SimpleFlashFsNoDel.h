@@ -68,6 +68,23 @@ protected:
 	virtual void erase_inode_and_unused_pages( base_t::file_handle_t & inode_to_erase, base_t::file_handle_t & next_inode_version ) override {
 		// do nothing
 	}
+
+	typename base_t::FileHandle read_inode( std::size_t index )
+	{
+		if( this->mem->can_map_read() ) {
+			auto page = this->read_page_mapped( index, this->header.page_size, true );
+			if( !page ) {
+				return {};
+			}
+			return this->get_inode( *page );
+		}
+
+		typename base_t::config_t::page_type page( this->header.page_size );
+		if( !base_t::read_page( index, page, true ) ) {
+			return {};
+		}
+		return this->get_inode( page );
+	}
 };
 
 
@@ -85,25 +102,10 @@ void SimpleFsNoDel<Config>::read_all_free_data_pages()
 
 	for( unsigned i = 0; i < base_t::header.max_inodes; i++ ) {
 
-		typename base_t::FileHandle inode;
+		typename base_t::FileHandle inode = read_inode( i );
 
-		if( this->mem->can_map_read() ) {
-
-			auto page = this->read_page_mapped( i, this->header.page_size, true );
-			if( !page ) {
-				continue;
-			}
-			inode = base_t::get_inode( *page );
-
-
-		} else {
-
-			typename base_t::config_t::page_type page(base_t::header.page_size);
-			if( !base_t::read_page( i, page, true ) ) {
-				continue;
-			}
-			inode = base_t::get_inode( page );
-
+		if( !inode ) {
+			continue;
 		}
 
 		inode.page = i;
