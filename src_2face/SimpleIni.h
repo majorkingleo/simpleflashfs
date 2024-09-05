@@ -6,14 +6,20 @@
  */
 #pragma once
 
-#include "../src/SimpleFlashFsFileInterface.h"
+#include "SimpleFlashFsFileBuffer.h"
 
 class SimpleIni
 {
-	SimpleFlashFs::FileInterface & file;
+	SimpleFlashFs::FileBuffer & file;
+
+	const std::array<char,2> comment_signs = {
+			{ ',',
+			  '\"'
+			}
+	};
 
 public:
-	SimpleIni( SimpleFlashFs::FileInterface & file_ )
+	SimpleIni( SimpleFlashFs::FileBuffer & file_ )
 	: file ( file_ )
 	{}
 
@@ -34,5 +40,6 @@ public:
 
 private:
 
+	std::string_view get_section_name( const std::string_view & line );
 };
 

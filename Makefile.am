@@ -39,6 +39,8 @@ test_2face_SOURCES=\
 		src_2face/SimpleFlashFsFileBuffer.cc \
 		src_2face/SimpleFlashFs2FlashPages.h \
 		src_2face/SimpleFlashFsNoDel.h \
+		src_2face/SimpleIni.h \
+		src_2face/SimpleIni.cc \
 		src_test_static/test_2face.cc \
 		src_test_static/test_H7TwoFace.h \
 		src_test_static/test_H7TwoFace.cc \
