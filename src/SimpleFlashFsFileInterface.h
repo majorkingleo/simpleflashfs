@@ -7,6 +7,8 @@
 
 #pragma once
 #include <cstddef>
+#include <string>
+#include <fstream>
 
 namespace SimpleFlashFs {
 
@@ -40,6 +42,10 @@ public:
 	bool valid() const {
 		return !operator!();
 	}
+
+	virtual std::string_view get_file_name() const = 0;
+
+	virtual bool is_append_mode() const = 0;
 };
 
 

@@ -35,6 +35,8 @@ test_2face_SOURCES=\
 		src_2face/H7TwoFace.h \
 		src_2face/H7TwoFaceConfig.h \
 		src_2face/H7TwoFace.cc \
+		src_2face/SimpleFlashFsFileBuffer.h \
+		src_2face/SimpleFlashFsFileBuffer.cc \
 		src_2face/SimpleFlashFs2FlashPages.h \
 		src_2face/SimpleFlashFsNoDel.h \
 		src_test_static/test_2face.cc \
@@ -42,6 +44,8 @@ test_2face_SOURCES=\
 		src_test_static/test_H7TwoFace.cc \
 		src_test_static/test_pageset.h \
 		src_test_static/test_pageset.cc \
+		src_test_static/test_FileBuffer.cc \
+		src_test_static/test_FileBuffer.h \
 		tools_config.h				
 
 AM_CPPFLAGS = -I$(top_srcdir)/tools \

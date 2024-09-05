@@ -226,6 +226,14 @@ public:
 	bool valid() const {
 		return fs != nullptr;
 	}
+
+	std::string_view get_file_name() const override {
+		return inode.file_name;
+	}
+
+	bool is_append_mode() const override {
+		return append;
+	}
 };
 
 

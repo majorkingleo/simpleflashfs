@@ -86,6 +86,14 @@ public:
 		bool rename_file( const std::string_view & new_file_name ) override {
 			return file->rename_file( new_file_name );
 		}
+
+		std::string_view get_file_name() const override {
+			return file->get_file_name();
+		}
+
+		bool is_append_mode() const override {
+			return file->is_append_mode();
+		}
 	};
 
 private:

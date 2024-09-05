@@ -11,6 +11,7 @@
 #include <format.h>
 #include "test_H7TwoFace.h"
 #include "test_pageset.h"
+#include "test_FileBuffer.h"
 #include <limits>
 
 using namespace Tools;
@@ -60,7 +61,7 @@ int main( int argc, char **argv )
 #endif
 
 		std::vector<std::shared_ptr<TestCaseBase<bool>>> test_cases;
-
+/*
 		test_cases.push_back( test_case_static_TwoFace_write1() );
 		test_cases.push_back( test_case_static_TwoFace_write2() );
 		test_cases.push_back( test_case_static_TwoFace_write3() );
@@ -84,6 +85,19 @@ int main( int argc, char **argv )
 
 		test_cases.push_back( test_case_static_TwoFace_max_files1() );
 		test_cases.push_back( test_case_static_TwoFace_max_files2() );
+*/
+
+		test_cases.push_back( test_case_filebuffer_1() );
+		test_cases.push_back( test_case_filebuffer_2() );
+		test_cases.push_back( test_case_filebuffer_3() );
+		test_cases.push_back( test_case_filebuffer_4() );
+		test_cases.push_back( test_case_filebuffer_5() );
+		test_cases.push_back( test_case_filebuffer_6() );
+		test_cases.push_back( test_case_filebuffer_7() );
+		test_cases.push_back( test_case_filebuffer_8() );
+
+		test_cases.push_back( test_case_filebuffer_9() );
+		test_cases.push_back( test_case_filebuffer_10() );
 
 		ColBuilder col;
 
