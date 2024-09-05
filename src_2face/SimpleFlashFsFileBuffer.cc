@@ -67,6 +67,11 @@ bool FileBuffer::read_to_buffer( std::size_t size )
 	std::size_t size_to_read = std::max( size, buffer.size() );
 	size_to_read = std::min( file.file_size() - file.tellg(), buffer.size() );
 
+	// EOF reached
+	if( size_to_read == 0 ) {
+		return false;
+	}
+
 	current_buffer = std::span<std::byte>( buffer.data(), size_to_read );
 
 	std::size_t len_read = file.read( current_buffer.data(), size_to_read );
@@ -77,7 +82,12 @@ bool FileBuffer::read_to_buffer( std::size_t size )
 		return false;
 	}
 
-	pos = size;
+	// EOF
+	if( size_to_read < size ) {
+		pos = size_to_read;
+	} else {
+		pos = size;
+	}
 
 	return true;
 }
@@ -111,19 +121,23 @@ bool FileBuffer::flush()
 	return file.flush();
 }
 
-void FileBuffer::seek( std::size_t pos_to_seepk_to )
+void FileBuffer::seek( std::size_t pos_to_seek_to )
 {
 	if( !current_buffer.empty() ) {
-		if( current_buffer_start < pos_to_seepk_to &&
-			pos_to_seepk_to < current_buffer_start + current_buffer.size() ) {
-			pos = pos_to_seepk_to - current_buffer_start;
+		if( current_buffer_start < pos_to_seek_to &&
+			pos_to_seek_to < current_buffer_start + current_buffer.size() ) {
+			pos = pos_to_seek_to - current_buffer_start;
+
+			// so that tellg is telling the trouth
+			file.seek( pos_to_seek_to );
+			CPPDEBUG( Tools::format("seeking to pos: %d", pos) );
 			return;
 		}
 
 	}
 
 	discard_buffer();
-	file.seek( pos_to_seepk_to );
+	file.seek( pos_to_seek_to );
 }
 
 std::size_t FileBuffer::write( const std::byte *data, std::size_t size )

@@ -19,3 +19,4 @@ std::shared_ptr<TestCaseBase<bool>> test_case_filebuffer_7();
 std::shared_ptr<TestCaseBase<bool>> test_case_filebuffer_8();
 std::shared_ptr<TestCaseBase<bool>> test_case_filebuffer_9();
 std::shared_ptr<TestCaseBase<bool>> test_case_filebuffer_10();
+std::shared_ptr<TestCaseBase<bool>> test_case_filebuffer_11();

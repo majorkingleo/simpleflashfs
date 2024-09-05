@@ -11,6 +11,7 @@
 #include <static_vector.h>
 #include <span>
 #include <optional>
+#include <static_string.h>
 
 namespace SimpleFlashFs {
 
@@ -46,7 +47,6 @@ private:
 	bool current_buffer_modified = false;
 
 public:
-
 	FileBuffer( SimpleFlashFs::FileInterface & file_, std::span<std::byte> buf_ )
 	: file( file_ ),
 	  buffer( buf_ )
@@ -79,6 +79,12 @@ public:
 	}
 
 	bool eof() const override {
+		if( !current_buffer.empty() ) {
+			if( current_buffer_start + pos >= file.file_size() ) {
+				return true;
+			}
+		}
+
 		return file.eof();
 	}
 
@@ -106,9 +112,82 @@ public:
 
 	 std::span<std::byte> read( std::size_t size );
 
+	 std::size_t get_buffer_size() const {
+		 return buffer.size();
+	 }
+
 	 std::size_t write( const std::span<const std::byte> & data ) {
 		 return write( data.data(), data.size() );
 	 }
+
+	 std::size_t write( const std::span<const char> & data ) {
+		 return write( reinterpret_cast<const std::byte*>(data.data()), data.size() );
+	 }
+
+	 std::size_t write( const char* data ) {
+		 return write( reinterpret_cast<const std::byte*>(data), std::strlen(data) );
+	 }
+
+	 std::size_t write( const std::string & data ) {
+		 return write( reinterpret_cast<const std::byte*>(data.data()), data.size() );
+	 }
+
+	 std::size_t write( const std::string_view & data ) {
+		 return write( reinterpret_cast<const std::byte*>(data.data()), data.size() );
+	 }
+
+	 bool get_char( char & c ) {
+		 auto sv = read( sizeof(decltype(c)) );
+		 if( sv.empty() ) {
+			 return false;
+		 }
+
+		 c = static_cast<char>(sv[0]);
+		 return true;
+	 }
+
+	 bool read( std::span<char*> & data ) {
+		 std::size_t data_read = FileInterface::read( reinterpret_cast<std::byte*>(data.data()), data.size() );
+		 data = data.subspan(0,data_read);
+
+		 return data_read > 0;
+	 }
+
+	 template<class t_std_string>
+	 std::optional<t_std_string> get_line()
+	 {
+		 CPPDEBUG( Tools::format( "current_buffer_start %d pos: %d", current_buffer_start, pos ));
+
+		 t_std_string ret;
+
+		 while( !eof() ) {
+			 std::size_t size_to_read = get_buffer_size();
+
+			 if( ret.capacity() > 0 ) {
+				 size_to_read = std::min( ret.capacity() , size_to_read );
+			 }
+
+			 std::size_t pos_before_read = tellg();
+			 auto span_byte = read( size_to_read );
+
+			 CPPDEBUG( Tools::format( "current_buffer_start %d pos: %d pos_before_read: %d size: %d",
+					 current_buffer_start, pos, pos_before_read, span_byte.size() ));
+
+			 for( unsigned i = 0; i < span_byte.size(); ++i ) {
+				 if( span_byte[i] == static_cast<std::byte>('\n') ) {
+					 seek( pos_before_read + i + 1 );
+					 CPPDEBUG( Tools::format( "current_buffer_start %d pos: %d", current_buffer_start, pos ));
+					 return ret;
+				 } else  {
+					 // CPPDEBUG( Tools::format( "app: '%c'", static_cast<char>(span_byte[i]) ));
+					 ret.push_back( static_cast<char>(span_byte[i]) );
+				 }
+			 }
+		 }
+
+		 return {};
+	 }
+
 
 	 friend class AutoDiscard;
 
