@@ -133,10 +133,10 @@ void FileBuffer::seek( std::size_t pos_to_seek_to )
 			// CPPDEBUG( Tools::format("seeking to pos: %d", pos) );
 			return;
 		}
-
 	}
 
-	if( file.tellg() == pos_to_seek_to ) {
+	if( (file.tellg() == pos_to_seek_to) &&
+		(current_buffer.empty() || !current_buffer_modified ) ) {
 		return;
 	}
 

@@ -356,6 +356,8 @@ bool SimpleIniBase::write( const std::string_view & section,
 	}
 
 	CPPDEBUG( "section not found" );
+	std::optional<std::size_t> last_key_end;
+	std::size_t section_keys_start = file.tellg();
 
 	for( auto o_next_key_pos = find_next_key(); o_next_key_pos;  o_next_key_pos = find_next_key() ) {
 
@@ -369,6 +371,7 @@ bool SimpleIniBase::write( const std::string_view & section,
 		auto & current_value = std::get<VALUE>( key_value );
 
 		if( current_key != key ) {
+			last_key_end = file.tellg();
 			continue;
 		}
 
@@ -377,11 +380,69 @@ bool SimpleIniBase::write( const std::string_view & section,
 			return true;
 		}
 
+		std::size_t start = section_keys_start;
+		if( last_key_end ) {
+			start = *last_key_end;
+		}
 
+
+		std::size_t end = file.tellg();
+
+		file.seek( start );
+
+		Tools::static_vector<std::string_view,10> sl;
+
+		if( !comment.empty() ) {
+			sl.insert( sl.end(), { "#\t", comment, "\n" } );
+		}
+
+		sl.insert( sl.end(), { "\t", key, " = ", value, "\n" } );
+
+		std::size_t len_to_write = 0;
+		for( auto & sv : sl ) {
+			len_to_write += sv.size();
+		}
+
+		const std::size_t size_to_overwrite = end - start + 1;
+
+		// fill with white spaces
+		if(  size_to_overwrite > len_to_write ) {
+			if( !write( sl ) ) {
+				return false;
+			}
+
+			for( unsigned i = 0; i < size_to_overwrite - len_to_write; ++i ) {
+				if( !write( " " ) ) {
+					return false;
+				}
+			}
+
+			return true;
+		} else {
+			char* buffer = reinterpret_cast<char*>(alloca( len_to_write ));
+
+			std::size_t current_pos = 0;
+			for( auto & sv : sl ) {
+				std::memcpy( buffer + current_pos, sv.data(), sv.size() );
+				current_pos += sv.size();
+			}
+
+			// 10 - 4 = 6
+			if( !write( std::string_view(buffer, size_to_overwrite ) ) ) {
+				return false;
+			}
+
+			if( !insert( file.tellg(), { std::string_view(buffer + size_to_overwrite, len_to_write - size_to_overwrite ) } ) ) {
+				return false;
+			}
+
+			return true;
+		} // else
 	}
 
 	CPPDEBUG( "key not found" );
 
+	// there may is an extra '\n' before this section
 	std::size_t current_pos = file.tellg();
 	if( current_pos > 0 ) {
 		file.seek(current_pos-1);

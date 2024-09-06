@@ -94,7 +94,22 @@ protected:
 		return true;
 	}
 
+	bool write( const std::span<const std::string_view> & values ) {
+		for( auto & sv : values ) {
+			if( !write( sv )  ) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
 	bool insert( std::size_t pos_in_file, const std::span<const std::string_view> & values );
+
+	bool insert( std::size_t pos_in_file, const std::string_view & value ) {
+		return insert( pos_in_file, std::span<const std::string_view>( {value} ) );
+	}
+
 };
 
 template<std::size_t N=100>
