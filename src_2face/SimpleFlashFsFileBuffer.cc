@@ -57,7 +57,7 @@ std::span<std::byte> FileBuffer::read( std::size_t size )
 		return {};
 	}
 
-	return current_buffer.subspan( 0, size );
+	return current_buffer.subspan( 0, std::min( size, current_buffer.size() ) );
 }
 
 bool FileBuffer::read_to_buffer( std::size_t size )

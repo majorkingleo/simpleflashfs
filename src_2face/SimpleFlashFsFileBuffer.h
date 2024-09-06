@@ -186,6 +186,10 @@ public:
 			 }
 		 }
 
+		 if( !ret.empty() ) {
+			 return ret;
+		 }
+
 		 return {};
 	 }
 
