@@ -322,11 +322,15 @@ bool SimpleIniBase::insert( std::size_t pos_in_file, const std::span<const std::
 		// read data into buffer 2
 		std::size_t pos_before_read = file.tellg();
 
-		if( !file.read( s_buffer_a ) ) {
-			return false;
+		if( pos_before_read +1 < file.file_size() ) {
+
+			if( !file.read( s_buffer_a ) ) {
+				return false;
+			}
+
+			CPPDEBUG( Tools::format( "readed from file: '%s'", to_debug_string( std::string( s_buffer_a.data(), s_buffer_a.size() ) ) ) );
 		}
 
-		CPPDEBUG( Tools::format( "readed from file: '%s'", to_debug_string( std::string( s_buffer_a.data(), s_buffer_a.size() ) ) ) );
 		CPPDEBUG( Tools::format( "wanted to write : '%s'", to_debug_string( std::string( s_buffer_b.data(), s_buffer_b.size() ) ) ) );
 
 
@@ -378,6 +382,15 @@ bool SimpleIniBase::write( const std::string_view & section,
 
 	CPPDEBUG( "key not found" );
 
+	std::size_t current_pos = file.tellg();
+	if( current_pos > 0 ) {
+		file.seek(current_pos-1);
+		char c;
+		if( file.get_char(c) && c == '\n' ) {
+			file.seek(current_pos-1);
+		}
+	}
+
 	Tools::static_vector<std::string_view,10> sl;
 
 	if( !comment.empty() ) {
@@ -386,9 +399,11 @@ bool SimpleIniBase::write( const std::string_view & section,
 
 	sl.insert( sl.end(), { "\t", key, " = ", value, "\n" } );
 
-	insert( file.tellg(), sl );
+	if( !insert( file.tellg(), sl ) ) {
+		return false;
+	}
 
-	return false;
+	return true;
 }
 
 
