@@ -156,7 +156,7 @@ public:
 	 template<class t_std_string>
 	 std::optional<t_std_string> get_line()
 	 {
-		 CPPDEBUG( Tools::format( "current_buffer_start %d pos: %d", current_buffer_start, pos ));
+		 // CPPDEBUG( Tools::format( "current_buffer_start %d pos: %d", current_buffer_start, pos ));
 
 		 t_std_string ret;
 
@@ -170,13 +170,14 @@ public:
 			 std::size_t pos_before_read = tellg();
 			 auto span_byte = read( size_to_read );
 
+			 /*
 			 CPPDEBUG( Tools::format( "current_buffer_start %d pos: %d pos_before_read: %d size: %d",
 					 current_buffer_start, pos, pos_before_read, span_byte.size() ));
-
+			 */
 			 for( unsigned i = 0; i < span_byte.size(); ++i ) {
 				 if( span_byte[i] == static_cast<std::byte>('\n') ) {
 					 seek( pos_before_read + i + 1 );
-					 CPPDEBUG( Tools::format( "current_buffer_start %d pos: %d", current_buffer_start, pos ));
+					 // CPPDEBUG( Tools::format( "current_buffer_start %d pos: %d", current_buffer_start, pos ));
 					 return ret;
 				 } else  {
 					 // CPPDEBUG( Tools::format( "app: '%c'", static_cast<char>(span_byte[i]) ));

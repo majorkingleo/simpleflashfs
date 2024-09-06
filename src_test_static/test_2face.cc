@@ -12,6 +12,7 @@
 #include "test_H7TwoFace.h"
 #include "test_pageset.h"
 #include "test_FileBuffer.h"
+#include "test_SimpleIni.h"
 #include <limits>
 
 using namespace Tools;
@@ -98,8 +99,11 @@ int main( int argc, char **argv )
 
 		test_cases.push_back( test_case_filebuffer_9() );
 		test_cases.push_back( test_case_filebuffer_10() );
-*/
+
 		test_cases.push_back( test_case_filebuffer_11() );
+*/
+
+		test_cases.push_back( test_case_simple_ini_read_1() );
 
 		ColBuilder col;
 

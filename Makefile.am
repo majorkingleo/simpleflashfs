@@ -48,6 +48,9 @@ test_2face_SOURCES=\
 		src_test_static/test_pageset.cc \
 		src_test_static/test_FileBuffer.cc \
 		src_test_static/test_FileBuffer.h \
+		src_test_static/test_SimpleIni.h \
+		src_test_static/test_SimpleIni.cc \
+		src_test_static/FFile.h \
 		tools_config.h				
 
 AM_CPPFLAGS = -I$(top_srcdir)/tools \

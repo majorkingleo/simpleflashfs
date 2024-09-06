@@ -7,8 +7,9 @@
 #pragma once
 
 #include "SimpleFlashFsFileBuffer.h"
+#include <static_string.h>
 
-class SimpleIni
+class SimpleIniBase
 {
 	SimpleFlashFs::FileBuffer & file;
 
@@ -19,11 +20,13 @@ class SimpleIni
 	};
 
 public:
-	SimpleIni( SimpleFlashFs::FileBuffer & file_ )
+	SimpleIniBase( SimpleFlashFs::FileBuffer & file_ )
 	: file ( file_ )
 	{}
 
-	SimpleIni( const SimpleIni & other  ) = delete;
+	SimpleIniBase( const SimpleIniBase & other  ) = delete;
+
+	virtual ~SimpleIniBase() {}
 
 
 	bool read( const std::string_view & section, const std::string_view & key, std::string_view & value );
@@ -38,8 +41,37 @@ public:
 
 	bool write( const std::string_view & section, const std::string_view & key, const std::string_view & value );
 
-private:
+protected:
+	std::string_view get_section_name( const std::string_view & line ) const;
+	std::tuple<std::string_view,std::string_view> get_key_value( const std::string_view & line ) const;
 
-	std::string_view get_section_name( const std::string_view & line );
+	virtual std::optional<std::string_view> get_line( SimpleFlashFs::FileBuffer & file ) = 0;
 };
+
+template<std::size_t N=100>
+class SimpleIni : public SimpleIniBase
+{
+protected:
+	char acbuf1[100];
+	Tools::static_string<N> line_buffer;
+	char acbuf2[100];
+
+public:
+	SimpleIni( SimpleFlashFs::FileBuffer & file )
+	: SimpleIniBase( file )
+	{}
+
+	std::optional<std::string_view> get_line( SimpleFlashFs::FileBuffer & file ) override
+	{
+		auto line = file.get_line<decltype(line_buffer)>();
+		if( line ) {
+			line_buffer = *line;
+			return line_buffer;
+		}
+
+		return {};
+	}
+
+};
+
 

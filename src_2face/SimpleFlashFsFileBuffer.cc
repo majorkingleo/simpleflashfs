@@ -130,7 +130,7 @@ void FileBuffer::seek( std::size_t pos_to_seek_to )
 
 			// so that tellg is telling the trouth
 			file.seek( pos_to_seek_to );
-			CPPDEBUG( Tools::format("seeking to pos: %d", pos) );
+			// CPPDEBUG( Tools::format("seeking to pos: %d", pos) );
 			return;
 		}
 
@@ -146,11 +146,11 @@ std::size_t FileBuffer::write( const std::byte *data, std::size_t size )
 	s = substitude( s,  "\n", "\\n" );
 	s = substitude( s,  std::string(1,'\0'), "\\0" );
 
-	CPPDEBUG( Tools::format( "starting to write '%s'", s ) );
+	//CPPDEBUG( Tools::format( "starting to write '%s'", s ) );
 	//CPPDEBUG( Tools::format( "starting to write '%s'", std::string_view(reinterpret_cast<const char*>(data),size) ) );
 
 	if( size > buffer.size() ) {
-		CPPDEBUG( "size > buffer.size()" );
+		//CPPDEBUG( "size > buffer.size()" );
 		auto pos_in_file = file.tellg();
 		discard_buffer();
 		file.seek( pos_in_file );
@@ -172,20 +172,20 @@ std::size_t FileBuffer::write( const std::byte *data, std::size_t size )
 	}
 
 	if( !current_buffer.empty() ) {
-		CPPDEBUG( "!current_buffer.empty() " );
+		//CPPDEBUG( "!current_buffer.empty() " );
 
 		// enlarge current_buffer
 		if( buffer.size() - pos > size ) {
-			CPPDEBUG( "enlarging buffer" );
+			//CPPDEBUG( "enlarging buffer" );
 			current_buffer = buffer.subspan( 0, pos + size );
 		}
 
-		CPPDEBUG( Tools::format( "pos: %d size: %d csize: %d",  pos, size,  current_buffer.size() ));
+		//CPPDEBUG( Tools::format( "pos: %d size: %d csize: %d",  pos, size,  current_buffer.size() ));
 
 		// overwrite
 		if( pos + size <= current_buffer.size() ) {
 
-			CPPDEBUG( "pos + size < current_buffer.size()" );
+			//CPPDEBUG( "pos + size < current_buffer.size()" );
 
 			std::memcpy( &current_buffer[pos], data, size );
 			current_buffer_modified = true;
@@ -205,7 +205,7 @@ std::size_t FileBuffer::write( const std::byte *data, std::size_t size )
 
 	if( current_buffer.empty() ) {
 
-		CPPDEBUG( "current_buffer.empty()" );
+		//CPPDEBUG( "current_buffer.empty()" );
 
 		current_buffer_start = file.tellg();
 		pos = 0;
@@ -214,7 +214,7 @@ std::size_t FileBuffer::write( const std::byte *data, std::size_t size )
 		std::memcpy( current_buffer.data(), data, size );
 		current_buffer_modified = true;
 
-		CPPDEBUG( Tools::format( "pos: %d size: %d current_buffer_start: %d",  pos, size,  current_buffer_start ));
+		//CPPDEBUG( Tools::format( "pos: %d size: %d current_buffer_start: %d",  pos, size,  current_buffer_start ));
 
 		pos = size;
 
