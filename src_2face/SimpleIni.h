@@ -39,13 +39,60 @@ public:
 		return true;
 	}
 
-	bool write( const std::string_view & section, const std::string_view & key, const std::string_view & value );
+	bool write( const std::string_view & section,
+			    const std::string_view & key,
+				const std::string_view & value,
+				const std::string_view & comment = {} );
 
 protected:
 	std::string_view get_section_name( const std::string_view & line ) const;
 	std::tuple<std::string_view,std::string_view> get_key_value( const std::string_view & line ) const;
 
 	virtual std::optional<std::string_view> get_line( SimpleFlashFs::FileBuffer & file ) = 0;
+
+	std::optional<std::size_t> find_section( const std::string_view & section );
+	std::optional<std::size_t> find_next_section();
+	std::optional<std::size_t> find_next_key();
+
+	bool is_comment( const std::string_view & line ) const {
+
+		if( line.empty() ) {
+			return false;
+		}
+
+		for( char c : comment_signs ) {
+			if( line[0] == c ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	bool append( const std::string_view & section,
+				    const std::string_view & key,
+					const std::string_view & value,
+					const std::string_view & comment = {} );
+
+
+	bool append_section( const std::string_view & section );
+
+	bool append_key( const std::string_view & key,
+			const std::string_view & value,
+			const std::string_view & comment = {} );
+
+
+	bool write( const std::string_view & s );
+
+	bool write( const std::initializer_list<const std::string_view> & il ) {
+		for( auto & sv : il ) {
+			if( !write( sv )  ) {
+				return false;
+			}
+		}
+
+		return true;
+	}
 };
 
 template<std::size_t N=100>

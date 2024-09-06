@@ -87,7 +87,7 @@ int main( int argc, char **argv )
 		test_cases.push_back( test_case_static_TwoFace_max_files1() );
 		test_cases.push_back( test_case_static_TwoFace_max_files2() );
 */
-/*
+
 		test_cases.push_back( test_case_filebuffer_1() );
 		test_cases.push_back( test_case_filebuffer_2() );
 		test_cases.push_back( test_case_filebuffer_3() );
@@ -101,10 +101,17 @@ int main( int argc, char **argv )
 		test_cases.push_back( test_case_filebuffer_10() );
 
 		test_cases.push_back( test_case_filebuffer_11() );
-*/
+
+
 
 		test_cases.push_back( test_case_simple_ini_read_1() );
 		test_cases.push_back( test_case_simple_ini_read_2() );
+		test_cases.push_back( test_case_simple_ini_read_3() );
+		test_cases.push_back( test_case_simple_ini_read_4() );
+		test_cases.push_back( test_case_simple_ini_read_5() );
+
+		test_cases.push_back( test_case_simple_ini_write_1() );
+		test_cases.push_back( test_case_simple_ini_write_2() );
 
 		ColBuilder col;
 

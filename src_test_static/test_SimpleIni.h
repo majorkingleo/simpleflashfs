@@ -14,3 +14,10 @@ std::shared_ptr<TestCaseBase<bool>> test_case_simple_ini_read_2();
 std::shared_ptr<TestCaseBase<bool>> test_case_simple_ini_read_3();
 std::shared_ptr<TestCaseBase<bool>> test_case_simple_ini_read_4();
 std::shared_ptr<TestCaseBase<bool>> test_case_simple_ini_read_5();
+
+std::shared_ptr<TestCaseBase<bool>> test_case_simple_ini_write_1();
+std::shared_ptr<TestCaseBase<bool>> test_case_simple_ini_write_2();
+std::shared_ptr<TestCaseBase<bool>> test_case_simple_ini_write_3();
+std::shared_ptr<TestCaseBase<bool>> test_case_simple_ini_write_4();
+std::shared_ptr<TestCaseBase<bool>> test_case_simple_ini_write_5();
+
