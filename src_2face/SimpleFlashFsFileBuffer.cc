@@ -194,7 +194,7 @@ std::size_t FileBuffer::write( const std::byte *data, std::size_t size )
 			return size;
 		} else {
 
-			auto pos_in_file = file.tellg() + pos;
+			auto pos_in_file = current_buffer_start + pos;
 			discard_buffer();
 			file.seek( pos_in_file );
 
