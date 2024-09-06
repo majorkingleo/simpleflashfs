@@ -42,7 +42,7 @@ public:
 
 	bool run() override {
 
-		std::string file_name_buffered_fstream = Tools::format( ".%s.buffered_fstream.txt", name );
+		std::string file_name_buffered_fstream = Tools::format( ".%s.buffered_fstream.ini", name );
 		std::vector<std::byte> buffer(buffer_size);
 
 		std::filesystem::remove(file_name_buffered_fstream);
@@ -373,4 +373,79 @@ std::shared_ptr<TestCaseBase<bool>> test_case_simple_ini_write_2()
 
 	return std::make_shared<TestCaseFuncWriteIni>(__FUNCTION__, test_func, 20,
 				std::ios_base::in | std::ios_base::out | std::ios_base::trunc, true, expected_text );
+}
+
+
+std::shared_ptr<TestCaseBase<bool>> test_case_simple_ini_write_3()
+{
+	std::string expected_text =
+			"[section1]\n" \
+			"#\tcomment1\n"
+			"\tkey1 = value1\n" \
+			"\n" \
+			"[section2]\n" \
+			"#\tcomment 2\n"
+			"\tkey2 = value2\n";
+
+	auto test_func = []( SimpleFlashFs::FileBuffer & file ) {
+
+		SimpleIni ini( file );
+
+		std::string_view value;
+
+		if( !ini.write("section1","key1", "value1", "comment1" ) ) {
+			CPPDEBUG( "writing failed" );
+			return false;
+		}
+
+		if( !ini.write("section2","key2", "value2", "comment 2" ) ) {
+			CPPDEBUG( "writing failed" );
+			return false;
+		}
+
+		return true;
+	};
+
+	return std::make_shared<TestCaseFuncWriteIni>(__FUNCTION__, test_func, 20,
+				std::ios_base::in | std::ios_base::out | std::ios_base::trunc, true, expected_text );
+}
+
+std::shared_ptr<TestCaseBase<bool>> test_case_simple_ini_write_4()
+{
+	std::string expected_text =
+			"[section1]\n" \
+			"\tkey1 = value1\n" \
+			"\tkey3 = value3\n" \
+			"\n" \
+			"[section2]\n" \
+			"\tkey2 = value2\n";
+
+	auto test_func = []( SimpleFlashFs::FileBuffer & file ) {
+
+		std::string init_text =
+				"[section1]\n" \
+				"\tkey1 = value1\n" \
+				"\n" \
+				"[section2]\n" \
+				"\tkey2 = value2\n";
+
+
+		if( !file.write( init_text ) ) {
+			return false;
+		}
+
+		SimpleIni ini( file );
+
+		std::string_view value;
+
+		if( !ini.write("section1","key3", "value3" ) ) {
+			CPPDEBUG( "writing failed" );
+			return false;
+		}
+
+		return true;
+	};
+
+	return std::make_shared<TestCaseFuncWriteIni>(__FUNCTION__, test_func, 20,
+				std::ios_base::in | std::ios_base::out | std::ios_base::trunc, false, expected_text );
 }

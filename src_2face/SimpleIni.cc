@@ -6,6 +6,10 @@
  */
 #include "SimpleIni.h"
 #include <string_utils.h>
+#include <static_vector.h>
+
+#include <CpputilsDebug.h>
+#include <format.h>
 
 using namespace Tools;
 
@@ -205,6 +209,7 @@ std::optional<std::size_t> SimpleIniBase::find_next_key()
 
 		 // found a section?
 		 if( sv_line[0] == '[' ) {
+			file.seek(pos_before_read_line);
 			return {};
 		 }
 
@@ -265,12 +270,76 @@ bool SimpleIniBase::append_key( const std::string_view & key,
 			const std::string_view & comment )
 {
 	if( !comment.empty() ) {
-		if( !write( { "# ", comment, "\n" } ) ) {
+		if( !write( { "#\t", comment, "\n" } ) ) {
 			return false;
 		}
 	}
 
 	return write( { "\t", key, " = ", value, "\n" } );
+}
+
+std::string to_debug_string( std::string s )
+{
+	s = Tools::substitude( s,  "\n", "\\n" );
+	s = Tools::substitude( s,  "\t", "\\t" );
+	s = Tools::substitude( s,  std::string(1,'\0'), "\\0" );
+
+	return s;
+}
+
+bool SimpleIniBase::insert( std::size_t pos_in_file, const std::span<const std::string_view> & values )
+{
+	file.seek(pos_in_file);
+
+	std::size_t len = 0;
+	for( auto sv : values ) {
+		len += sv.size();
+	}
+
+	char *buffer1 = reinterpret_cast<char*>( alloca( len ) );
+	char *buffer2 = reinterpret_cast<char*>( alloca( len ) );
+	std::span<char> s_buffer_origin1( buffer1, len );
+	std::span<char> s_buffer_origin2( buffer2, len );
+
+	// copy values to insert into buffer1
+	{
+		std::size_t current_pos = 0;
+		for( auto sv : values ) {
+			std::memcpy( s_buffer_origin1.data() + current_pos, sv.data(), sv.size() );
+			current_pos += sv.size();
+		}
+
+		CPPDEBUG( Tools::format( "want to write : '%s'", to_debug_string( std::string( s_buffer_origin1.data(), s_buffer_origin1.size() ) ) ) );
+	}
+
+	auto s_buffer_a = s_buffer_origin2;
+	auto s_buffer_b = s_buffer_origin1;
+
+	const std::size_t new_file_size = file.file_size() + len;
+
+	for( std::size_t p = pos_in_file; p < new_file_size;  ) {
+
+		// read data into buffer 2
+		std::size_t pos_before_read = file.tellg();
+
+		if( !file.read( s_buffer_a ) ) {
+			return false;
+		}
+
+		CPPDEBUG( Tools::format( "readed from file: '%s'", to_debug_string( std::string( s_buffer_a.data(), s_buffer_a.size() ) ) ) );
+		CPPDEBUG( Tools::format( "wanted to write : '%s'", to_debug_string( std::string( s_buffer_b.data(), s_buffer_b.size() ) ) ) );
+
+
+		file.seek(pos_before_read);
+		if( file.write( s_buffer_b ) != s_buffer_b.size() ) {
+			return false;
+		}
+		p += s_buffer_b.size();
+
+		std::swap( s_buffer_a, s_buffer_b );
+	}
+
+	return true;
 }
 
 bool SimpleIniBase::write( const std::string_view & section,
@@ -281,6 +350,43 @@ bool SimpleIniBase::write( const std::string_view & section,
 	if( !o_section_pos ) {
 		return append_section( section ) && append_key( key, value, comment );
 	}
+
+	CPPDEBUG( "section not found" );
+
+	for( auto o_next_key_pos = find_next_key(); o_next_key_pos;  o_next_key_pos = find_next_key() ) {
+
+		auto o_line = get_line( file );
+		if( !o_line ) {
+			return false;
+		}
+
+		auto key_value = get_key_value( *o_line );
+		auto & current_key = std::get<KEY>( key_value );
+		auto & current_value = std::get<VALUE>( key_value );
+
+		if( current_key != key ) {
+			continue;
+		}
+
+		if( current_value == value ) {
+			// nothing to do
+			return true;
+		}
+
+
+	}
+
+	CPPDEBUG( "key not found" );
+
+	Tools::static_vector<std::string_view,10> sl;
+
+	if( !comment.empty() ) {
+		sl.insert( sl.end(), { "#\t", comment, "\n" } );
+	}
+
+	sl.insert( sl.end(), { "\t", key, " = ", value, "\n" } );
+
+	insert( file.tellg(), sl );
 
 	return false;
 }

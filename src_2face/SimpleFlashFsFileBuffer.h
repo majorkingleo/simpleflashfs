@@ -146,8 +146,8 @@ public:
 		 return true;
 	 }
 
-	 bool read( std::span<char*> & data ) {
-		 std::size_t data_read = FileInterface::read( reinterpret_cast<std::byte*>(data.data()), data.size() );
+	 bool read( std::span<char> & data ) {
+		 std::size_t data_read = read( reinterpret_cast<std::byte*>(data.data()), data.size() );
 		 data = data.subspan(0,data_read);
 
 		 return data_read > 0;

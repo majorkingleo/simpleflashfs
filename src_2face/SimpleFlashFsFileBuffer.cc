@@ -136,6 +136,10 @@ void FileBuffer::seek( std::size_t pos_to_seek_to )
 
 	}
 
+	if( file.tellg() == pos_to_seek_to ) {
+		return;
+	}
+
 	discard_buffer();
 	file.seek( pos_to_seek_to );
 }

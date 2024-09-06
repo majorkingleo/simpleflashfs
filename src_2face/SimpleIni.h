@@ -93,6 +93,8 @@ protected:
 
 		return true;
 	}
+
+	bool insert( std::size_t pos_in_file, const std::span<const std::string_view> & values );
 };
 
 template<std::size_t N=100>
