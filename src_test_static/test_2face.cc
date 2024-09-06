@@ -104,6 +104,7 @@ int main( int argc, char **argv )
 */
 
 		test_cases.push_back( test_case_simple_ini_read_1() );
+		test_cases.push_back( test_case_simple_ini_read_2() );
 
 		ColBuilder col;
 

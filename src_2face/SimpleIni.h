@@ -52,9 +52,7 @@ template<std::size_t N=100>
 class SimpleIni : public SimpleIniBase
 {
 protected:
-	char acbuf1[100];
 	Tools::static_string<N> line_buffer;
-	char acbuf2[100];
 
 public:
 	SimpleIni( SimpleFlashFs::FileBuffer & file )

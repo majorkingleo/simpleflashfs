@@ -29,7 +29,7 @@ bool SimpleIniBase::read( const std::string_view & section, const std::string_vi
 			 return false;
 		 }
 
-		 CPPDEBUG( format( "line: '%s' found section: %d", *o_line, found_section ));
+		 //CPPDEBUG( format( "line: '%s' found section: %d", *o_line, found_section ));
 
 		 auto & line = *o_line;
 
@@ -49,11 +49,8 @@ bool SimpleIniBase::read( const std::string_view & section, const std::string_vi
 		 // found a section?
 		 if( sv_line[0] == '[' ) {
 			 auto current_section = get_section_name( sv_line );
-			 if( current_section != section ) {
-				 continue;
-			 }
 
-			 found_section = true;
+			 found_section = ( current_section == section );
 			 continue;
 		 }
 
@@ -83,7 +80,7 @@ bool SimpleIniBase::read( const std::string_view & section, const std::string_vi
 
 std::string_view SimpleIniBase::get_section_name( const std::string_view & line ) const
 {
-	return strip_view( line, "[]" );
+	return strip_view( strip_view( line, "[]" ) );
 }
 
 std::tuple<std::string_view,std::string_view> SimpleIniBase::get_key_value( const std::string_view & line ) const

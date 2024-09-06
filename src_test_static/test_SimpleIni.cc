@@ -14,7 +14,7 @@ using namespace Tools;
 
 namespace {
 
-bool write_default_ini( SimpleFlashFs::FileBuffer & file )
+bool write_default_ini1( SimpleFlashFs::FileBuffer & file )
 {
 	if( file.write(
 			"[section1]\n" \
@@ -27,9 +27,20 @@ bool write_default_ini( SimpleFlashFs::FileBuffer & file )
 			" \t key2= value2 \n" \
 			"[section3 ]\n" \
 			"# comment 1   \n"
-			"  key1 = value1 \t\n" \
+			"  key3 = value3 \t\n" \
 			"; comment = 2   \n"
-			"  key2= value2 \n" \
+			"  key4= value4 \n" \
+			"[section4 ]\n" \
+			"  key1=nolineend" ) <= 0 ) {
+		return false;
+	}
+
+	return true;
+}
+
+bool write_default_ini2( SimpleFlashFs::FileBuffer & file )
+{
+	if( file.write(
 			"[section4 ]\n" \
 			"  key1=nolineend" ) <= 0 ) {
 		return false;
@@ -44,12 +55,12 @@ std::shared_ptr<TestCaseBase<bool>> test_case_simple_ini_read_1()
 {
 	auto test_func = []( SimpleFlashFs::FileBuffer & file ) {
 
-		write_default_ini( file );
+		write_default_ini1( file );
 
 		SimpleIni ini( file );
 
 		std::string_view value;
-/*
+
 		if( !ini.read("section1","key1", value ) || value != "value1" ) {
 			CPPDEBUG( format( "value: %d", value ) );
 			CPPDEBUG( "section1/key1 not found" );
@@ -75,14 +86,14 @@ std::shared_ptr<TestCaseBase<bool>> test_case_simple_ini_read_1()
 			CPPDEBUG( format( "section2/key2 not found (value:'%s')", value ) );
 			return false;
 		}
-*/
-		if( !ini.read("section3","key1", value ) || value != "value1" ) {
-			CPPDEBUG( "section3/key1 not found" );
+
+		if( !ini.read("section3","key3", value ) || value != "value3" ) {
+			CPPDEBUG( "section3/key3 not found" );
 			return false;
 		}
-/*
-		if( !ini.read("section3","key2", value ) || value != "value2" ) {
-			CPPDEBUG( "section3/key2 not found" );
+
+		if( !ini.read("section3","key4", value ) || value != "value4" ) {
+			CPPDEBUG( "section3/key4 not found" );
 			return false;
 		}
 
@@ -90,15 +101,31 @@ std::shared_ptr<TestCaseBase<bool>> test_case_simple_ini_read_1()
 			CPPDEBUG( "section4/key1 not found" );
 			return false;
 		}
-*/
+
 		return true;
 	};
 
 	return std::make_shared<TestCaseFuncOneFileBuffer>(__FUNCTION__, test_func, 20,
 			std::ios_base::in | std::ios_base::out | std::ios_base::trunc, false );
 }
-/*
+
 std::shared_ptr<TestCaseBase<bool>> test_case_simple_ini_read_2()
 {
+	auto test_func = []( SimpleFlashFs::FileBuffer & file ) {
 
-}*/
+		write_default_ini2( file );
+
+		SimpleIni ini( file );
+
+		std::string_view value;
+
+		if( !ini.read("section4","key1", value ) || value != "nolineend" ) {
+			CPPDEBUG( format( "section4/key1 not found (value:'%s')", value ) );
+			return false;
+		}
+		return true;
+	};
+
+	return std::make_shared<TestCaseFuncOneFileBuffer>(__FUNCTION__, test_func, 20,
+				std::ios_base::in | std::ios_base::out | std::ios_base::trunc, false );
+}
