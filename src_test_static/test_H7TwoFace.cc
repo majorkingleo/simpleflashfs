@@ -487,8 +487,6 @@ std::shared_ptr<TestCaseBase<bool>> test_case_static_TwoFace_write_ini1()
 				return false;
 			}
 
-			fbuffer.flush();
-
 			if( !ini.write( "section2", "key2", "value2"  ) ) {
 				CPPDEBUG( "writing key2 failed" );
 				return false;
