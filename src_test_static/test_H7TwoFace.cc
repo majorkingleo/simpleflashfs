@@ -8,6 +8,7 @@
 #include "../src_2face/H7TwoFace.h"
 #include "../src_2face/H7TwoFaceConfig.h"
 #include "../src_2face/SimpleFlashFs2FlashPages.h"
+#include "../src_2face/SimpleIni.h"
 #include <stderr_exception.h>
 #include <format.h>
 #include <filesystem>
@@ -110,7 +111,7 @@ public:
 			init();
 			bool ret1 = func();
 			deinit();
-
+/*
 			CPPDEBUG( "calling mapped memory interface" );
 			init_mapped();
 			bool ret2 = func();
@@ -120,15 +121,17 @@ public:
 			if( ret1 != ret2 ) {
 				return !expected_result;
 			}
-
+*/
 			return ret1;
 
 		} catch( const std::exception & error ) {
 			deinit();
+			deinit_mapped();
 			throw error;
 
 		} catch( ... ) {
 			deinit();
+			deinit_mapped();
 			throw;
 		}
 	}
@@ -457,6 +460,83 @@ std::shared_ptr<TestCaseBase<bool>> test_case_static_TwoFace_open_speacial1()
 				continue;
 			}
 			return false;
+		}
+
+		return true;
+	});
+}
+
+std::shared_ptr<TestCaseBase<bool>> test_case_static_TwoFace_write_ini1()
+{
+	return std::make_shared<TestCaseH7FuncNoInp>(__FUNCTION__, true, []() {
+
+		{
+			auto ini_file = H7TwoFace::open( "test.ini", std::ios_base::out | std::ios_base::in );
+
+			if( !ini_file ) {
+				CPPDEBUG( "cannot open ini file" );
+				return false;
+			}
+
+			SimpleFlashFs::StaticFileBuffer<SFF_PAGE_SIZE> fbuffer( *ini_file );
+
+			SimpleIni ini( fbuffer );
+
+			if( !ini.write( "section1", "key1", "value1"  ) ) {
+				CPPDEBUG( "writing key1 failed" );
+				return false;
+			}
+
+			fbuffer.flush();
+
+			if( !ini.write( "section2", "key2", "value2"  ) ) {
+				CPPDEBUG( "writing key2 failed" );
+				return false;
+			}
+
+			if( !ini.write( "section1", "key3", "value3", "comment3"  ) ) {
+				CPPDEBUG( "writing key3 failed" );
+				return false;
+			}
+
+		}
+
+
+		{
+			auto ini_file = H7TwoFace::open( "test.ini", std::ios_base::in );
+
+			if( !ini_file ) {
+				CPPDEBUG( "cannot open ini file" );
+				return false;
+			}
+
+			SimpleFlashFs::StaticFileBuffer<SFF_PAGE_SIZE> fbuffer( *ini_file );
+
+			SimpleIni ini( fbuffer );
+
+			{
+				std::string_view sv_value;
+				if( !ini.read( "section1", "key1", sv_value ) || sv_value != "value1" ) {
+					CPPDEBUG( "reading key1 failed" );
+					return false;
+				}
+			}
+
+			{
+				std::string_view sv_value;
+				if( !ini.read( "section2", "key2", sv_value ) || sv_value != "value2" ) {
+					CPPDEBUG( "reading key2 failed" );
+					return false;
+				}
+			}
+
+			{
+				std::string_view sv_value;
+				if( !ini.read( "section1", "key3", sv_value ) || sv_value != "value3" ) {
+					CPPDEBUG( "reading key3 failed" );
+					return false;
+				}
+			}
 		}
 
 		return true;

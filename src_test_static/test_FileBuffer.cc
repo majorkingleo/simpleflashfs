@@ -42,6 +42,7 @@ namespace {
 			std::string file_name_fstream          = format( ".%s.fstream.txt", name );
 			std::string file_name_buffered_fstream = format( ".%s.buffered_fstream.txt", name );
 			std::vector<std::byte> buffer(buffer_size);
+			std::span<std::byte> sbuffer(buffer);
 
 			std::filesystem::remove(file_name_fstream);
 			std::filesystem::remove(file_name_buffered_fstream);
@@ -62,7 +63,7 @@ namespace {
 				}
 
 
-				SimpleFlashFs::FileBuffer file_buffered_fstream( f_fstream_b, buffer );
+				SimpleFlashFs::FileBuffer file_buffered_fstream( f_fstream_b, sbuffer );
 
 				func( f_fstream_a );
 				func( file_buffered_fstream );

@@ -21,4 +21,6 @@ std::shared_ptr<TestCaseBase<bool>> test_case_simple_ini_write_3();
 std::shared_ptr<TestCaseBase<bool>> test_case_simple_ini_write_4();
 std::shared_ptr<TestCaseBase<bool>> test_case_simple_ini_write_5();
 std::shared_ptr<TestCaseBase<bool>> test_case_simple_ini_write_6();
+std::shared_ptr<TestCaseBase<bool>> test_case_simple_ini_write_7();
+std::shared_ptr<TestCaseBase<bool>> test_case_simple_ini_write_8();
 

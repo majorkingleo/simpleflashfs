@@ -146,11 +146,13 @@ void FileBuffer::seek( std::size_t pos_to_seek_to )
 
 std::size_t FileBuffer::write( const std::byte *data, std::size_t size )
 {
+	/*
 	std::string s( std::string_view( reinterpret_cast<const char*>(data), size ) );
 	s = substitude( s,  "\n", "\\n" );
 	s = substitude( s,  std::string(1,'\0'), "\\0" );
 
-	//CPPDEBUG( Tools::format( "starting to write '%s'", s ) );
+	CPPDEBUG( Tools::format( "starting to write '%s'", s ) );
+	*/
 	//CPPDEBUG( Tools::format( "starting to write '%s'", std::string_view(reinterpret_cast<const char*>(data),size) ) );
 
 	if( size > buffer.size() ) {
@@ -179,7 +181,7 @@ std::size_t FileBuffer::write( const std::byte *data, std::size_t size )
 		//CPPDEBUG( "!current_buffer.empty() " );
 
 		// enlarge current_buffer
-		if( buffer.size() - pos > size ) {
+		if( buffer.size() - (pos + 1) > size ) {
 			//CPPDEBUG( "enlarging buffer" );
 			current_buffer = buffer.subspan( 0, pos + size );
 		}

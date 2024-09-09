@@ -44,6 +44,7 @@ public:
 
 		std::string file_name_buffered_fstream = Tools::format( ".%s.buffered_fstream.ini", name );
 		std::vector<std::byte> buffer(buffer_size);
+		std::span<std::byte> sbuffer(buffer);
 
 		std::filesystem::remove(file_name_buffered_fstream);
 
@@ -56,7 +57,7 @@ public:
 			}
 
 
-			SimpleFlashFs::FileBuffer file_buffered_fstream( f_fstream_b, buffer );
+			SimpleFlashFs::FileBuffer file_buffered_fstream( f_fstream_b, sbuffer );
 
 			if( !func( file_buffered_fstream ) ) {
 				return false;
@@ -529,5 +530,82 @@ std::shared_ptr<TestCaseBase<bool>> test_case_simple_ini_write_6()
 	};
 
 	return std::make_shared<TestCaseFuncWriteIni>(__FUNCTION__, test_func, 20,
+				std::ios_base::in | std::ios_base::out | std::ios_base::trunc, false, expected_text );
+}
+
+
+std::shared_ptr<TestCaseBase<bool>> test_case_simple_ini_write_7()
+{
+	std::string expected_text =
+			"[section1]\n" \
+			"\tkey1 = value1\n" \
+			"#\tcomment3\n"
+			"\tkey3 = value3\n" \
+			"\n" \
+			"[section2]\n" \
+			"\tkey2 = value2\n";
+
+	auto test_func = []( SimpleFlashFs::FileBuffer & file ) {
+
+
+		SimpleIni ini( file );
+
+		if( !ini.write( "section1", "key1", "value1"  ) ) {
+			CPPDEBUG( "writing key1 failed" );
+			return false;
+		}
+
+		if( !ini.write( "section2", "key2", "value2"  ) ) {
+			CPPDEBUG( "writing key2 failed" );
+			return false;
+		}
+
+		if( !ini.write( "section1", "key3", "value3", "comment3"  ) ) {
+			CPPDEBUG( "writing key3 failed" );
+			return false;
+		}
+
+		return true;
+	};
+
+	return std::make_shared<TestCaseFuncWriteIni>(__FUNCTION__, test_func, 20,
+				std::ios_base::in | std::ios_base::out | std::ios_base::trunc, false, expected_text );
+}
+
+std::shared_ptr<TestCaseBase<bool>> test_case_simple_ini_write_8()
+{
+	std::string expected_text =
+			"[section1]\n" \
+			"\tkey1 = value1\n" \
+			"#\tcomment3\n"
+			"\tkey3 = value3\n" \
+			"\n" \
+			"[section2]\n" \
+			"\tkey2 = value2\n";
+
+	auto test_func = []( SimpleFlashFs::FileBuffer & file ) {
+
+
+		SimpleIni ini( file );
+
+		if( !ini.write( "section1", "key1", "value1"  ) ) {
+			CPPDEBUG( "writing key1 failed" );
+			return false;
+		}
+
+		if( !ini.write( "section2", "key2", "value2"  ) ) {
+			CPPDEBUG( "writing key2 failed" );
+			return false;
+		}
+
+		if( !ini.write( "section1", "key3", "value3", "comment3"  ) ) {
+			CPPDEBUG( "writing key3 failed" );
+			return false;
+		}
+
+		return true;
+	};
+
+	return std::make_shared<TestCaseFuncWriteIni>(__FUNCTION__, test_func, 512,
 				std::ios_base::in | std::ios_base::out | std::ios_base::trunc, false, expected_text );
 }

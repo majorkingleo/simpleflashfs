@@ -309,7 +309,9 @@ bool SimpleIniBase::insert( std::size_t pos_in_file, const std::span<const std::
 			current_pos += sv.size();
 		}
 
-		CPPDEBUG( Tools::format( "want to write : '%s'", to_debug_string( std::string( s_buffer_origin1.data(), s_buffer_origin1.size() ) ) ) );
+		CPPDEBUG( Tools::format( "want to write : '%s' at pos: %d",
+				to_debug_string( std::string( s_buffer_origin1.data(), s_buffer_origin1.size() ) ),
+				pos_in_file ) );
 	}
 
 	auto s_buffer_a = s_buffer_origin2;
@@ -317,21 +319,19 @@ bool SimpleIniBase::insert( std::size_t pos_in_file, const std::span<const std::
 
 	const std::size_t new_file_size = file.file_size() + len;
 
-	for( std::size_t p = pos_in_file; p < new_file_size;  ) {
+	for( std::size_t p = pos_in_file; p < new_file_size && !s_buffer_b.empty();  ) {
 
 		// read data into buffer 2
 		std::size_t pos_before_read = file.tellg();
 
-		if( pos_before_read +1 < file.file_size() ) {
+		file.read( s_buffer_a );
+		CPPDEBUG( Tools::format( "readed from file: '%s'", to_debug_string( std::string( s_buffer_a.data(), s_buffer_a.size() ) ) ) );
 
-			if( !file.read( s_buffer_a ) ) {
-				return false;
-			}
-
-			CPPDEBUG( Tools::format( "readed from file: '%s'", to_debug_string( std::string( s_buffer_a.data(), s_buffer_a.size() ) ) ) );
-		}
-
-		CPPDEBUG( Tools::format( "wanted to write : '%s'", to_debug_string( std::string( s_buffer_b.data(), s_buffer_b.size() ) ) ) );
+		CPPDEBUG( Tools::format( "wanted to write : '%s'{%d} at: %d file_size: %d",
+				to_debug_string( std::string( s_buffer_b.data(), s_buffer_b.size() ) ),
+				s_buffer_b.size(),
+				pos_before_read,
+				file.file_size() ) );
 
 
 		file.seek(pos_before_read);
@@ -355,11 +355,13 @@ bool SimpleIniBase::write( const std::string_view & section,
 		return append_section( section ) && append_key( key, value, comment );
 	}
 
-	CPPDEBUG( "section not found" );
+	CPPDEBUG( "section found" );
 	std::optional<std::size_t> last_key_end;
 	std::size_t section_keys_start = file.tellg();
 
 	for( auto o_next_key_pos = find_next_key(); o_next_key_pos;  o_next_key_pos = find_next_key() ) {
+
+		file.seek(*o_next_key_pos);
 
 		auto o_line = get_line( file );
 		if( !o_line ) {
@@ -459,8 +461,14 @@ bool SimpleIniBase::write( const std::string_view & section,
 	}
 
 	sl.insert( sl.end(), { "\t", key, " = ", value, "\n" } );
-
-	if( !insert( file.tellg(), sl ) ) {
+/*
+	std::size_t x = file.tellg();
+	char c;
+	file.get_char(c);
+	CPPDEBUG( format("current_sign: '%c'", c ) );
+	file.seek(x);
+*/
+	if( !insert( last_key_end ? *last_key_end : file.tellg(), sl ) ) {
 		return false;
 	}
 

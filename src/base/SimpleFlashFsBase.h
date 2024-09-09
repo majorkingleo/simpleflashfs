@@ -192,6 +192,10 @@ public:
 	}
 
 	bool eof() const override {
+		if( inode.file_len == 0 ) {
+			return true;
+		}
+
 		return pos == inode.file_len-1;
 	}
 

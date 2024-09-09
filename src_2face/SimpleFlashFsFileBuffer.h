@@ -40,17 +40,22 @@ class FileBuffer : public FileInterface
 
 private:
 	SimpleFlashFs::FileInterface & file;
-	std::span<std::byte> buffer;
+	std::span<std::byte> & buffer;
 	std::span<std::byte> current_buffer{};
 	std::size_t current_buffer_start = 0;
 	std::size_t pos = 0;
 	bool current_buffer_modified = false;
 
 public:
-	FileBuffer( SimpleFlashFs::FileInterface & file_, std::span<std::byte> buf_ )
+	FileBuffer( SimpleFlashFs::FileInterface & file_, std::span<std::byte> & buf_ )
 	: file( file_ ),
 	  buffer( buf_ )
-	{}
+	{
+		//CPPDEBUG( Tools::format( "buffer size: %d", buffer.size() ) );
+		//throw std::out_of_range("buffer.size() is null");
+	}
+
+	FileBuffer( const FileBuffer & other ) = delete;
 
 	~FileBuffer() {
 		flush();
@@ -167,8 +172,17 @@ public:
 				 size_to_read = std::min( ret.capacity() , size_to_read );
 			 }
 
+			 if( size_to_read == 0 ) {
+				 break;
+			 }
+
 			 std::size_t pos_before_read = tellg();
 			 auto span_byte = read( size_to_read );
+
+			 if( span_byte.empty() ) {
+				 break;
+			 }
+
 
 			 /*
 			 CPPDEBUG( Tools::format( "current_buffer_start %d pos: %d pos_before_read: %d size: %d",
@@ -207,11 +221,14 @@ private:
 template<size_t N>
 class StaticFileBuffer : public FileBuffer
 {
-	Tools::static_vector<std::byte,N> buf{};
+	Tools::static_vector<std::byte,N> buf;
+	std::span<std::byte> sbuf;
 
 public:
 	StaticFileBuffer( FileInterface & file_ )
-	: FileBuffer ( file_, buf )
+	: FileBuffer ( file_, sbuf ),
+	  buf(N),
+	  sbuf(buf)
 	{}
 
 

@@ -23,3 +23,5 @@ std::shared_ptr<TestCaseBase<bool>> test_case_static_TwoFace_max_files2();
 std::shared_ptr<TestCaseBase<bool>> test_case_static_TwoFace_list_files1();
 
 std::shared_ptr<TestCaseBase<bool>> test_case_static_TwoFace_open_speacial1();
+
+std::shared_ptr<TestCaseBase<bool>> test_case_static_TwoFace_write_ini1();

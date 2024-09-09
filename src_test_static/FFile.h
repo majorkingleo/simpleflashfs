@@ -31,6 +31,7 @@ public:
 	}
 
 	std::size_t write( const std::byte *data, std::size_t size ) override  {
+		file.clear();
 		if( debug ) {
 			std::string s( std::string_view( reinterpret_cast<const char*>(data), size ) );
 			s = Tools::substitude( s,  "\n", "\\n" );
@@ -43,6 +44,7 @@ public:
 	}
 
 	std::size_t read( std::byte *data, std::size_t size ) override {
+		file.clear();
 		file.read( reinterpret_cast<char*>(data), size );
 		return file.gcount();
 	}
@@ -53,7 +55,14 @@ public:
 	}
 
 	std::size_t tellg() const override {
-		return file.tellg();
+		auto pos = file.tellg();
+
+		if( pos == decltype(file)::pos_type(-1) ) {
+			file.clear();
+			return file_size();
+		}
+
+		return pos;
 	}
 
 	std::size_t file_size() const override {
@@ -140,8 +149,9 @@ public:
 				return false;
 			}
 
+			std::span<std::byte> sbuffer( buffer );
 
-			SimpleFlashFs::FileBuffer file_buffered_fstream( f_fstream_b, buffer );
+			SimpleFlashFs::FileBuffer file_buffered_fstream( f_fstream_b, sbuffer );
 
 			return func( file_buffered_fstream );
 		}
