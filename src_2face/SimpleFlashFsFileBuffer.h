@@ -80,14 +80,18 @@ public:
 	}
 
 	std::size_t file_size() const override {
+
+		// unwritten data
+		if( !current_buffer.empty() && current_buffer_modified ) {
+			return std::max( current_buffer_start + current_buffer.size(), file.file_size() );
+		}
+
 		return std::max( current_buffer_start + pos, file.file_size() );
 	}
 
 	bool eof() const override {
 		if( !current_buffer.empty() ) {
-			if( current_buffer_start + pos >= file.file_size() ) {
-				return true;
-			}
+			return (current_buffer_start + pos >= file_size());
 		}
 
 		return file.eof();

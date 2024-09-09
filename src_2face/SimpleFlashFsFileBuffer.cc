@@ -124,11 +124,11 @@ bool FileBuffer::flush()
 void FileBuffer::seek( std::size_t pos_to_seek_to )
 {
 	if( !current_buffer.empty() ) {
-		if( current_buffer_start < pos_to_seek_to &&
+		if( current_buffer_start <= pos_to_seek_to &&
 			pos_to_seek_to < current_buffer_start + current_buffer.size() ) {
 			pos = pos_to_seek_to - current_buffer_start;
 
-			// so that tellg is telling the trouth
+			// so that tellg is telling the truth
 			file.seek( pos_to_seek_to );
 			// CPPDEBUG( Tools::format("seeking to pos: %d", pos) );
 			return;
