@@ -47,6 +47,18 @@ std::span<std::byte> FileBuffer::read( std::size_t size )
 		 return ret;
 	}
 
+	// wan't to read till the end of file
+	if( !current_buffer.empty() &&
+		 current_buffer_start + current_buffer.size() >= file_size() ) {
+
+		 std::size_t size_to_read = std::min( size, current_buffer.size() - pos );
+		 auto ret = current_buffer.subspan( pos, size_to_read );
+		 pos += size_to_read;
+
+		 return ret;
+	}
+
+
 	if( !current_buffer.empty() ) {
 		std::size_t pos_in_file = current_buffer_start + pos;
 		discard_buffer();
@@ -104,6 +116,9 @@ void FileBuffer::discard_buffer()
 bool FileBuffer::flush_buffer()
 {
 	if( current_buffer_modified ) {
+		CPPDEBUG( format( "flushing buffer: current_buffer_start: %d pos: %d size: %d",
+				current_buffer_start, pos, current_buffer.size() ) );
+
 		file.seek(current_buffer_start);
 		if( file.write(current_buffer.data(),current_buffer.size())  != current_buffer.size() ) {
 			return false;
