@@ -493,4 +493,41 @@ std::shared_ptr<TestCaseBase<bool>> test_case_simple_ini_write_5()
 				std::ios_base::in | std::ios_base::out | std::ios_base::trunc, false, expected_text );
 }
 
+std::shared_ptr<TestCaseBase<bool>> test_case_simple_ini_write_6()
+{
+	std::string expected_text =
+			"[section1]\n" \
+			"#\tcomment 3\n"
+			"\tkey3 = value3\n" \
+			"\n" \
+			"[section2]\n" \
+			"\tkey2 = value2\n";
 
+	auto test_func = []( SimpleFlashFs::FileBuffer & file ) {
+
+		std::string init_text =
+				"[section1]\n" \
+				"\n" \
+				"[section2]\n" \
+				"\tkey2 = value2\n";
+
+
+		if( !file.write( init_text ) ) {
+			return false;
+		}
+
+		SimpleIni ini( file );
+
+		std::string_view value;
+
+		if( !ini.write("section1","key3", "value3", "comment 3" ) ) {
+			CPPDEBUG( "writing failed" );
+			return false;
+		}
+
+		return true;
+	};
+
+	return std::make_shared<TestCaseFuncWriteIni>(__FUNCTION__, test_func, 20,
+				std::ios_base::in | std::ios_base::out | std::ios_base::trunc, false, expected_text );
+}
