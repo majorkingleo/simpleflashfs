@@ -281,7 +281,7 @@ int main( int argc, char **argv )
 
 	Arg::StringOption o_tar_extract("x");
 	o_tar_extract.addName( "extract" );
-	o_tar_extract.setDescription("extract files from archive");
+	o_tar_extract.setDescription("extract files from archive [FILE NAME]");
 	o_tar_extract.setRequired(false);
 	o_tar_extract.setMinValues(0);
 	arg.addOptionR( &o_tar_extract );
