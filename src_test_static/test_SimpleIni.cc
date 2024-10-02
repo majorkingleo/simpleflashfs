@@ -94,7 +94,7 @@ bool write_default_ini1( SimpleFlashFs::FileBuffer & file )
 			"[section1]\n" \
 			"  key1=value1\n" \
 			"  key2=value2\n" \
-			"\n"
+			"\n" \
 			"[section2]\n" \
 			"   \n"
 			"  key1 = value1 \t\n" \
@@ -601,6 +601,157 @@ std::shared_ptr<TestCaseBase<bool>> test_case_simple_ini_write_8()
 		if( !ini.write( "section1", "key3", "value3", "comment3"  ) ) {
 			CPPDEBUG( "writing key3 failed" );
 			return false;
+		}
+
+		return true;
+	};
+
+	return std::make_shared<TestCaseFuncWriteIni>(__FUNCTION__, test_func, 512,
+				std::ios_base::in | std::ios_base::out | std::ios_base::trunc, false, expected_text );
+}
+
+namespace {
+
+bool write_default_ini6( SimpleFlashFs::FileBuffer & file )
+{
+	if( file.write(
+			"[section1]\n" \
+			"  key1=1\n" \
+			"  key2=-1\n" \
+			"  key3=-13\n" \
+			"  key4=14\n" \
+			"\n" ) <= 0 ) {
+		return false;
+	}
+
+	return true;
+}
+
+} // namespace
+
+std::shared_ptr<TestCaseBase<bool>> test_case_simple_ini_read_value_1()
+{
+	auto test_func = []( SimpleFlashFs::FileBuffer & file ) {
+
+		if( !write_default_ini6( file ) ) {
+			CPPDEBUG( "cannot write default ini" );
+			return false;
+		}
+
+		SimpleIni ini( file );
+
+		{
+			uint32_t i = 0;
+			if( !ini.read( "section1", "key1",  i ) ) {
+				CPPDEBUG( "reading key1 failed" );
+				return false;
+			}
+
+			if( i != 1 ) {
+				return false;
+			}
+		}
+
+		{
+			int32_t i = 0;
+			if( !ini.read( "section1", "key2",  i ) ) {
+				CPPDEBUG( "reading key2 failed" );
+				return false;
+			}
+
+			if( i != -1 ) {
+				return false;
+			}
+		}
+
+		{
+			int64_t i = 0;
+			if( !ini.read( "section1", "key3",  i ) ) {
+				CPPDEBUG( "reading key3 failed" );
+				return false;
+			}
+
+			if( i != -13 ) {
+				return false;
+			}
+		}
+
+		{
+			uint64_t i = 0;
+			if( !ini.read( "section1", "key4",  i ) ) {
+				CPPDEBUG( "reading key4 failed" );
+				return false;
+			}
+
+			if( i != 14 ) {
+				return false;
+			}
+		}
+
+		return true;
+	};
+
+	return std::make_shared<TestCaseFuncOneFileBuffer>(__FUNCTION__, test_func, 512,
+				std::ios_base::in | std::ios_base::out | std::ios_base::trunc, false );
+}
+
+
+std::shared_ptr<TestCaseBase<bool>> test_case_simple_ini_read_value_2()
+{
+	std::string expected_text =
+			"[section1]\n"
+			"#       (123)\n"
+			"        key1 = 0x42F60000\n"
+			"#       (3.141590)\n"
+			"        key2 = 0x40490FD0\n"
+			"#       (3.141590)\n"
+			"        key3 = 0x400921F9F01B866E\n"
+			"#       (-3.141590)\n"
+			"        key4 = 0xC00921F9F01B866E\n"
+			"#       (-3.141590)\n"
+			"        key5 = 0xC0490FD0\n";
+
+	auto test_func = []( SimpleFlashFs::FileBuffer & file ) {
+
+
+		SimpleIni ini( file );
+
+		if( !ini.write( "section1", "key1", 123.0f  ) ) {
+			CPPDEBUG( "writing key1 failed" );
+			return false;
+		}
+
+		if( !ini.write( "section1", "key2", 3.14159f  ) ) {
+			CPPDEBUG( "writing key2 failed" );
+			return false;
+		}
+
+		if( !ini.write( "section1", "key3",  3.14159 ) ) {
+			CPPDEBUG( "writing key3 failed" );
+			return false;
+		}
+
+		if( !ini.write( "section1", "key4",  -3.14159 ) ) {
+			CPPDEBUG( "writing key4 failed" );
+			return false;
+		}
+
+		if( !ini.write( "section1", "key5",  -3.14159f ) ) {
+			CPPDEBUG( "writing key3 failed" );
+			return false;
+		}
+
+		{
+			float f = 0;
+			if( !ini.read( "section1", "key1", f  ) ) {
+				CPPDEBUG( "reading key1 failed" );
+				return false;
+			}
+
+			if( f != 123.0f ) {
+				CPPDEBUG( format( "key1: invalid value: %f != %f", f, 123.0f ) );
+				return false;
+			}
 		}
 
 		return true;

@@ -132,6 +132,9 @@ int main( int argc, char **argv )
 
 		test_cases.push_back( test_case_static_TwoFace_write_ini1() );
 
+		test_cases.push_back( test_case_simple_ini_read_value_1() );
+		test_cases.push_back( test_case_simple_ini_read_value_2() );
+
 		ColBuilder col;
 
 		const int COL_IDX 		= col.addCol( "Idx" );

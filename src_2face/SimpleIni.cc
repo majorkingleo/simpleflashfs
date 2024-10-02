@@ -7,9 +7,10 @@
 #include "SimpleIni.h"
 #include <string_utils.h>
 #include <static_vector.h>
-
+#include <static_format.h>
 #include <CpputilsDebug.h>
 #include <format.h>
+#include <charconv>
 
 using namespace Tools;
 
@@ -476,3 +477,189 @@ bool SimpleIniBase::write( const std::string_view & section,
 }
 
 
+bool SimpleIniBase::write(  const std::string_view & section,
+							const std::string_view & key,
+							const uint32_t value,
+							const std::string_view & comment )
+{
+	auto s = static_format<50>( "%d", value );
+	return write( section, key, s, comment );
+}
+
+bool SimpleIniBase::write(  const std::string_view & section,
+							const std::string_view & key,
+							const int32_t value,
+							const std::string_view & comment )
+{
+	auto s = static_format<50>( "%d", value );
+	return write( section, key, s, comment );
+}
+
+bool SimpleIniBase::write(  const std::string_view & section,
+							const std::string_view & key,
+							const uint64_t value,
+							const std::string_view & comment )
+{
+	auto s = static_format<50>( "%d", value );
+	return write( section, key, s, comment );
+}
+
+bool SimpleIniBase::write(  const std::string_view & section,
+							const std::string_view & key,
+							const int64_t value,
+							const std::string_view & comment )
+{
+	auto s = static_format<50>( "%d", value );
+	return write( section, key, s, comment );
+}
+
+bool SimpleIniBase::write(  const std::string_view & section,
+							const std::string_view & key,
+							const char value,
+							const std::string_view & comment )
+{
+	auto s = static_format<50>( "%c", value );
+	return write( section, key, s, comment );
+}
+
+bool SimpleIniBase::write(  const std::string_view & section,
+							const std::string_view & key,
+							const float value,
+							const std::string_view & comment )
+{
+	static_assert( sizeof(float) == sizeof(uint32_t) );
+
+	union f_t {
+		float    f;
+		uint32_t i;
+	};
+
+	f_t f;
+
+	f.f = value;
+
+	auto s = static_format<50>( "0x%X", f.i );
+	auto c = static_format<50>( "%s%s(%f)", comment, comment.empty() ? "" : " ", f.f );
+
+	return write( section, key, s, c );
+}
+
+bool SimpleIniBase::write(  const std::string_view & section,
+							const std::string_view & key,
+							const double value,
+							const std::string_view & comment )
+{
+	static_assert( sizeof(double) == sizeof(uint64_t) );
+
+	union f_t {
+		double   f;
+		uint64_t i;
+	};
+
+	f_t f;
+
+	f.f = value;
+
+	auto s = static_format<50>( "0x%X", f.i );
+	auto c = static_format<100>( "%s%s(%f)", comment, comment.empty() ? "" : " ", f.f );
+
+	return write( section, key, s, c );
+}
+
+namespace {
+
+template<class T>
+bool iread( SimpleIniBase & ini, const std::string_view & section, const std::string_view & key, T & value )
+{
+	std::string_view s_value;
+
+	if( !ini.read( section, key, s_value ) ) {
+		return false;
+	}
+
+	auto res = std::from_chars( s_value.data(), s_value.data() + s_value.size(), value );
+
+	if( res.ec == std::errc{} ) {
+		return true;
+	}
+
+	return false;
+}
+
+} // namespace
+
+bool SimpleIniBase::read( const std::string_view & section, const std::string_view & key, int32_t & value )
+{
+	return iread( *this, section, key, value );
+}
+
+bool SimpleIniBase::read( const std::string_view & section, const std::string_view & key, uint32_t & value )
+{
+	return iread( *this, section, key, value );
+}
+
+bool SimpleIniBase::read( const std::string_view & section, const std::string_view & key, int64_t & value )
+{
+	return iread( *this, section, key, value );
+}
+
+bool SimpleIniBase::read( const std::string_view & section, const std::string_view & key, uint64_t & value )
+{
+	return iread( *this, section, key, value );
+}
+
+bool SimpleIniBase::read( const std::string_view & section, const std::string_view & key, float & value )
+{
+	std::string_view s_value;
+
+	if( !read( section, key, s_value ) ) {
+		return false;
+	}
+
+	s_value = strip_view( s_value, "0x" );
+	s_value = strip_view( s_value, "0X" );
+
+	union f_t {
+		float    f;
+		uint32_t i;
+	};
+
+	f_t f;
+
+	auto res = std::from_chars( s_value.data(), s_value.data() + s_value.size(), f.i, 16 );
+
+	if( res.ec == std::errc{} ) {
+		value = f.f;
+		return true;
+	}
+
+	return false;
+}
+
+bool SimpleIniBase::read( const std::string_view & section, const std::string_view & key, double & value )
+{
+	std::string_view s_value;
+
+	if( !read( section, key, s_value ) ) {
+		return false;
+	}
+
+	s_value = strip_view( s_value, "0x" );
+	s_value = strip_view( s_value, "0X" );
+
+	union f_t {
+		double   f;
+		uint64_t i;
+	};
+
+	f_t f;
+
+	auto res = std::from_chars( s_value.data(), s_value.data() + s_value.size(), f.i, 16 );
+
+	if( res.ec == std::errc{} ) {
+		value = f.f;
+		return true;
+	}
+
+	return false;
+}

@@ -39,9 +39,54 @@ public:
 		return true;
 	}
 
+	bool read( const std::string_view & section, const std::string_view & key, int32_t & value );
+	bool read( const std::string_view & section, const std::string_view & key, uint32_t & value );
+
+	bool read( const std::string_view & section, const std::string_view & key, int64_t & value );
+	bool read( const std::string_view & section, const std::string_view & key, uint64_t & value );
+
+	bool read( const std::string_view & section, const std::string_view & key, float & value );
+	bool read( const std::string_view & section, const std::string_view & key, double & value );
+
 	bool write( const std::string_view & section,
 			    const std::string_view & key,
 				const std::string_view & value,
+				const std::string_view & comment = {} );
+
+	bool write( const std::string_view & section,
+			    const std::string_view & key,
+				const uint32_t value,
+				const std::string_view & comment = {} );
+
+	bool write( const std::string_view & section,
+			    const std::string_view & key,
+				const int32_t value,
+				const std::string_view & comment = {} );
+
+
+	bool write( const std::string_view & section,
+			    const std::string_view & key,
+				const uint64_t value,
+				const std::string_view & comment = {} );
+
+	bool write( const std::string_view & section,
+				const std::string_view & key,
+				const int64_t value,
+				const std::string_view & comment = {} );
+
+	bool write( const std::string_view & section,
+			    const std::string_view & key,
+				const char value,
+				const std::string_view & comment = {} );
+
+	bool write( const std::string_view & section,
+			    const std::string_view & key,
+				const float value,
+				const std::string_view & comment = {} );
+
+	bool write( const std::string_view & section,
+			    const std::string_view & key,
+				const double value,
 				const std::string_view & comment = {} );
 
 protected:
