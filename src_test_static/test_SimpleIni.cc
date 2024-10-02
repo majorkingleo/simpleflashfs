@@ -700,16 +700,16 @@ std::shared_ptr<TestCaseBase<bool>> test_case_simple_ini_read_value_2()
 {
 	std::string expected_text =
 			"[section1]\n"
-			"#       (123)\n"
-			"        key1 = 0x42F60000\n"
-			"#       (3.141590)\n"
-			"        key2 = 0x40490FD0\n"
-			"#       (3.141590)\n"
-			"        key3 = 0x400921F9F01B866E\n"
-			"#       (-3.141590)\n"
-			"        key4 = 0xC00921F9F01B866E\n"
-			"#       (-3.141590)\n"
-			"        key5 = 0xC0490FD0\n";
+			"#	(123)\n"
+			"	key1 = 0x42F60000\n"
+			"#	(3.141590)\n"
+			"	key2 = 0x40490FD0\n"
+			"#	(3.141590)\n"
+			"	key3 = 0x400921F9F01B866E\n"
+			"#	(-3.141590)\n"
+			"	key4 = 0xC00921F9F01B866E\n"
+			"#	(-3.141590)\n"
+			"	key5 = 0xC0490FD0\n";
 
 	auto test_func = []( SimpleFlashFs::FileBuffer & file ) {
 
@@ -750,6 +750,97 @@ std::shared_ptr<TestCaseBase<bool>> test_case_simple_ini_read_value_2()
 
 			if( f != 123.0f ) {
 				CPPDEBUG( format( "key1: invalid value: %f != %f", f, 123.0f ) );
+				return false;
+			}
+		}
+
+		{
+			float f = 0;
+			if( !ini.read( "section1", "key2", f  ) ) {
+				CPPDEBUG( "reading key2 failed" );
+				return false;
+			}
+
+			if( f != 3.14159f  ) {
+				CPPDEBUG( format( "key2: invalid value: %f != %f", f, 3.14159f ) );
+				return false;
+			}
+		}
+
+		{
+			double f = 0;
+			if( !ini.read( "section1", "key3", f  ) ) {
+				CPPDEBUG( "reading key3 failed" );
+				return false;
+			}
+
+			if( f != 3.14159  ) {
+				CPPDEBUG( format( "key3: invalid value: %f != %f", f, 3.14159 ) );
+				return false;
+			}
+		}
+
+		{
+			double f = 0;
+			if( !ini.read( "section1", "key4", f  ) ) {
+				CPPDEBUG( "reading key4 failed" );
+				return false;
+			}
+
+			if( f != -3.14159  ) {
+				CPPDEBUG( format( "key4: invalid value: %f != %f", f, -3.14159 ) );
+				return false;
+			}
+		}
+
+		{
+			float f = 0;
+			if( !ini.read( "section1", "key5", f  ) ) {
+				CPPDEBUG( "reading key3 failed" );
+				return false;
+			}
+
+			if( f != -3.14159f  ) {
+				CPPDEBUG( format( "key5: invalid value: %f != %f", f, -3.14159f ) );
+				return false;
+			}
+		}
+
+		return true;
+	};
+
+	return std::make_shared<TestCaseFuncWriteIni>(__FUNCTION__, test_func, 512,
+				std::ios_base::in | std::ios_base::out | std::ios_base::trunc, false, expected_text );
+}
+
+
+
+std::shared_ptr<TestCaseBase<bool>> test_case_simple_ini_read_value_3()
+{
+	std::string expected_text =
+			"[section1]\n"
+			"#	(x)\n"
+			"	key1 = 0x78\n";
+
+	auto test_func = []( SimpleFlashFs::FileBuffer & file ) {
+
+
+		SimpleIni ini( file );
+
+		if( !ini.write( "section1", "key1", 'x'  ) ) {
+			CPPDEBUG( "writing key1 failed" );
+			return false;
+		}
+
+		{
+			char c = ' ';
+			if( !ini.read( "section1", "key1", c  ) ) {
+				CPPDEBUG( "reading key1 failed" );
+				return false;
+			}
+
+			if( c != 'x'  ) {
+				CPPDEBUG( format( "key1: invalid value: %c != %c", c, 'x' ) );
 				return false;
 			}
 		}

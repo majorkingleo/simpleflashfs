@@ -518,8 +518,21 @@ bool SimpleIniBase::write(  const std::string_view & section,
 							const char value,
 							const std::string_view & comment )
 {
-	auto s = static_format<50>( "%c", value );
-	return write( section, key, s, comment );
+	auto s = static_format<50>( "0x%X", static_cast<int>(value) );
+	static_string<10> sc;
+
+	switch( value ) {
+		case '\n': sc = "\\n"; break;
+		case '\t': sc = "\\t"; break;
+		case '\r': sc = "\\r"; break;
+
+		default:
+			sc += value;
+			break;
+	}
+
+	auto c = static_format<50>( "%s%s(%s)", comment, comment.empty() ? "" : " ", sc );
+	return write( section, key, s, c );
 }
 
 bool SimpleIniBase::write(  const std::string_view & section,
@@ -616,8 +629,7 @@ bool SimpleIniBase::read( const std::string_view & section, const std::string_vi
 		return false;
 	}
 
-	s_value = strip_view( s_value, "0x" );
-	s_value = strip_view( s_value, "0X" );
+	s_value = remove_hex_prefix( s_value );
 
 	union f_t {
 		float    f;
@@ -644,8 +656,7 @@ bool SimpleIniBase::read( const std::string_view & section, const std::string_vi
 		return false;
 	}
 
-	s_value = strip_view( s_value, "0x" );
-	s_value = strip_view( s_value, "0X" );
+	s_value = remove_hex_prefix( s_value );
 
 	union f_t {
 		double   f;
@@ -658,6 +669,40 @@ bool SimpleIniBase::read( const std::string_view & section, const std::string_vi
 
 	if( res.ec == std::errc{} ) {
 		value = f.f;
+		return true;
+	}
+
+	return false;
+}
+
+std::string_view SimpleIniBase::remove_hex_prefix( const std::string_view & s ) const
+{
+	if( s.substr(0,2) == "0x" ) {
+		return s.substr(2);
+	}
+
+	if( s.substr(0,2) == "0X" ) {
+		return s.substr(2);
+	}
+
+	return s;
+}
+
+bool SimpleIniBase::read( const std::string_view & section, const std::string_view & key, char & value )
+{
+	std::string_view s_value;
+
+	if( !read( section, key, s_value ) ) {
+		return false;
+	}
+
+	s_value = remove_hex_prefix( s_value );
+
+	int i;
+	auto res = std::from_chars( s_value.data(), s_value.data() + s_value.size(), i, 16 );
+
+	if( res.ec == std::errc{} ) {
+		value = static_cast<char>(i);
 		return true;
 	}
 

@@ -45,6 +45,8 @@ public:
 	bool read( const std::string_view & section, const std::string_view & key, int64_t & value );
 	bool read( const std::string_view & section, const std::string_view & key, uint64_t & value );
 
+	bool read( const std::string_view & section, const std::string_view & key, char & value );
+
 	bool read( const std::string_view & section, const std::string_view & key, float & value );
 	bool read( const std::string_view & section, const std::string_view & key, double & value );
 
@@ -155,6 +157,7 @@ protected:
 		return insert( pos_in_file, std::span<const std::string_view>( {value} ) );
 	}
 
+	std::string_view remove_hex_prefix( const std::string_view & s ) const;
 };
 
 template<std::size_t N=100>
