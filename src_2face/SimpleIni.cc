@@ -708,3 +708,48 @@ bool SimpleIniBase::read( const std::string_view & section, const std::string_vi
 
 	return false;
 }
+
+bool SimpleIniBase::read_blob( const std::string_view & section,
+							   const std::string_view & key,
+							   std::span<std::byte> & blob )
+{
+	std::string_view s_value;
+	if( !SimpleIniBase::read(section, key, s_value) ) {
+		return false;
+	}
+
+	if( s_value.size() % 2 != 0 ) {
+		return false;
+	}
+
+	if( s_value.size() / 2 > blob.size() ) {
+		return false;
+	}
+
+	unsigned i_blob = 0;
+
+	for( unsigned i_buffer = 0; i_buffer < s_value.size(); i_buffer += 2, i_blob++ ) {
+
+		static_string<10> buffer;
+
+		buffer = s_value.substr( i_buffer, 2 );
+
+		unsigned value = 0;
+		auto res = std::from_chars( buffer.data(), buffer.data() + buffer.size(), value, 16 );
+
+		if( res.ec != std::errc{} ) {
+			return false;
+		}
+
+		blob[i_blob] = static_cast<std::byte>(value);
+	}
+
+	if( i_blob < blob.size() ) {
+		blob = blob.subspan( 0, i_blob );
+	}
+
+	return true;
+}
+
+
+

@@ -818,8 +818,8 @@ std::shared_ptr<TestCaseBase<bool>> test_case_simple_ini_read_value_2()
 std::shared_ptr<TestCaseBase<bool>> test_case_simple_ini_read_value_3()
 {
 	std::string expected_text =
-			"[section1]\n"
-			"#	(x)\n"
+			"[section1]\n" \
+			"#	(x)\n" \
 			"	key1 = 0x78\n";
 
 	auto test_func = []( SimpleFlashFs::FileBuffer & file ) {
@@ -841,6 +841,50 @@ std::shared_ptr<TestCaseBase<bool>> test_case_simple_ini_read_value_3()
 
 			if( c != 'x'  ) {
 				CPPDEBUG( format( "key1: invalid value: %c != %c", c, 'x' ) );
+				return false;
+			}
+		}
+
+		return true;
+	};
+
+	return std::make_shared<TestCaseFuncWriteIni>(__FUNCTION__, test_func, 512,
+				std::ios_base::in | std::ios_base::out | std::ios_base::trunc, false, expected_text );
+}
+
+
+std::shared_ptr<TestCaseBase<bool>> test_case_simple_ini_read_blob_1()
+{
+	std::string expected_text =
+			"[section1]\n" \
+			"	key1 = 3132333435363738393000\n";
+
+	auto test_func = []( SimpleFlashFs::FileBuffer & file ) {
+
+
+		SimpleIni ini( file );
+
+		std::string test = "1234567890";
+		std::span<const std::byte> blob( reinterpret_cast<const std::byte*>(test.c_str()), test.size() + 1 );
+
+		if( !ini.write_blob( "section1", "key1", blob  ) ) {
+			CPPDEBUG( "writing key1 failed" );
+			return false;
+		}
+
+		{
+			std::vector<char> v(50,'\0');
+			std::span<std::byte> blob_read(reinterpret_cast<std::byte*>( v.data() ), v.size());
+
+
+			if( !ini.read_blob( "section1", "key1", blob_read  ) ) {
+				CPPDEBUG( "reading key1 failed" );
+				return false;
+			}
+
+			std::string_view sv_blob( v.data() );
+			if( sv_blob != test ) {
+				CPPDEBUG( format( "key1 '%s' != '%s'", sv_blob, test ) );
 				return false;
 			}
 		}

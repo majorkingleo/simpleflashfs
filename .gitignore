@@ -105,3 +105,5 @@ mymoc.sh
 
 
 .test*.bin
+.test*.ini
+.test*.txt

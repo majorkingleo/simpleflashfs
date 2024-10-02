@@ -8,6 +8,7 @@
 
 #include "SimpleFlashFsFileBuffer.h"
 #include <static_string.h>
+#include <static_format.h>
 
 class SimpleIniBase
 {
@@ -91,6 +92,10 @@ public:
 				const double value,
 				const std::string_view & comment = {} );
 
+	bool read_blob( const std::string_view & section,
+					const std::string_view & key,
+					std::span<std::byte> & blob );
+
 protected:
 	std::string_view get_section_name( const std::string_view & line ) const;
 	std::tuple<std::string_view,std::string_view> get_key_value( const std::string_view & line ) const;
@@ -171,6 +176,36 @@ public:
 	: SimpleIniBase( file )
 	{}
 
+	bool write_blob( const std::string_view & section,
+			    const std::string_view & key,
+				const std::span<const std::byte> & blob,
+				const std::string_view & comment = {} )
+	{
+		// no capacity to read and write this
+		if( blob.size() * 2 >= N ) {
+			return false;
+		}
+
+		Tools::static_string<N> buffer;
+		for( unsigned i = 0; i < blob.size(); ++i ) {
+
+			// no space left in buffer
+			if( buffer.size() + 2 > buffer.capacity() ) {
+				return false;
+			}
+
+			buffer += std::string_view(Tools::static_format<10>("%02X", static_cast<const unsigned>(blob[i])));
+		}
+
+		// no space left in line
+		if( buffer.size() >= line_buffer.capacity() ) {
+			return false;
+		}
+
+		return SimpleIniBase::write( section, key, buffer, comment );
+	}
+
+protected:
 	std::optional<std::string_view> get_line( SimpleFlashFs::FileBuffer & file ) override
 	{
 		auto line = file.get_line<decltype(line_buffer)>();
