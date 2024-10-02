@@ -158,11 +158,13 @@ cpputils_cpputilsshared_cpputilsformat_libcpputilsformat_a_SOURCES= \
 	cpputils/cpputilsshared/cpputilsformat/format2.h \
 	cpputils/cpputilsshared/cpputilsformat/format1.h \
 	cpputils/cpputilsshared/cpputilsformat/cformat.h \
+	cpputils/cpputilsshared/cpputilsformat/cformat.cc \
 	cpputils/cpputilsshared/cpputilsformat/wformat2.cc \
 	cpputils/cpputilsshared/cpputilsformat/wformat2.h \
 	cpputils/cpputilsshared/cpputilsformat/cwformat.h \
-	cpputils/cpputilsshared/cpputilsformat/cwformat.cc
-	
+	cpputils/cpputilsshared/cpputilsformat/cwformat.cc \
+	cpputils/cpputilsshared/cpputilsformat/static_format.h \
+	cpputils/cpputilsshared/cpputilsformat/static_format.cc	
 	
 	
 common_libcommon_a_SOURCES=\
