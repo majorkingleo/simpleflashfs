@@ -10,6 +10,7 @@
 #include <static_format.h>
 #include <CpputilsDebug.h>
 #include <format.h>
+#include <alloca.h>
 #include <charconv>
 
 using namespace Tools;
@@ -108,7 +109,6 @@ std::tuple<std::string_view,std::string_view> SimpleIniBase::get_key_value( cons
 std::optional<std::size_t> SimpleIniBase::find_section( const std::string_view & section )
 {
 	file.seek(0);
-	bool found_section = false;
 
 	for( ;; ) {
 		 auto o_line = get_line(file);
@@ -148,8 +148,6 @@ std::optional<std::size_t> SimpleIniBase::find_section( const std::string_view &
 
 std::optional<std::size_t> SimpleIniBase::find_next_section()
 {
-	bool found_section = false;
-
 	for( ;; ) {
 		 auto o_line = get_line(file);
 

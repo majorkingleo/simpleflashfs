@@ -194,7 +194,7 @@ public:
 				return false;
 			}
 
-			buffer += std::string_view(Tools::static_format<10>("%02X", static_cast<const unsigned>(blob[i])));
+			buffer += std::string_view(Tools::static_format<10>("%02X", static_cast<unsigned>(blob[i])));
 		}
 
 		// no space left in line
