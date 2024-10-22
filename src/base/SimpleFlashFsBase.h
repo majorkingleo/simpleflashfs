@@ -14,7 +14,7 @@
 #include "../SimpleFlashFsFileInterface.h"
 #include "SimpleFlashFsPageSet.h"
 #include <CpputilsDebug.h>
-#include <format.h>
+#include <static_format.h>
 #include <string_utils.h>
 #include <bit>
 #include <span>
@@ -643,7 +643,7 @@ bool SimpleFlashFsBase<Config>::read_page( std::size_t idx, std::byte *page, std
 	std::size_t offset = header.page_size + idx * header.page_size;
 	if( std::size_t len_read; (len_read = mem->read(offset, page, size )) != size ) {
 		CPPDEBUG( "cannot read all data" );
-		CPPDEBUG( Tools::format( "cannot read all data from page: %d size: %d len_read: %d offset: %d", idx, size, len_read, offset ) );
+		CPPDEBUG( Tools::static_format<100>( "cannot read all data from page: %d size: %d len_read: %d offset: %d", idx, size, len_read, offset ) );
 		return false;
 	}
 
@@ -693,8 +693,8 @@ Config::page_type SimpleFlashFsBase<Config>::inode2page( const Inode<Config> & i
 		const size_t size = sizeof(t);
 
 		if( pos + sizeof(size) > page.size() ) {
-			CPPDEBUG( Tools::format( "%d + %d > %d", pos, sizeof(size), page.size() ) );
-			throw new std::out_of_range( Tools::format( "%d + %d > %d", pos, sizeof(size), page.size() ));
+			CPPDEBUG( Tools::static_format<100>( "%d + %d > %d", pos, sizeof(size), page.size() ) );
+			throw new std::out_of_range( Tools::static_format<100>( "%d + %d > %d", pos, sizeof(size), page.size() ));
 		}
 
 		std::memcpy(&page[pos], &t, size );
@@ -738,7 +738,7 @@ bool SimpleFlashFsBase<Config>::init()
 	h.magic_string.assign(std::string_view( reinterpret_cast<char*>(&page[pos]), MAGICK_STRING_LEN ));
 
 	if( h.magic_string != MAGICK_STRING ) {
-		CPPDEBUG( Tools::format( "invalid magick string: '%s'", h.magic_string ));
+		CPPDEBUG( Tools::static_format<100>( "invalid magick string: '%s'", h.magic_string ));
 		return false;
 	}
 
@@ -751,7 +751,7 @@ bool SimpleFlashFsBase<Config>::init()
 	} else if( endianess == ENDIANESS_LE ) {
 		h.endianess = header_t::ENDIANESS::LE;
 	} else {
-		CPPDEBUG( Tools::format( "invalid endianess: '%s'", endianess ));
+		CPPDEBUG( Tools::static_format<100>( "invalid endianess: '%s'", endianess ));
 		return false;
 	}
 
@@ -780,17 +780,17 @@ bool SimpleFlashFsBase<Config>::init()
 		h.crc_checksum_type = header_t::CRC_CHECKSUM::CRC32;
 		break;
 	default:
-		CPPDEBUG( Tools::format( "invalid chksum type: '%d'", chktype ));
+		CPPDEBUG( Tools::static_format<100>( "invalid chksum type: '%d'", chktype ));
 		return false;
 	}
 
 	if( h.page_size < MIN_PAGE_SIZE ) {
-		CPPDEBUG( Tools::format( "invalid page size '%d'", h.page_size ));
+		CPPDEBUG( Tools::static_format<100>( "invalid page size '%d'", h.page_size ));
 		return false;
 	}
 
 	if( Config::PAGE_SIZE > 0 && h.page_size > Config::PAGE_SIZE ) {
-		CPPDEBUG( Tools::format( "invalid page size '%d'", h.page_size ));
+		CPPDEBUG( Tools::static_format<100>( "invalid page size '%d'", h.page_size ));
 		return false;
 	}
 
@@ -803,7 +803,7 @@ bool SimpleFlashFsBase<Config>::init()
 	uint32_t chksum_page = get_page_checksum( page );
 
 	if( chksum_calc != chksum_page ) {
-		CPPDEBUG( Tools::format( "chksum_calc: %d != chksum_page: %d", chksum_calc, chksum_page ));
+		CPPDEBUG( Tools::static_format<100>( "chksum_calc: %d != chksum_page: %d", chksum_calc, chksum_page ));
 		return false;
 	}
 
@@ -999,7 +999,7 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::get_inod
 			ret.inode.inode_data.resize(inode_space);
 			std::memcpy( ret.inode.inode_data.data(), page.data() + pos, ret.inode.file_len );
 		} else {
-			CPPDEBUG( Tools::format( "inode with file length > inode space found, but no data pages" ) );
+			CPPDEBUG( "inode with file length > inode space found, but no data pages" );
 			ret.inode.file_len = 0;
 		}
 	}
@@ -1058,7 +1058,7 @@ bool SimpleFlashFsBase<Config>::flush( file_handle_t* file )
 		file->inode.inode_number = max_inode_number + 1;
 		max_inode_number = file->inode.inode_number;
 /*
-		CPPDEBUG( Tools::format( "writing new inode %d,%d at page %d, data pages: %s",
+		CPPDEBUG( Tools::static_format<100>( "writing new inode %d,%d at page %d, data pages: %s",
 				file->inode.inode_number,
 				file->inode.inode_version_number,
 				file->page,
@@ -1068,7 +1068,7 @@ bool SimpleFlashFsBase<Config>::flush( file_handle_t* file )
 		add_page_checksum(page);
 
 		if( !write_page(file, page, true, file->page ) ) {
-			CPPDEBUG( Tools::format( "cannot write inode %d page %d", file->inode.inode_number, file->page ));
+			CPPDEBUG( Tools::static_format<100>( "cannot write inode %d page %d", file->inode.inode_number, file->page ));
 			return false;
 		}
 		file->modified = false;
@@ -1083,14 +1083,14 @@ bool SimpleFlashFsBase<Config>::flush( file_handle_t* file )
 	auto page = inode2page(file->inode);
 	add_page_checksum(page);
 /*
-	CPPDEBUG( Tools::format( "writing inode %d,%d page %d (%s)",
+	CPPDEBUG( Tools::static_format<100>( "writing inode %d,%d page %d (%s)",
 			file->inode.inode_number,
 			file->inode.inode_version_number,
 			file->page,
 			file->inode.file_name ));
 */
 	if( !write_page(file, page, true, file->page ) ) {
-		CPPDEBUG( Tools::format( "cannot write inode %d,%d page %d",
+		CPPDEBUG( Tools::static_format<100>( "cannot write inode %d,%d page %d",
 				file->inode.inode_number, file->inode.inode_version_number, file->page ));
 		return false;
 	}
@@ -1192,7 +1192,7 @@ template <class Config>
 void SimpleFlashFsBase<Config>::erase_inode_and_unused_pages( file_handle_t & inode_to_erase,
 		file_handle_t & next_inode_version )
 {
-	CPPDEBUG( Tools::format( "cleaning up inode %d,%d comparing with %d,%d",
+	CPPDEBUG( Tools::static_format<100>( "cleaning up inode %d,%d comparing with %d,%d",
 			inode_to_erase.inode.inode_number,
 			inode_to_erase.inode.inode_version_number,
 			next_inode_version.inode.inode_number,
@@ -1215,7 +1215,7 @@ void SimpleFlashFsBase<Config>::erase_inode_and_unused_pages( file_handle_t & in
 	pages_to_erase.insert(inode_to_erase.page);
 
 	for( auto page : pages_to_erase.get_data() ) {
-		CPPDEBUG( Tools::format( "erasing page: %d", page ) );
+		CPPDEBUG( Tools::static_format<100>( "erasing page: %d", page ) );
 
 		std::size_t address = header.page_size + page * header.page_size;
 		mem->erase(address, header.page_size );
@@ -1325,7 +1325,7 @@ std::size_t SimpleFlashFsBase<Config>::write( file_handle_t* file, const std::by
 		typename Config::page_type page(header.page_size);
 		const std::size_t page_number = file->inode.data_pages.at(page_idx);
 		if( !read_page( page_number, page, false ) ) {
-			CPPDEBUG( Tools::format( "reading from pos %d failed", page_number * header.page_size ) );
+			CPPDEBUG( Tools::static_format<100>( "reading from pos %d failed", page_number * header.page_size ) );
 			return 0;
 		}
 
@@ -1365,7 +1365,7 @@ std::size_t SimpleFlashFsBase<Config>::write( file_handle_t* file, const std::by
 			if( !target_page_is_a_new_allocated_one ) {
 				const std::size_t page_number = file->inode.data_pages.at(page_idx);
 				if( !read_page( page_number, page, false ) ) {
-					CPPDEBUG( Tools::format( "reading from pos %d failed", page_number * header.page_size ) );
+					CPPDEBUG( Tools::static_format<100>( "reading from pos %d failed", page_number * header.page_size ) );
 					return 0;
 				}
 			}
@@ -1435,7 +1435,7 @@ std::size_t SimpleFlashFsBase<Config>::read( file_handle_t* file, std::byte *dat
 	if( data_start_at_page != 0 ) {
 		typename Config::page_type page(header.page_size);
 		if( !read_page( file->inode.data_pages.at(page_idx), page, false ) ) {
-			CPPDEBUG( Tools::format( "reading from pos %d failed", page_idx * header.page_size ) );
+			CPPDEBUG( Tools::static_format<100>( "reading from pos %d failed", page_idx * header.page_size ) );
 			return bytes_readen;
 		}
 
@@ -1455,7 +1455,7 @@ std::size_t SimpleFlashFsBase<Config>::read( file_handle_t* file, std::byte *dat
 			typename Config::page_type page(header.page_size);
 
 			if( !read_page( file->inode.data_pages.at(page_idx), page, false ) ) {
-				CPPDEBUG( Tools::format( "reading from pos %d failed", page_idx * header.page_size ) );
+				CPPDEBUG( Tools::static_format<100>( "reading from pos %d failed", page_idx * header.page_size ) );
 				return bytes_readen;
 			}
 

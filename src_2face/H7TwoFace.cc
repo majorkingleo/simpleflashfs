@@ -8,8 +8,7 @@
 #include "H7TwoFaceConfig.h"
 #include "SimpleFlashFs2FlashPages.h"
 #include <CpputilsDebug.h>
-#include <format.h>
-#include <stderr_exception.h>
+#include <static_debug_exception.h>
 
 using namespace Tools;
 
@@ -108,7 +107,7 @@ public:
 		fs.emplace(mem1,mem2);
 
 		if( !fs->init() ) {
-			throw STDERR_EXCEPTION("cannot create fs");
+			throw STATIC_DEBUG_EXCEPTION("cannot create fs");
 		}
 	}
 
@@ -177,7 +176,6 @@ H7TwoFace::file_handle_t H7TwoFace::open( const std::string_view & name, std::io
 
 	fs_impl.emplace(fs_mem1.value(),fs_mem2.value());
 
-	// CPPDEBUG( Tools::format( "free inodes: %d", fs_impl->get_fs().get_current_fs()->get_stat().free_inodes  ));
 	if( (mode & std::ios_base::trunc) && fs_impl->get_fs().get_current_fs()->get_stat().free_inodes > 2) {
 		// ok
 	} else if( mode == std::ios_base::in ) {

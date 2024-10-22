@@ -87,7 +87,7 @@ public:
 		{
 			Component & c = get_component(Component::Type::active);
 			fs = &c.fs.value();
-			CPPDEBUG( Tools::format( "active fs is: %s", c.name ) );
+			CPPDEBUG( Tools::static_format<100>( "active fs is: %s", c.name ) );
 		}
 
 
@@ -98,7 +98,7 @@ public:
 		{
 			Component & c = get_component(Component::Type::active);
 			fs = &c.fs.value();
-			CPPDEBUG( Tools::format( "active fs is: %s", c.name ) );
+			CPPDEBUG( Tools::static_format<100>( "active fs is: %s", c.name ) );
 		}
 
 		return true;
@@ -118,7 +118,7 @@ public:
 		const typename SimpleFsNoDel<Config>::Stat & stat = fs->get_stat();
 		const unsigned inode_usage = 100 - ( 100.0 / header.max_inodes * stat.free_inodes );
 
-		CPPDEBUG( Tools::format( "data_pages_usage: %d%%, inode_usage: %d%%", data_pages_usage, inode_usage ) );
+		CPPDEBUG( Tools::static_format<100>( "data_pages_usage: %d%%, inode_usage: %d%%", data_pages_usage, inode_usage ) );
 
 		// cleanup makes only sense, if we have something to free from trash
 		if( stat.trash_inodes > 0 || stat.trash_size > 0 ) {
