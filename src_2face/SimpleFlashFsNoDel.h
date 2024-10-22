@@ -98,7 +98,7 @@ void SimpleFsNoDel<Config>::read_all_free_data_pages()
 		base_t::free_data_pages.unordered_insert(i);
 	}
 
-	typename base_t::InodeVersionStore iv_store;
+	this->iv_storage.clear();
 
 	for( unsigned i = 0; i < base_t::header.max_inodes; i++ ) {
 
@@ -116,7 +116,7 @@ void SimpleFsNoDel<Config>::read_all_free_data_pages()
 				inode.inode.inode_number, inode.inode.inode_version_number, i, inode.inode.file_name ) );
 */
 
-		if( iv_store.add( inode ) == base_t::InodeVersionStore::add_ret_t::replaced ) {
+		if( this->iv_storage.add( inode ) == base_t::InodeVersionStore::add_ret_t::replaced ) {
 			stat.trash_inodes++;
 		} else {
 			stat.used_inodes++;

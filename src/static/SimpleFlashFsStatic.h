@@ -99,7 +99,7 @@ public:
 
 	void list_files( typename Config::vector_type<typename Config::string_type> & file_names )
 	{
-		typename base_t::InodeVersionStore iv_store;
+		this->iv_storage.clear();
 
 		for( unsigned i = 0; i < base_t::header.max_inodes; i++ ) {
 			typename Config::page_type page(base_t::header.page_size);
@@ -107,11 +107,11 @@ public:
 			if( base_t::read_page( i, page, true ) ) {
 				auto file_handle = base_t::get_inode( page );
 				file_handle.page = i;
-				iv_store.add( file_handle );
+				this->iv_storage.add( file_handle );
 			}
 		}
 
-		const auto & data = iv_store.get_data();
+		const auto & data = this->iv_storage.get_data();
 
 		for( const auto & iv : data ) {
 			typename Config::page_type page(base_t::header.page_size);

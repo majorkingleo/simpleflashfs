@@ -309,6 +309,10 @@ protected:
 		const typename Config::vector_type<InodeVersion> & get_data() const {
 			return data;
 		}
+
+		void clear() {
+			data.clear();
+		}
 	};
 
 protected:
@@ -320,6 +324,10 @@ protected:
 	PageSet<Config> free_data_pages;
 
 	uint64_t max_inode_number = 0;
+
+	// Buffer of a member variable here to avoid having it on the
+	// stack of the function, because it can be really large.
+	InodeVersionStore iv_storage;
 
 public:
 	SimpleFlashFsBase( FlashMemoryInterface *mem_interface_ )
@@ -871,7 +879,7 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::open( co
 template <class Config>
 FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::find_file_unmapped( const Config::string_view_type & name )
 {
-	InodeVersionStore iv_storage;
+	iv_storage.clear();
 
 	// find the latest version of all inodes
 	// we have top do this, because only the last version of each
@@ -917,7 +925,7 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::find_fil
 template <class Config>
 FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::find_file_mapped( const Config::string_view_type & name )
 {
-	InodeVersionStore iv_storage;
+	iv_storage.clear();
 
 	// find the latest version of all inodes
 	// we have top do this, because only the last version of each
