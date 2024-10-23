@@ -206,15 +206,18 @@ std::span<std::string_view> H7TwoFace::list_files()
 
 	AutoFreeFs autofree;
 
-	static ConfigH7::vector_type<ConfigH7::string_type> file_list;
 	static ConfigH7::vector_type<std::string_view> v_file_list;
-	file_list.clear();
 	v_file_list.clear();
 
-	fs_impl->get_fs().get_current_fs()->list_files( file_list );
-	fs_impl.reset();
+	auto & x_file_list = v_file_list;
+	auto fs = fs_impl->get_fs().get_current_fs();
 
-	v_file_list.insert( v_file_list.end(), file_list.begin(), file_list.end() );
+	fs->list_files( [&x_file_list,&fs]( auto & file_handle ) {
+		x_file_list.push_back( fs->get_inode_file_name_mapped(file_handle).value() );
+		return true;
+	} );
+
+	fs_impl.reset();
 
 	std::span<std::string_view> ret( v_file_list.data(), v_file_list.size() );
 
@@ -249,10 +252,11 @@ H7TwoFace::Stat H7TwoFace::get_stat()
 	ret.trash_size = stat.trash_size;
 	ret.used_inodes = stat.used_inodes;
 
-	ConfigH7::vector_type<ConfigH7::string_type> file_list;
-	fs_impl->get_fs().get_current_fs()->list_files( file_list );
+	std::size_t count = 0;
 
-	ret.number_of_files = file_list.size();
+	fs_impl->get_fs().get_current_fs()->list_files( [&count]( auto & file_handle ) { count++; return true; } );
+
+	ret.number_of_files = count;
 
 	// some special files required for copying fs to second flash page
 	// minus 1 inode to delete something

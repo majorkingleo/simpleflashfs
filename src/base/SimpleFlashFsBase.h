@@ -370,6 +370,12 @@ public:
 		return free_data_pages.size();
 	}
 
+	/**
+	 * returns a string_view to the filename. This is only possible if the flash
+	 * data is mapped to RAM as address. This is the case for the internal flash.
+	 */
+	std::optional<typename Config::string_view_type> get_inode_file_name_mapped( const file_handle_t & file_handle ) const;
+
 	friend class FileHandle<Config,SimpleFlashFsBase<Config>>;
 
 	// read the fs that the memory interface points to
@@ -377,9 +383,9 @@ public:
 	virtual bool init();
 
 protected:
-	bool swap_endianess();
+	bool swap_endianess() const;
 
-	template<class T> void auto_endianess( T & val ) {
+	template<class T> void auto_endianess( T & val ) const {
 		if( swap_endianess() ) {
 			val = swapByteOrder( val );
 		}
@@ -517,7 +523,7 @@ Header<Config> SimpleFlashFsBase<Config>::create_default_header( uint32_t page_s
 }
 
 template <class Config>
-bool SimpleFlashFsBase<Config>::swap_endianess()
+bool SimpleFlashFsBase<Config>::swap_endianess() const
 {
 	if( std::endian::native == std::endian::big && header.endianess == header_t::ENDIANESS::LE ) {
 		return true;
@@ -963,6 +969,42 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::find_fil
 	return {};
 }
 
+template <class Config>
+std::optional<typename Config::string_view_type> SimpleFlashFsBase<Config>::get_inode_file_name_mapped( const file_handle_t & file_handle ) const
+{
+	if( !mem->can_map_read() ) {
+		return {};
+	}
+
+	std::size_t offset = header.page_size + file_handle.page * header.page_size;
+
+	const std::byte* addr = mem->map_read(offset);
+
+	if( addr == nullptr ) {
+		CPPDEBUG( "cannot read all data" );
+		return {};
+	}
+
+	std::span<const std::byte> page( addr, header.page_size );
+
+	std::size_t pos = sizeof( inode_t::inode_number) +
+	   				  sizeof( inode_t::inode_version_number );
+
+	decltype(inode_t::file_name_len) file_name_len = 0;
+
+	auto read=[this,&pos,&page]( auto & t ) {
+		const size_t size = sizeof(std::remove_reference_t<decltype(t)>);
+		std::memcpy(&t, &page[pos], size );
+		auto_endianess(t);
+		pos += size;
+	};
+
+	read( file_name_len );
+
+	typename Config::string_view_type ret = std::string_view( reinterpret_cast<const char*>(&page[pos]), file_name_len );
+
+	return ret;
+}
 
 template <class Config>
 FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::get_inode( const std::span<const std::byte> & page )

@@ -312,20 +312,23 @@ protected:
 
 		inactive_component.fs->set_max_inode_number( active_component.fs->get_max_inode_number() + 1 );
 
-		typename Config::vector_type<typename Config::string_type> file_names;
-		active_component.fs->list_files( file_names );
+		bool copy_error = false;
 
-		for( auto & file_name : file_names ) {
-
-			auto file_source = active_component.fs->open( file_name, std::ios_base::in | std::ios_base::binary );
-			auto file_target = inactive_component.fs->open( file_name, std::ios_base::out | std::ios_base::trunc | std::ios_base::app | std::ios_base::binary );
+		active_component.fs->list_files( [&copy_error,&inactive_component,this]( auto & file_source ) {
+			auto file_target = inactive_component.fs->open( file_source.inode.file_name,
+					std::ios_base::out | std::ios_base::trunc | std::ios_base::app | std::ios_base::binary );
 
 			if( !copy( file_source, file_target ) ) {
-				CPPDEBUG( "cannot recreate fs by copying files!" );
+				copy_error = true;
 				return false;
 			}
 
-			// CPPDEBUG( Tools::format( "copied file: '%s' to '%s'", file_name, inactive_component.name ) );
+			return true;
+		} );
+
+		if( copy_error ) {
+			CPPDEBUG( "cannot recreate fs by copying files!" );
+			return false;
 		}
 
 		{

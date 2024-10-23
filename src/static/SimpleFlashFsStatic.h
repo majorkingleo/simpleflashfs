@@ -97,7 +97,7 @@ public:
 		return this->init();
 	}
 
-	void list_files( typename Config::vector_type<typename Config::string_type> & file_names )
+	void list_files( std::function<bool(FileHandle&)> callback )
 	{
 		this->iv_storage.clear();
 
@@ -128,7 +128,9 @@ public:
 					continue;
 				}
 
-				file_names.push_back( file_handle.inode.file_name );
+				if( !callback( file_handle ) ) {
+					break;
+				}
 			}
 		}
 	}
