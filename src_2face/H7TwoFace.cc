@@ -217,11 +217,8 @@ std::span<std::string_view> H7TwoFace::list_files()
 		return true;
 	} );
 
-	fs_impl.reset();
-
 	std::span<std::string_view> ret( v_file_list.data(), v_file_list.size() );
 
-	autofree.disable();
 	return 	ret;
 }
 
