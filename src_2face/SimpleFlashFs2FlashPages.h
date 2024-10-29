@@ -175,40 +175,32 @@ protected:
 			return true;
 		}
 
-		auto fs1_file_copy_completed = c1.fs->open( COPY_COMPLETED_FILE_NAME, std::ios_base::in );
-		auto fs1_file_sealed = c1.fs->open( FILESYSTEM_SEALED_FILE_NAME, std::ios_base::in );
+		// avoid using of 4 file handles at once on stack.
+		// so only store if they are valid of not
+		bool fs1_file_copy_completed_valid = c1.fs->open( COPY_COMPLETED_FILE_NAME, std::ios_base::in ).valid();
+		bool fs2_file_copy_completed_valid = c2.fs->open( COPY_COMPLETED_FILE_NAME, std::ios_base::in ).valid();
+		bool fs1_file_sealed_valid = c1.fs->open( FILESYSTEM_SEALED_FILE_NAME, std::ios_base::in ).valid();
+		bool fs2_file_sealed_valid = c2.fs->open( FILESYSTEM_SEALED_FILE_NAME, std::ios_base::in ).valid();
 
-		auto fs2_file_copy_completed = c2.fs->open( COPY_COMPLETED_FILE_NAME, std::ios_base::in );
-		auto fs2_file_sealed = c2.fs->open( FILESYSTEM_SEALED_FILE_NAME, std::ios_base::in );
-
-		/*
-		CPPDEBUG( Tools::format( "FS1: %s %s",
-				!fs1_file_copy_completed ? "" : COPY_COMPLETED_FILE_NAME,
-				!fs1_file_sealed ? "" : FILESYSTEM_SEALED_FILE_NAME ));
-
-		CPPDEBUG( Tools::format( "FS2: %s %s",
-				!fs2_file_copy_completed ? "" : COPY_COMPLETED_FILE_NAME,
-				!fs2_file_sealed ? "" : FILESYSTEM_SEALED_FILE_NAME ));
-		*/
 
 		// conversion from fs2 to fs1 completed
-		if( fs1_file_copy_completed.valid() && fs2_file_sealed.valid() ) {
+		if( fs1_file_copy_completed_valid && fs2_file_sealed_valid ) {
 			c2.fs.reset();
 			return true;
 		}
 		// conversion from fs1 to fs2 completed
-		else if( fs2_file_copy_completed.valid() && fs1_file_sealed.valid() ) {
+		else if( fs2_file_copy_completed_valid && fs1_file_sealed_valid ) {
 			c1.fs.reset();
 			return true;
 		}
 		// copying from fs2 to fs1 didn't finished
-		else if( !fs1_file_copy_completed && fs2_file_sealed.valid() ) {
+		else if( !fs1_file_copy_completed_valid && fs2_file_sealed_valid ) {
 			// stay on fs2
 			c1.fs.reset();
 			return true;
 		}
 		// copying from fs1 to fs2 didn't finished
-		else if( !fs2_file_copy_completed && fs1_file_sealed.valid() ) {
+		else if( !fs2_file_copy_completed_valid && fs1_file_sealed_valid ) {
 			// stay on fs1
 			c2.fs.reset();
 			return true;

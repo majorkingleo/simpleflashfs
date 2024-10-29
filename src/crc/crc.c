@@ -158,7 +158,11 @@ crcInit(void)
     crc			   remainder;
 	int			   dividend;
 	unsigned char  bit;
+	static int     inited = 0;
 
+	if( inited ) {
+		return;
+	}
 
     /*
      * Compute the remainder of each possible dividend.
@@ -193,6 +197,8 @@ crcInit(void)
          */
         crcTable[dividend] = remainder;
     }
+
+    inited = 1;
 
 }   /* crcInit() */
 
