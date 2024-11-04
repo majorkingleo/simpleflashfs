@@ -36,7 +36,7 @@ SimFlashFsFlashMemory::SimFlashFsFlashMemory( const std::string & filename_ )
 	file.open( filename.c_str(), std::ios_base::binary | std::ios_base::in | std::ios_base::out );
 
 	if( !file ) {
-		throw STDERR_EXCEPTION( format( "cannot open file '%s'", filename ) );
+		throw STDERR_EXCEPTION( Tools::format( "cannot open file '%s'", filename ) );
 	}
 }
 
