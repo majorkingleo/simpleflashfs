@@ -1476,6 +1476,7 @@ std::size_t SimpleFlashFsBase<Config>::read( file_handle_t* file, std::byte *dat
 
 		std::size_t len = std::min( static_cast<decltype(size)>(file->inode.file_len - file->pos), size );
 		memcpy( data, file->inode.inode_data.data() + file->pos, len );
+		file->pos += len;
 		return len;
 	}
 
