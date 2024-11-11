@@ -16,14 +16,15 @@ class PageSet
 {
 public:
 	static constexpr uint32_t NO_DATA = std::numeric_limits<uint32_t>::max();
-
-	using size_type = typename Config::vector_type<uint32_t>::size_type;
-	using iterator = typename Config::vector_type<uint32_t>::iterator;
-	using const_iterator = typename Config::vector_type<uint32_t>::const_iterator;
-	using vector_type =  typename Config::vector_type<uint32_t>;
-
+    
+    using size_type      = typename Config::template vector_type<uint32_t>::size_type;
+	using iterator       = typename Config::template vector_type<uint32_t>::iterator;
+	using const_iterator = typename Config::template vector_type<uint32_t>::const_iterator;
+	using vector_type    = typename Config::template vector_type<uint32_t>;
+    
 private:
-	typename Config::vector_type<uint32_t> data;
+    typename Config::template vector_type<uint32_t> data;
+
 	bool unsorted = false;
 	bool unshrinked = false;
 
@@ -137,19 +138,19 @@ public:
 		return 0;
 	}
 
-	const typename Config::vector_type<uint32_t> & get_data() const {
+	const typename Config::template vector_type<uint32_t> & get_data() const {
 		return data;
 	}
 
-	const typename Config::vector_type<uint32_t> & get_data() {
+	const typename Config::template vector_type<uint32_t> & get_data() {
 		if( unsorted || unshrinked ) {
 			sort();
 		}
 		return data;
 	}
 
-	typename Config::vector_type<uint32_t> get_sorted_data() const {
-		typename Config::vector_type<uint32_t> ret( data );
+	typename Config::template vector_type<uint32_t> get_sorted_data() const {
+		typename Config::template vector_type<uint32_t> ret( data );
 		std::sort( ret.begin(), ret.end() );
 		return ret;
 	}

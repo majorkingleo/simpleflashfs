@@ -11,6 +11,7 @@
 #define SRC_SIMPLEFLASHFSCONSTANTS_H_
 
 #include <cstdint>
+#include <cstddef>
 
 namespace SimpleFlashFs {
 

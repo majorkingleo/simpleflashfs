@@ -90,7 +90,7 @@ struct Inode
 	static constexpr uint32_t data_pages_type_size = sizeof(data_pages_value_type);
 
 	// the index of data pages
-	typename Config::vector_type<data_pages_value_type> data_pages;
+	typename Config::template vector_type<data_pages_value_type> data_pages;
 
 	// data, that can be stored inside the inode
 	// will only be filled if pages == 0, so data_pages is also
@@ -286,7 +286,7 @@ protected:
 		};
 
 	protected:
-		typename Config::vector_type<InodeVersion> data;
+		typename Config::template vector_type<InodeVersion> data;
 
 	public:
 
@@ -306,7 +306,7 @@ protected:
 			return add_ret_t::inserted;
 		}
 
-		const typename Config::vector_type<InodeVersion> & get_data() const {
+		const typename Config::template vector_type<InodeVersion> & get_data() const {
 			return data;
 		}
 

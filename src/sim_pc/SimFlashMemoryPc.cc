@@ -53,7 +53,7 @@ std::size_t SimFlashFsFlashMemory::read( std::size_t address, std::byte *data, s
 	file.seekg(address);
 	file.clear();
 	file.read( reinterpret_cast<char*>(data), size );
-	long data_read = file.tellg() - static_cast<long>(address);
+	long data_read = static_cast<long>(file.tellg()) - static_cast<long>(address);
 	return data_read;
 }
 
