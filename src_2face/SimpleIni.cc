@@ -10,8 +10,12 @@
 #include <static_format.h>
 #include <CpputilsDebug.h>
 #include <format.h>
-#include <alloca.h>
 #include <charconv>
+
+#ifndef _WIN32
+#    include <alloca.h>
+#endif
+
 
 using namespace Tools;
 
