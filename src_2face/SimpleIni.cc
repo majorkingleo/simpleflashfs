@@ -26,6 +26,8 @@ namespace {
 	};
 }
 
+namespace SimpleFlashFs {
+
 bool SimpleIniBase::read( const std::string_view & section, const std::string_view & key, std::string_view & value )
 {
 	file.seek(0);
@@ -754,4 +756,4 @@ bool SimpleIniBase::read_blob( const std::string_view & section,
 }
 
 
-
+} // namespace SimpleFlashFs

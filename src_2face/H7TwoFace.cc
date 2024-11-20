@@ -14,6 +14,8 @@ using namespace Tools;
 
 namespace {
 
+static std::function<void(bool)> lock_unlock_instance_cb = []( bool ) {};
+
 class H7TwoFaceImpl
 {
 public:
@@ -113,7 +115,7 @@ public:
 
 	~H7TwoFaceImpl()
 	{
-
+		lock_unlock_instance_cb( false );
 	}
 
 	File & open( std::optional<H7TwoFaceImpl> * fs_instance, const std::string_view & name, std::ios_base::openmode mode ) {
@@ -140,7 +142,9 @@ class AutoFreeFs
 public:
 	~AutoFreeFs() {
 		if( !is_disabled ) {
-			fs_impl.reset();
+			if( fs_impl ) {
+				fs_impl.reset();
+			}
 		}
 	}
 
@@ -151,6 +155,11 @@ public:
 
 } // namespace
 
+
+void H7TwoFace::set_lock_unlock_callback( std::function<void(bool)> lock_unlock_cb )
+{
+	lock_unlock_instance_cb = lock_unlock_cb;
+}
 
 uint32_t ConfigH7::crc32( const std::byte *bytes, size_t len )
 {
@@ -167,8 +176,11 @@ H7TwoFace::file_handle_t H7TwoFace::open( const std::string_view & name, std::io
 		}
 	}
 
+	lock_unlock_instance_cb( true );
+
 	if( fs_impl ) {
 		CPPDEBUG( "An other FS instance is already open" );
+		lock_unlock_instance_cb( false );
 		return {};
 	}
 
@@ -197,8 +209,11 @@ H7TwoFace::file_handle_t H7TwoFace::open( const std::string_view & name, std::io
 
 std::span<std::string_view> H7TwoFace::list_files()
 {
+	lock_unlock_instance_cb( true );
+
 	if( fs_impl ) {
 		CPPDEBUG( "An other FS instance is already open" );
+		lock_unlock_instance_cb( false );
 		return {};
 	}
 
@@ -230,8 +245,11 @@ void H7TwoFace::set_memory_interface( SimpleFlashFs::FlashMemoryInterface *mem1,
 
 H7TwoFace::Stat H7TwoFace::get_stat()
 {
+	lock_unlock_instance_cb( true );
+
 	if( fs_impl ) {
 		CPPDEBUG( "An other FS instance is already open" );
+		lock_unlock_instance_cb( false );
 		return {};
 	}
 
@@ -273,8 +291,10 @@ void H7TwoFace::set_crc32_func( std::function<uint32_t(const std::byte* data, si
 
 bool H7TwoFace::recreate()
 {
+	lock_unlock_instance_cb( true );
 	if( fs_impl ) {
 		CPPDEBUG( "An other FS instance is already open" );
+		lock_unlock_instance_cb( false );
 		return false;
 	}
 

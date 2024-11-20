@@ -10,6 +10,8 @@
 #include <static_string.h>
 #include <static_format.h>
 
+namespace SimpleFlashFs {
+
 class SimpleIniBase
 {
 	SimpleFlashFs::FileBuffer & file;
@@ -219,4 +221,4 @@ protected:
 
 };
 
-
+} // namespace SimpleFlashFs
