@@ -1601,11 +1601,13 @@ std::size_t SimpleFlashFsBase<Config>::read( file_handle_t* file, std::byte *dat
 
 		if( file->inode.inode_data.empty() && !file->inode.data_pages.empty() ) {
 			CPPDEBUG( Tools::static_format<100>( "file: '%s' no data in inode, but would fit", file->inode.file_name ) );
+
 		} else if( !file->inode.inode_data.empty() ) {
 			std::size_t len = std::min( static_cast<decltype(size)>(file->inode.file_len - file->pos), size );
 			memcpy( data, file->inode.inode_data.data() + file->pos, len );
 			file->pos += len;
 			return len;
+
 		} else {
 			CPPDEBUG( Tools::static_format<100>( "invalid file '%s' no in inode, no data pages", file->inode.file_name ) );
 		}
@@ -1623,37 +1625,51 @@ std::size_t SimpleFlashFsBase<Config>::read( file_handle_t* file, std::byte *dat
 			return bytes_readen;
 		}
 
-		typename Config::page_type page(header.page_size);
-		if( !read_page( file->inode.data_pages.at(page_idx).page_id, page, false ) ) {
-			CPPDEBUG( Tools::static_format<100>( "reading from pos %d failed", page_idx * header.page_size ) );
-			return bytes_readen;
-		}
-
+		auto & page_meta = file->inode.data_pages.at(page_idx);
 		const std::size_t len = std::min( size, static_cast<size_t>(header.page_size - data_start_at_page) );
-		memcpy( data + bytes_readen, &page[data_start_at_page], len );
+
+		if( page_meta.unwritten ) {
+			// this page contains only zeros
+			memset( data + bytes_readen, 0, len );
+
+		} else {
+			typename Config::page_type page(header.page_size);
+			if( !read_page( page_meta.page_id, page, false ) ) {
+				CPPDEBUG( Tools::static_format<100>( "reading from pos %d failed", page_idx * header.page_size ) );
+				return bytes_readen;
+			}
+
+			memcpy( data + bytes_readen, &page[data_start_at_page], len );
+		}
 
 		bytes_readen += len;
 		file->pos += len;
+
 	}
 
 	while( bytes_readen < size ) {
 		page_idx = file->pos / header.page_size;
+
+		// file corrupt
+		if( page_idx >= file->inode.data_pages.size() ) {
+			CPPDEBUG( Tools::static_format<100>( "less amount of data pages than expectd: data_pages: %d expected: %d",
+					file->inode.data_pages.size(), page_idx + 1 ) );
+			return bytes_readen;
+		}
+
+		auto & page_meta = file->inode.data_pages.at(page_idx);
 
 		// last partial page
 		if( bytes_readen + header.page_size > size ) {
 
 			typename Config::page_type page(header.page_size);
 
-			// file corrupt
-			if( page_idx >= file->inode.data_pages.size() ) {
-				CPPDEBUG( Tools::static_format<100>( "less amount of data pages than expectd: data_pages: %d expected: %d",
-						file->inode.data_pages.size(), page_idx + 1 ) );
-				return bytes_readen;
-			}
-
-			if( !read_page( file->inode.data_pages.at(page_idx).page_id, page, false ) ) {
-				CPPDEBUG( Tools::static_format<100>( "reading from pos %d failed", page_idx * header.page_size ) );
-				return bytes_readen;
+			// if the page is unwritten, it contains only zeros
+			if( !page_meta.unwritten ) {
+				if( !read_page( page_meta.page_id, page, false ) ) {
+					CPPDEBUG( Tools::static_format<100>( "reading from pos %d failed", page_idx * header.page_size ) );
+					return bytes_readen;
+				}
 			}
 
 			const std::size_t len = std::min( static_cast<uint32_t>(size - bytes_readen), header.page_size );
@@ -1664,7 +1680,11 @@ std::size_t SimpleFlashFsBase<Config>::read( file_handle_t* file, std::byte *dat
 
 		} else {
 
-			if( !read_page( file->inode.data_pages.at(page_idx).page_id, data + bytes_readen, header.page_size ) ) {
+			if( page_meta.unwritten ) {
+				// if the page is unwritten, it contains only zeros
+				memset( data + bytes_readen, 0, header.page_size );
+			}
+			else if( !read_page( page_meta.page_id, data + bytes_readen, header.page_size ) ) {
 				CPPDEBUG( "reading from device failed" );
 				return bytes_readen;
 			}
