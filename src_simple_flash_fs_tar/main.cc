@@ -156,7 +156,13 @@ static void info_fs( SimpleFlashFs::dynamic::SimpleFlashFs & fs )
 			co.addColData(PAGE,       x2s(inode->page));
 			co.addColData(FILENAME,   inode->inode.file_name);
 			co.addColData(SIZE,       x2s(inode->inode.file_len));
-			co.addColData(DATA_PAGES, IterableToCommaSeparatedString(inode->inode.data_pages));
+
+			std::vector<uint32_t> data_pages;
+			for( auto p : inode->inode.data_pages ) {
+				data_pages.push_back( p.page_id );
+			}
+
+			co.addColData(DATA_PAGES, IterableToCommaSeparatedString(data_pages));
 
 			std::string sattr;
 

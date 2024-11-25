@@ -31,7 +31,7 @@ public:
 
 	virtual bool eof() const = 0;
 
-	virtual void seek( std::size_t pos_ ) = 0;
+	virtual bool seek( std::size_t pos_ ) = 0;
 
 	virtual bool delete_file() = 0;
 

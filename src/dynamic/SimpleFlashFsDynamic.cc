@@ -122,7 +122,7 @@ void SimpleFlashFs::read_all_free_data_pages()
 	for( auto & pair : inodes ) {
 		auto & list = pair.second;
 		for( auto page : list.front()->inode.data_pages ) {
-			free_data_pages.erase(page);
+			free_data_pages.erase(page.page_id);
 		}
 	}
 

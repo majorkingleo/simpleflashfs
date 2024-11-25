@@ -71,7 +71,7 @@ public:
 			return file->eof();
 		}
 
-		virtual void seek( std::size_t pos ) override {
+		virtual bool seek( std::size_t pos ) override {
 			return file->seek(pos);
 		}
 

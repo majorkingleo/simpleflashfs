@@ -136,7 +136,7 @@ bool FileBuffer::flush()
 	return file.flush();
 }
 
-void FileBuffer::seek( std::size_t pos_to_seek_to )
+bool FileBuffer::seek( std::size_t pos_to_seek_to )
 {
 	if( !current_buffer.empty() ) {
 		if( current_buffer_start <= pos_to_seek_to &&
@@ -144,19 +144,23 @@ void FileBuffer::seek( std::size_t pos_to_seek_to )
 			pos = pos_to_seek_to - current_buffer_start;
 
 			// so that tellg is telling the truth
-			file.seek( pos_to_seek_to );
+			if( !file.seek( pos_to_seek_to ) ) {
+				return false;
+			}
 			// CPPDEBUG( Tools::format("seeking to pos: %d", pos) );
-			return;
+			return true;
 		}
 	}
 
 	if( (file.tellg() == pos_to_seek_to) &&
 		(current_buffer.empty() || !current_buffer_modified ) ) {
-		return;
+		return true;
 	}
 
 	discard_buffer();
 	file.seek( pos_to_seek_to );
+
+	return true;
 }
 
 std::size_t FileBuffer::write( const std::byte *data, std::size_t size )

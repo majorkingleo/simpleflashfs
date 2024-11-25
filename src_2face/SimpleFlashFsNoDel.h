@@ -127,7 +127,7 @@ void SimpleFsNoDel<Config>::read_all_free_data_pages()
 		// remove used pages from free_data_pages list
 		for( auto page : inode.inode.data_pages ) {
 			stat.trash_size += base_t::header.page_size;
-			base_t::free_data_pages.erase(page);
+			base_t::free_data_pages.erase(page.page_id);
 		}
 	}
 

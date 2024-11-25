@@ -97,7 +97,7 @@ public:
 		return file.eof();
 	}
 
-	void seek( std::size_t pos_ ) override;
+	bool seek( std::size_t pos_ ) override;
 
 	 bool delete_file() override {
 		 return file.delete_file();
