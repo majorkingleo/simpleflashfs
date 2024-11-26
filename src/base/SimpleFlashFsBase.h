@@ -1067,10 +1067,48 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::get_inod
 	read( ret.inode.pages );
 
 	if( ret.inode.pages  ) {
-		ret.inode.data_pages.resize( ret.inode.pages, {} );
+		ret.inode.data_pages.reserve( ret.inode.pages );
 
 		for( unsigned i = 0; i < ret.inode.pages; i++ ) {
-			read( ret.inode.data_pages[i].page_id );
+			typename Inode<Config>::data_pages_value_type page_id{};
+
+			read( page_id );
+
+			if( page_id >= header.filesystem_size ) {
+
+				int file_len = ret.inode.file_len;
+
+				// is last page
+				if( i + 1 ==  ret.inode.pages ) {
+
+					int part_len = file_len % header.page_size;
+
+					if( part_len == 0 ) {
+						part_len = header.page_size;
+					}
+					file_len -= part_len;
+
+				} else {
+					file_len -= header.page_size;
+				}
+
+
+				CPPDEBUG( Tools::static_format<100>("page_id %d > filesystem_size %d reducing file size from %d to %d",  
+						  page_id, 
+						  header.filesystem_size,
+						  ret.inode.file_len,
+						  file_len < 0 ? 0 : file_len ) );
+
+				if( file_len < 0 ) {
+					ret.inode.file_len = 0;
+				}
+
+				ret.inode.file_len = file_len;
+
+				continue;
+			}
+
+			ret.inode.data_pages.push_back( { page_id } );
 		}
 	}
 	/**
