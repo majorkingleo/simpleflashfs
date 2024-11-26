@@ -1069,6 +1069,8 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::get_inod
 	if( ret.inode.pages  ) {
 		ret.inode.data_pages.reserve( ret.inode.pages );
 
+		std::size_t len_read = 0;
+
 		for( unsigned i = 0; i < ret.inode.pages; i++ ) {
 			typename Inode<Config>::data_pages_value_type page_id{};
 
@@ -1093,7 +1095,8 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::get_inod
 				}
 
 
-				CPPDEBUG( Tools::static_format<100>("page_id %d > filesystem_size %d reducing file size from %d to %d",  
+				CPPDEBUG( Tools::static_format<100>("file '%s' page_id %d > filesystem_size %d reducing file size from %d to %d",
+						  ret.inode.file_name,
 						  page_id, 
 						  header.filesystem_size,
 						  ret.inode.file_len,
@@ -1104,11 +1107,31 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::get_inod
 				}
 
 				ret.inode.file_len = file_len;
+				ret.modified = true;
 
 				continue;
 			}
 
+			if( len_read >= ret.inode.file_len ) {
+
+				unsigned expected_pages = ret.inode.file_len / header.page_size;
+				if( ret.inode.file_len % header.page_size ) {
+					expected_pages++;
+				}
+
+				CPPDEBUG( Tools::static_format<100>("file '%s' idx %d page_id %d > expected file size of %d pages, ignoring",
+						  ret.inode.file_name,
+						  i,
+						  page_id,
+						  expected_pages,
+						  header.filesystem_size ) );
+
+				ret.modified = true;
+				break;
+			}
+
 			ret.inode.data_pages.push_back( { page_id } );
+			len_read += header.page_size;
 		}
 	}
 	/**
@@ -1124,6 +1147,7 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::get_inod
 		} else {
 			CPPDEBUG( "inode with file length > inode space found, but no data pages" );
 			ret.inode.file_len = 0;
+			ret.modified = true;
 		}
 	}
 
@@ -1647,7 +1671,7 @@ std::size_t SimpleFlashFsBase<Config>::read( file_handle_t* file, std::byte *dat
 			return len;
 
 		} else {
-			CPPDEBUG( Tools::static_format<100>( "invalid file '%s' no in inode, no data pages", file->inode.file_name ) );
+			CPPDEBUG( Tools::static_format<100>( "invalid file '%s' no inode, no data pages", file->inode.file_name ) );
 		}
 	}
 
