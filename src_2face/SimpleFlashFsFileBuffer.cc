@@ -17,7 +17,10 @@ namespace SimpleFlashFs {
 std::size_t FileBuffer::read( std::byte *data, std::size_t size )
 {
 	if( size > buffer.size() ) {
-		discard_buffer();
+		if( !discard_buffer() ) {
+			return 0;
+		}
+
 		return file.read( data, size );
 	}
 
@@ -61,7 +64,11 @@ std::span<std::byte> FileBuffer::read( std::size_t size )
 
 	if( !current_buffer.empty() ) {
 		std::size_t pos_in_file = current_buffer_start + pos;
-		discard_buffer();
+
+		if( !discard_buffer() ) {
+			return {};
+		}
+
 		file.seek(pos_in_file);
 	}
 
@@ -90,7 +97,11 @@ bool FileBuffer::read_to_buffer( std::size_t size )
 
 	if( len_read != size_to_read ) {
 		CPPDEBUG( Tools::format( "failed reading %d data from %s", size_to_read, file.get_file_name() ) );
-		discard_buffer();
+
+		if( !discard_buffer() ) {
+			return false;
+		}
+
 		return false;
 	}
 
@@ -104,13 +115,17 @@ bool FileBuffer::read_to_buffer( std::size_t size )
 	return true;
 }
 
-void FileBuffer::discard_buffer()
+bool FileBuffer::discard_buffer()
 {
-	flush_buffer();
+	if( !flush_buffer() ) {
+		return false;
+	}
 
 	pos = 0;
 	current_buffer_start = 0;
 	current_buffer = {};
+
+	return true;
 }
 
 bool FileBuffer::flush_buffer()
@@ -132,7 +147,10 @@ bool FileBuffer::flush_buffer()
 
 bool FileBuffer::flush()
 {
-	flush_buffer();
+	if( !flush_buffer() ) {
+		return false;
+	}
+
 	return file.flush();
 }
 
@@ -157,8 +175,13 @@ bool FileBuffer::seek( std::size_t pos_to_seek_to )
 		return true;
 	}
 
-	discard_buffer();
-	file.seek( pos_to_seek_to );
+	if( !discard_buffer() ) {
+		return false;
+	}
+
+	if( !file.seek( pos_to_seek_to ) ) {
+		return false;
+	}
 
 	return true;
 }
@@ -177,8 +200,12 @@ std::size_t FileBuffer::write( const std::byte *data, std::size_t size )
 	if( size > buffer.size() ) {
 		//CPPDEBUG( "size > buffer.size()" );
 		auto pos_in_file = file.tellg();
-		discard_buffer();
-		file.seek( pos_in_file );
+		if( !discard_buffer() ) {
+			return 0;
+		}
+		if( !file.seek( pos_in_file ) ) {
+			return 0;
+		}
 
 		std::size_t ret = file.write( data, size );
 
@@ -193,7 +220,9 @@ std::size_t FileBuffer::write( const std::byte *data, std::size_t size )
 	if( !current_buffer.empty() &&
 		!current_buffer_modified &&
 		file.is_append_mode() ) {
-		discard_buffer();
+		if( !discard_buffer() ) {
+			return 0;
+		}
 	}
 
 	if( !current_buffer.empty() ) {
@@ -220,8 +249,14 @@ std::size_t FileBuffer::write( const std::byte *data, std::size_t size )
 		} else {
 
 			auto pos_in_file = current_buffer_start + pos;
-			discard_buffer();
-			file.seek( pos_in_file );
+
+			if( !discard_buffer() ) {
+				return 0;
+			}
+
+			if( !file.seek( pos_in_file ) ) {
+				return 0;
+			}
 
 			return write( data, size );
 		}

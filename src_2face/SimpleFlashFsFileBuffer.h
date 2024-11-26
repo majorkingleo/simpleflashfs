@@ -218,7 +218,7 @@ private:
 
 	 bool read_to_buffer( std::size_t size );
 
-	 void discard_buffer();
+	 bool discard_buffer();
 	 bool flush_buffer();
 };
 
