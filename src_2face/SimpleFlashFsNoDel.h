@@ -94,7 +94,11 @@ void SimpleFsNoDel<Config>::read_all_free_data_pages()
 	base_t::free_data_pages.clear();
 	stat = {};
 
-	for( unsigned i = base_t::header.max_inodes; i < base_t::header.filesystem_size; i++ ) {
+	for( unsigned i = base_t::header.max_inodes; 
+		i < base_t::header.filesystem_size - 1; // -1 ... one page for the header itself
+		i++ ) {
+
+		CPPDEBUG( Tools::format( "free data page: %d", i) );
 		base_t::free_data_pages.unordered_insert(i);
 	}
 
