@@ -152,6 +152,14 @@ public:
 	typename Config::template vector_type<uint32_t> get_sorted_data() const {
 		typename Config::template vector_type<uint32_t> ret( data );
 		std::sort( ret.begin(), ret.end() );
+
+		for( unsigned i = 0; i < ret.size(); ++i ) {
+			if( ret[i] == NO_DATA ) {
+				ret.resize(i);
+				break;
+			}
+		}
+
 		return ret;
 	}
 
