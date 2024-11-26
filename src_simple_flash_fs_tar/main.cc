@@ -18,6 +18,7 @@
 #include <optional>
 #include <set>
 #include "../src/sim_pc/SimFlashMemoryPc.h"
+#include "SimpleFlashFsDynamicReadOnly.h"
 
 using namespace Tools;
 using namespace SimpleFlashFs;
@@ -335,7 +336,7 @@ int main( int argc, char **argv )
 			std::string file = o_fs_info.getValues()->at(0);
 
 			SimFlashFsFlashMemory mem(file);
-			SimpleFlashFs::dynamic::SimpleFlashFs fs(&mem);
+			SimpleFlashFs::dynamic::SimpleFlashFsReadOnly fs(&mem);
 
 			if( !fs.init() ) {
 				throw STDERR_EXCEPTION( "init failed" );
