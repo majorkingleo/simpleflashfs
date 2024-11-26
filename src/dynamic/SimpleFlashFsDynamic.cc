@@ -67,8 +67,9 @@ void SimpleFlashFs::read_all_free_data_pages()
 {
 	free_data_pages.clear();
 
-	for( unsigned i = header.max_inodes; i < header.filesystem_size; i++ ) {
-		free_data_pages.insert(i);
+	// -1 for the header page
+	for( unsigned i = header.max_inodes; i < (header.filesystem_size - 1); i++ ) {
+		free_data_pages.unordered_insert(i);
 	}
 
 	std::map<uint64_t,std::list<std::shared_ptr<FileHandle>>> inodes;
