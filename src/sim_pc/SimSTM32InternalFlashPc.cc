@@ -3,6 +3,8 @@
  */
 #include "SimSTM32InternalFlashPc.h"
 #include <cstring>
+#include <stderr_exception.h>
+#include <static_format.h>
 
 using namespace SimpleFlashFs::SimPc;
 
@@ -26,6 +28,15 @@ void SimSTM32InternalFlashPc::init()
 
 std::size_t SimSTM32InternalFlashPc::write( std::size_t address, const std::byte *data, std::size_t size )
 {
+	if( address >= mem.size() ) {
+		throw STDERR_EXCEPTION( Tools::static_format<100>("address %d is out of range. max: %d", address, mem.size() ) );
+	}
+
+	if( address + size > mem.size() ) {
+		throw STDERR_EXCEPTION( Tools::static_format<100>( "address + size %d + %d = %d >= %d is out of range", 
+															address, size, address + size, mem.size() ) );
+	}
+
 	std::memcpy( &mem[address], data, size );
 	return SimFlashFsFlashMemory::write( address, data, size );
 }
