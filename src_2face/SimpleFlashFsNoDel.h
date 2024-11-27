@@ -69,6 +69,10 @@ protected:
 		// do nothing
 	}
 
+	/**
+	 * reads inode, does no error correction, don't use the resulting
+	 * file handle for reading, or writing.
+	 */
 	typename base_t::FileHandle read_inode( std::size_t index )
 	{
 		if( this->mem->can_map_read() ) {
@@ -76,7 +80,7 @@ protected:
 			if( !page ) {
 				return {};
 			}
-			return this->get_inode( *page );
+			return this->get_inode( *page, false );
 		}
 
 		typename base_t::config_t::page_type page( this->header.page_size );
@@ -98,7 +102,6 @@ void SimpleFsNoDel<Config>::read_all_free_data_pages()
 		i < base_t::header.filesystem_size - 1; // -1 ... one page for the header itself
 		i++ ) {
 
-		CPPDEBUG( Tools::format( "free data page: %d", i) );
 		base_t::free_data_pages.unordered_insert(i);
 	}
 

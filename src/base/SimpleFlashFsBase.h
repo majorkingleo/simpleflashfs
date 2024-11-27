@@ -448,11 +448,11 @@ protected:
 	file_handle_t find_file_mapped( const Config::string_view_type & name );
 	file_handle_t find_file_unmapped( const Config::string_view_type & name );
 
-	file_handle_t get_inode( const Config::page_type & data ) {
-		return get_inode( std::span<const std::byte>(data.data(),data.size()) );
+	file_handle_t get_inode( const Config::page_type & data, bool do_error_corrections = true ) {
+		return get_inode( std::span<const std::byte>(data.data(),data.size()), do_error_corrections );
 	}
 
-	file_handle_t get_inode( const std::span<const std::byte> & data );
+	file_handle_t get_inode( const std::span<const std::byte> & data, bool do_error_corrections = true );
 
 	file_handle_t allocate_free_inode_page() {
 		if( mem->can_map_read() ) {
@@ -930,7 +930,7 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::find_fil
 		typename Config::page_type page(header.page_size);
 
 		if( read_page( i, page, true ) ) {
-			auto file_handle = get_inode( page );
+			auto file_handle = get_inode( page, false );
 			file_handle.page = i;
 
 			iv_storage.add(file_handle);
@@ -975,7 +975,7 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::find_fil
 		auto page = read_page_mapped( i, header.page_size, true );
 
 		if( page ) {
-			auto file_handle = get_inode( *page );
+			auto file_handle = get_inode( *page, false );
 			file_handle.page = i;
 
 			iv_storage.add(file_handle);
@@ -1042,7 +1042,7 @@ std::optional<typename Config::string_view_type> SimpleFlashFsBase<Config>::get_
 }
 
 template <class Config>
-FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::get_inode( const std::span<const std::byte> & page )
+FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::get_inode( const std::span<const std::byte> & page, bool do_error_corrections )
 {
 	file_handle_t ret(this);
 
@@ -1076,59 +1076,64 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::get_inod
 
 			read( page_id );
 
-			if( page_id >= header.filesystem_size ) {
+			if( do_error_corrections ) {
+				if( page_id >= header.filesystem_size ) {
 
-				int file_len = ret.inode.file_len;
+					int file_len = ret.inode.file_len;
 
-				// is last page
-				if( i + 1 ==  ret.inode.pages ) {
+					// is last page
+					if( i + 1 ==  ret.inode.pages ) {
 
-					int part_len = file_len % header.page_size;
+						int part_len = file_len % header.page_size;
 
-					if( part_len == 0 ) {
-						part_len = header.page_size;
+						if( part_len == 0 ) {
+							part_len = header.page_size;
+						}
+						file_len -= part_len;
+
+					} else {
+						file_len -= header.page_size;
 					}
-					file_len -= part_len;
 
-				} else {
-					file_len -= header.page_size;
+
+					CPPDEBUG( Tools::static_format<100>("file '%s' page_id %d > filesystem_size %d reducing file size from %d to %d",
+							  ret.inode.file_name,
+							  page_id,
+							  header.filesystem_size,
+							  ret.inode.file_len,
+							  file_len < 0 ? 0 : file_len ) );
+
+					if( file_len < 0 ) {
+						ret.inode.file_len = 0;
+					}
+
+					ret.inode.file_len = file_len;
+					ret.modified = true;
+
+					continue;
 				}
 
 
-				CPPDEBUG( Tools::static_format<100>("file '%s' page_id %d > filesystem_size %d reducing file size from %d to %d",
-						  ret.inode.file_name,
-						  page_id, 
-						  header.filesystem_size,
-						  ret.inode.file_len,
-						  file_len < 0 ? 0 : file_len ) );
+				if( len_read >= ret.inode.file_len ) {
 
-				if( file_len < 0 ) {
-					ret.inode.file_len = 0;
+					unsigned expected_pages = ret.inode.file_len / header.page_size;
+					if( ret.inode.file_len % header.page_size ) {
+						expected_pages++;
+					}
+
+					CPPDEBUG( Tools::static_format<100>("file '%s' %d,%d idx %d page_id %d > expected file size of %d pages, ignoring",
+							  ret.inode.file_name,
+							  ret.inode.inode_number,
+							  ret.inode.inode_version_number,
+							  i,
+							  page_id,
+							  expected_pages,
+							  header.filesystem_size ) );
+
+					ret.modified = true;
+					break;
 				}
-
-				ret.inode.file_len = file_len;
-				ret.modified = true;
-
-				continue;
-			}
-
-			if( len_read >= ret.inode.file_len ) {
-
-				unsigned expected_pages = ret.inode.file_len / header.page_size;
-				if( ret.inode.file_len % header.page_size ) {
-					expected_pages++;
-				}
-
-				CPPDEBUG( Tools::static_format<100>("file '%s' idx %d page_id %d > expected file size of %d pages, ignoring",
-						  ret.inode.file_name,
-						  i,
-						  page_id,
-						  expected_pages,
-						  header.filesystem_size ) );
-
-				ret.modified = true;
-				break;
-			}
+			} // if( do_error_corrections )
 
 			ret.inode.data_pages.push_back( { page_id } );
 			len_read += header.page_size;
@@ -1224,13 +1229,13 @@ bool SimpleFlashFsBase<Config>::flush( file_handle_t* file )
 	if( file->inode.inode_number == 0) {
 		file->inode.inode_number = max_inode_number + 1;
 		max_inode_number = file->inode.inode_number;
-/*
-		CPPDEBUG( Tools::static_format<100>( "writing new inode %d,%d at page %d, data pages: %s",
+
+		/*
+		CPPDEBUG( Tools::static_format<100>( "writing new inode %d,%d at page %d",
 				file->inode.inode_number,
 				file->inode.inode_version_number,
-				file->page,
-				Tools::IterableToCommaSeparatedString( file->inode.data_pages )));
-*/
+				file->page));
+		*/
 
 		if( !write_zero_pages( file ) ) {
 			CPPDEBUG( "failed flushing zero pages" );
@@ -1259,13 +1264,13 @@ bool SimpleFlashFsBase<Config>::flush( file_handle_t* file )
 		CPPDEBUG( "failed flushing zero pages" );
 	}
 
-/*
+	/*
 	CPPDEBUG( Tools::static_format<100>( "writing inode %d,%d page %d (%s)",
 			file->inode.inode_number,
 			file->inode.inode_version_number,
 			file->page,
 			file->inode.file_name ));
-*/
+	*/
 	if( !write_meta_page(file, page, file->page ) ) {
 		CPPDEBUG( Tools::static_format<100>( "cannot write inode %d,%d page %d",
 				file->inode.inode_number, file->inode.inode_version_number, file->page ));
