@@ -11,6 +11,7 @@
 #include <CpputilsDebug.h>
 #include <format.h>
 #include <charconv>
+#include <string_adapter.h>
 
 #ifndef _WIN32
 #    include <alloca.h>
@@ -301,17 +302,17 @@ bool SimpleIniBase::insert( std::size_t pos_in_file, const std::span<const std::
 		len += sv.size();
 	}
 
-	char *buffer1 = reinterpret_cast<char*>( alloca( len ) );
-	char *buffer2 = reinterpret_cast<char*>( alloca( len ) );
-	std::span<char> s_buffer_origin1( buffer1, len );
-	std::span<char> s_buffer_origin2( buffer2, len );
+	const unsigned BUFFER_SIZE = 512;
+
+	char *buffer1 = reinterpret_cast<char*>( alloca( BUFFER_SIZE ) );
+	char *buffer2 = reinterpret_cast<char*>( alloca( BUFFER_SIZE ) );
+	basic_string_adapter<char> s_buffer_origin1(span_vector(std::span<char>( buffer1, BUFFER_SIZE ) ) );
+	basic_string_adapter<char> s_buffer_origin2(span_vector(std::span<char>( buffer2, BUFFER_SIZE ) ) );
 
 	// copy values to insert into buffer1
 	{
-		std::size_t current_pos = 0;
 		for( auto sv : values ) {
-			std::memcpy( s_buffer_origin1.data() + current_pos, sv.data(), sv.size() );
-			current_pos += sv.size();
+			s_buffer_origin1 += sv;
 		}
 
 		CPPDEBUG( Tools::format( "want to write : '%s' at pos: %d",
@@ -319,33 +320,38 @@ bool SimpleIniBase::insert( std::size_t pos_in_file, const std::span<const std::
 				pos_in_file ) );
 	}
 
-	auto s_buffer_a = s_buffer_origin2;
-	auto s_buffer_b = s_buffer_origin1;
+	auto p_buffer_a = &s_buffer_origin2;
+	auto p_buffer_b = &s_buffer_origin1;
 
 	const std::size_t new_file_size = file.file_size() + len;
 
-	for( std::size_t p = pos_in_file; p < new_file_size && !s_buffer_b.empty();  ) {
+	for( std::size_t p = pos_in_file; p < new_file_size && !p_buffer_b->empty();  ) {
 
 		// read data into buffer 2
 		std::size_t pos_before_read = file.tellg();
 
-		file.read( s_buffer_a );
-		CPPDEBUG( Tools::format( "readed from file: '%s'", to_debug_string( std::string( s_buffer_a.data(), s_buffer_a.size() ) ) ) );
+		p_buffer_a->resize( p_buffer_a->capacity() );
+
+		std::span<char> readbuf( p_buffer_a->data(), p_buffer_a->size() );
+		file.read( readbuf );
+		p_buffer_a->resize(readbuf.size());
+
+		CPPDEBUG( Tools::format( "readed from file: '%s'", to_debug_string( std::string( p_buffer_a->data(), p_buffer_a->size() ) ) ) );
 
 		CPPDEBUG( Tools::format( "wanted to write : '%s'{%d} at: %d file_size: %d",
-				to_debug_string( std::string( s_buffer_b.data(), s_buffer_b.size() ) ),
-				s_buffer_b.size(),
+				to_debug_string( std::string( p_buffer_b->data(), p_buffer_b->size() ) ),
+				p_buffer_b->size(),
 				pos_before_read,
 				file.file_size() ) );
 
 
 		file.seek(pos_before_read);
-		if( file.write( s_buffer_b ) != s_buffer_b.size() ) {
+		if( file.write( std::span<char>(p_buffer_b->data(), p_buffer_b->size()) ) != p_buffer_b->size() ) {
 			return false;
 		}
-		p += s_buffer_b.size();
+		p += p_buffer_b->size();
 
-		std::swap( s_buffer_a, s_buffer_b );
+		std::swap( p_buffer_a, p_buffer_b );
 	}
 
 	return true;
