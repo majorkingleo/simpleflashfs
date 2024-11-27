@@ -14,13 +14,22 @@ namespace SimpleFlashFs {
 
 class SimpleIniBase
 {
-	SimpleFlashFs::FileBuffer & file;
+public:
+	static const std::span<char> default_comment_signs; // ',' and '"'
 
-	const std::array<char,2> comment_signs = {
-			{ ',',
-			  '\"'
-			}
+	struct properties_t
+	{
+		// buffer size that will be allocated via alloca, when inserting data
+		// 2 buffers are needed in insert function.
+		std::size_t line_buffer_size; // bytes
+
+		std::span<char> comment_signs;
 	};
+
+	properties_t properties{ 512, default_comment_signs };
+
+protected:
+	SimpleFlashFs::FileBuffer & file;
 
 public:
 	SimpleIniBase( SimpleFlashFs::FileBuffer & file_ )
@@ -114,7 +123,7 @@ protected:
 			return false;
 		}
 
-		for( char c : comment_signs ) {
+		for( char c : properties.comment_signs ) {
 			if( line[0] == c ) {
 				return true;
 			}
@@ -176,7 +185,9 @@ protected:
 public:
 	SimpleIni( SimpleFlashFs::FileBuffer & file )
 	: SimpleIniBase( file )
-	{}
+	{
+		properties.line_buffer_size = N;
+	}
 
 	bool write_blob( const std::string_view & section,
 			    const std::string_view & key,

@@ -13,9 +13,9 @@
 #include <charconv>
 #include <string_adapter.h>
 
-#ifndef _WIN32
-#    include <alloca.h>
-#endif
+//#ifndef _WIN32
+//#    include <alloca.h>
+//#endif
 
 
 using namespace Tools;
@@ -28,6 +28,15 @@ namespace {
 }
 
 namespace SimpleFlashFs {
+
+static std::array<char,2> _default_comment_signs {
+	{
+		',',
+		'\"'
+	}
+};
+
+const std::span<char> SimpleIniBase::default_comment_signs = _default_comment_signs;
 
 bool SimpleIniBase::read( const std::string_view & section, const std::string_view & key, std::string_view & value )
 {
@@ -302,10 +311,12 @@ bool SimpleIniBase::insert( std::size_t pos_in_file, const std::span<const std::
 		len += sv.size();
 	}
 
-	const unsigned BUFFER_SIZE = 512;
+	const unsigned BUFFER_SIZE = properties.line_buffer_size;
 
-	char *buffer1 = reinterpret_cast<char*>( alloca( BUFFER_SIZE ) );
-	char *buffer2 = reinterpret_cast<char*>( alloca( BUFFER_SIZE ) );
+	//char *buffer1 = reinterpret_cast<char*>( alloca( BUFFER_SIZE ) );
+	//char *buffer2 = reinterpret_cast<char*>( alloca( BUFFER_SIZE ) );
+	char buffer1[BUFFER_SIZE];
+	char buffer2[BUFFER_SIZE];
 	basic_string_adapter<char> s_buffer_origin1(span_vector(std::span<char>( buffer1, BUFFER_SIZE ) ) );
 	basic_string_adapter<char> s_buffer_origin2(span_vector(std::span<char>( buffer2, BUFFER_SIZE ) ) );
 
@@ -314,10 +325,11 @@ bool SimpleIniBase::insert( std::size_t pos_in_file, const std::span<const std::
 		for( auto sv : values ) {
 			s_buffer_origin1 += sv;
 		}
-
+/*
 		CPPDEBUG( Tools::format( "want to write : '%s' at pos: %d",
 				to_debug_string( std::string( s_buffer_origin1.data(), s_buffer_origin1.size() ) ),
 				pos_in_file ) );
+				*/
 	}
 
 	auto p_buffer_a = &s_buffer_origin2;
@@ -336,6 +348,7 @@ bool SimpleIniBase::insert( std::size_t pos_in_file, const std::span<const std::
 		file.read( readbuf );
 		p_buffer_a->resize(readbuf.size());
 
+		/*
 		CPPDEBUG( Tools::format( "readed from file: '%s'", to_debug_string( std::string( p_buffer_a->data(), p_buffer_a->size() ) ) ) );
 
 		CPPDEBUG( Tools::format( "wanted to write : '%s'{%d} at: %d file_size: %d",
@@ -343,7 +356,7 @@ bool SimpleIniBase::insert( std::size_t pos_in_file, const std::span<const std::
 				p_buffer_b->size(),
 				pos_before_read,
 				file.file_size() ) );
-
+		*/
 
 		file.seek(pos_before_read);
 		if( file.write( std::span<char>(p_buffer_b->data(), p_buffer_b->size()) ) != p_buffer_b->size() ) {
@@ -366,7 +379,7 @@ bool SimpleIniBase::write( const std::string_view & section,
 		return append_section( section ) && append_key( key, value, comment );
 	}
 
-	CPPDEBUG( "section found" );
+	// CPPDEBUG( "section found" );
 	std::optional<std::size_t> last_key_end;
 	std::size_t section_keys_start = file.tellg();
 
@@ -374,23 +387,25 @@ bool SimpleIniBase::write( const std::string_view & section,
 
 		file.seek(*o_next_key_pos);
 
-		auto o_line = get_line( file );
-		if( !o_line ) {
-			return false;
-		}
+		{
+			auto o_line = get_line( file );
+			if( !o_line ) {
+				return false;
+			}
 
-		auto key_value = get_key_value( *o_line );
-		auto & current_key = std::get<KEY>( key_value );
-		auto & current_value = std::get<VALUE>( key_value );
+			auto key_value = get_key_value( *o_line );
+			auto & current_key = std::get<KEY>( key_value );
+			auto & current_value = std::get<VALUE>( key_value );
 
-		if( current_key != key ) {
-			last_key_end = file.tellg();
-			continue;
-		}
+			if( current_key != key ) {
+				last_key_end = file.tellg();
+				continue;
+			}
 
-		if( current_value == value ) {
-			// nothing to do
-			return true;
+			if( current_value == value ) {
+				// nothing to do
+				return true;
+			}
 		}
 
 		std::size_t start = section_keys_start;
@@ -432,7 +447,8 @@ bool SimpleIniBase::write( const std::string_view & section,
 
 			return true;
 		} else {
-			char* buffer = reinterpret_cast<char*>(alloca( len_to_write ));
+			// char* buffer = reinterpret_cast<char*>(alloca( len_to_write ));
+			char buffer[len_to_write];
 
 			std::size_t current_pos = 0;
 			for( auto & sv : sl ) {
@@ -453,7 +469,7 @@ bool SimpleIniBase::write( const std::string_view & section,
 		} // else
 	}
 
-	CPPDEBUG( "key not found" );
+	// CPPDEBUG( "key not found" );
 
 	// there may is an extra '\n' before this section
 	std::size_t current_pos = file.tellg();
