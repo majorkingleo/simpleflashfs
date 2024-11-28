@@ -175,7 +175,7 @@ public:
 
 	std::size_t write( const std::byte *data, std::size_t size ) override {
 		if( append ) {
-			seek( inode.file_len-1 );
+			seek( inode.file_len );
 		}
 		return fs->write( this, data, size );
 	}
@@ -400,6 +400,10 @@ public:
 	// read the fs that the memory interface points to
 	// starting at offset 0
 	virtual bool init();
+
+	std::size_t get_max_file_size() const {
+		 return (header.page_size * (header.filesystem_size - 1)) - (header.max_inodes * header.page_size);
+	}
 
 protected:
 	bool swap_endianess() const;
@@ -1811,6 +1815,17 @@ template <class Config>
 bool SimpleFlashFsBase<Config>::enlarge_file( file_handle_t* file, std::size_t amount )
 {
 	const std::size_t target_size = file->inode.file_len + amount;
+
+	if( amount >= get_number_of_free_data_pages() * header.page_size ) {
+		CPPDEBUG( "cannot enlarge file, no free data pages left" );
+		return false;
+	}
+
+	if( target_size >= get_max_file_size() ) {
+		CPPDEBUG( "cannot enlarge file, target size > filesystem max size" );
+		return false;
+	}
+
 	const std::size_t page_idx = target_size / header.page_size;
 
 	const std::size_t space_inside_the_inode = get_inode_data_space_size(file);

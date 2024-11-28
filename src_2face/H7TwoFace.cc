@@ -276,7 +276,7 @@ H7TwoFace::Stat H7TwoFace::get_stat()
 	// some special files required for copying fs to second flash page
 	// minus 1 inode to delete something
 	ret.max_number_of_files = header.max_inodes  - 1 - SimpleFlashFs::static_memory::SimpleFs2FlashPages<ConfigH7>::RESERVED_NAMES.size();
-	ret.max_file_size = (header.page_size * (header.filesystem_size - 1)) - (header.max_inodes * header.page_size);
+	ret.max_file_size = fs_impl->get_fs().get_current_fs()->get_max_file_size();
 	ret.max_path_len = header.max_path_len;
 	ret.free_space = (fs_impl->get_fs().get_current_fs()->get_number_of_free_data_pages() * header.page_size) + ret.trash_size;
 
