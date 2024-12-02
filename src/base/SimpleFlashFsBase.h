@@ -1518,7 +1518,7 @@ std::size_t SimpleFlashFsBase<Config>::write( file_handle_t* file, const std::by
 		memcpy( page.data(), file->inode.inode_data.data(), inode_data_size );
 		file->pos += inode_data_size;
 
-		const std::size_t bytes_left = std::min( header.page_size - inode_data_size, size );
+		const std::size_t bytes_left = std::min( std::size_t(header.page_size - inode_data_size), size );
 		memcpy( page.data() + file->pos, data, bytes_left );
 
 		const std::size_t total_size = inode_data_size + bytes_left;
