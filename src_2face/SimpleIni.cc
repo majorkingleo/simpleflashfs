@@ -9,13 +9,12 @@
 #include <static_vector.h>
 #include <static_format.h>
 #include <CpputilsDebug.h>
-#include <format.h>
 #include <charconv>
 #include <string_adapter.h>
 
-//#ifndef _WIN32
-//#    include <alloca.h>
-//#endif
+#ifndef _WIN32
+#    include <alloca.h>
+#endif
 
 
 using namespace Tools;
@@ -313,10 +312,8 @@ bool SimpleIniBase::insert( std::size_t pos_in_file, const std::span<const std::
 
 	const unsigned BUFFER_SIZE = properties.line_buffer_size;
 
-	//char *buffer1 = reinterpret_cast<char*>( alloca( BUFFER_SIZE ) );
-	//char *buffer2 = reinterpret_cast<char*>( alloca( BUFFER_SIZE ) );
-	char buffer1[BUFFER_SIZE];
-	char buffer2[BUFFER_SIZE];
+	char *buffer1 = reinterpret_cast<char*>( alloca( BUFFER_SIZE ) );
+	char *buffer2 = reinterpret_cast<char*>( alloca( BUFFER_SIZE ) );
 	basic_string_adapter<char> s_buffer_origin1(span_vector(std::span<char>( buffer1, BUFFER_SIZE ) ) );
 	basic_string_adapter<char> s_buffer_origin2(span_vector(std::span<char>( buffer2, BUFFER_SIZE ) ) );
 
@@ -447,8 +444,7 @@ bool SimpleIniBase::write( const std::string_view & section,
 
 			return true;
 		} else {
-			// char* buffer = reinterpret_cast<char*>(alloca( len_to_write ));
-			char buffer[len_to_write];
+			char* buffer = reinterpret_cast<char*>(alloca( len_to_write ));
 
 			std::size_t current_pos = 0;
 			for( auto & sv : sl ) {
