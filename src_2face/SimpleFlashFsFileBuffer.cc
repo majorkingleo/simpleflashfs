@@ -6,7 +6,7 @@
  */
 #include "SimpleFlashFsFileBuffer.h"
 #include <CpputilsDebug.h>
-#include <format.h>
+#include <static_format.h>
 #include <cstring>
 
 #include <string_utils.h>
@@ -96,7 +96,7 @@ bool FileBuffer::read_to_buffer( std::size_t size )
 	std::size_t len_read = file.read( current_buffer.data(), size_to_read );
 
 	if( len_read != size_to_read ) {
-		CPPDEBUG( Tools::format( "failed reading %d data from %s", size_to_read, file.get_file_name() ) );
+		CPPDEBUG( Tools::static_format<100>( "failed reading %d data from %s", size_to_read, file.get_file_name() ) );
 
 		if( !discard_buffer() ) {
 			return false;
@@ -131,7 +131,7 @@ bool FileBuffer::discard_buffer()
 bool FileBuffer::flush_buffer()
 {
 	if( current_buffer_modified ) {
-		CPPDEBUG( format( "flushing buffer: current_buffer_start: %d pos: %d size: %d",
+		CPPDEBUG( static_format<100>( "flushing buffer: current_buffer_start: %d pos: %d size: %d",
 				current_buffer_start, pos, current_buffer.size() ) );
 
 		file.seek(current_buffer_start);
