@@ -104,12 +104,17 @@ private:
 	std::optional<File> file;
 
 public:
-	H7TwoFaceImpl(SimpleFlashFs::FlashMemoryInterface *mem1, SimpleFlashFs::FlashMemoryInterface *mem2 )
+	/**
+	 * do_init = false, makes only sense on reformatting the fs
+	 */
+	H7TwoFaceImpl(SimpleFlashFs::FlashMemoryInterface *mem1, SimpleFlashFs::FlashMemoryInterface *mem2, bool do_init = true )
 	{
 		fs.emplace(mem1,mem2);
 
-		if( !fs->init() ) {
-			throw STATIC_DEBUG_EXCEPTION("cannot create fs");
+		if( do_init ) {
+			if( !fs->init() ) {
+				throw STATIC_DEBUG_EXCEPTION("cannot create fs");
+			}
 		}
 	}
 
@@ -298,7 +303,7 @@ bool H7TwoFace::recreate()
 		return false;
 	}
 
-	fs_impl.emplace(fs_mem1.value(),fs_mem2.value());
+	fs_impl.emplace(fs_mem1.value(),fs_mem2.value(), false);
 
 	AutoFreeFs autofree;
 

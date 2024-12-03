@@ -35,7 +35,7 @@ public:
 	/**
 	 * converts the address to a in memory mapped address
 	 */
-	virtual const std::byte* map_read( std::size_t address ) { return nullptr; }
+	virtual const std::byte* map_read( std::size_t address, std::size_t size ) { return nullptr; }
 };
 
 

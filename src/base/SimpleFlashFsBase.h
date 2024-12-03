@@ -715,10 +715,10 @@ std::optional<std::span<const std::byte>> SimpleFlashFsBase<Config>::read_page_m
 {
 	std::size_t offset = header.page_size + idx * header.page_size;
 
-	const std::byte* addr = mem->map_read(offset);
+	const std::byte* addr = mem->map_read(offset, size );
 
 	if( addr == nullptr ) {
-		CPPDEBUG( "cannot read all data" );
+		// CPPDEBUG( "cannot read all data" );
 		return {};
 	}
 
@@ -1017,7 +1017,7 @@ std::optional<typename Config::string_view_type> SimpleFlashFsBase<Config>::get_
 
 	std::size_t offset = header.page_size + file_handle.page * header.page_size;
 
-	const std::byte* addr = mem->map_read(offset);
+	const std::byte* addr = mem->map_read(offset, header.page_size );
 
 	if( addr == nullptr ) {
 		CPPDEBUG( "cannot read all data" );
