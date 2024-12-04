@@ -174,6 +174,14 @@ protected:
 	}
 
 	std::string_view remove_hex_prefix( const std::string_view & s ) const;
+
+
+	Tools::static_string<2> get_comment_sign() const {
+		auto cs = Tools::static_format<2>("%c", properties.comment_signs[0]);
+		Tools::static_string<2> ret;
+		ret.assign(cs);
+		return ret;
+	}
 };
 
 template<std::size_t N=100>

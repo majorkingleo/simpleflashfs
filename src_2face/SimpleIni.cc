@@ -30,8 +30,8 @@ namespace SimpleFlashFs {
 
 static std::array<char,2> _default_comment_signs {
 	{
-		',',
-		'\"'
+		'\"',
+		','
 	}
 };
 
@@ -284,7 +284,8 @@ bool SimpleIniBase::append_key( const std::string_view & key,
 			const std::string_view & comment )
 {
 	if( !comment.empty() ) {
-		if( !write( { "#\t", comment, "\n" } ) ) {
+		auto cs = get_comment_sign();
+		if( !write( { cs, "\t", comment, "\n" } ) ) {
 			return false;
 		}
 	}
@@ -418,7 +419,8 @@ bool SimpleIniBase::write( const std::string_view & section,
 		Tools::static_vector<std::string_view,10> sl;
 
 		if( !comment.empty() ) {
-			sl.insert( sl.end(), { "#\t", comment, "\n" } );
+			auto cs = get_comment_sign();
+			sl.insert( sl.end(), { cs, "\t", comment, "\n" } );
 		}
 
 		sl.insert( sl.end(), { "\t", key, " = ", value, "\n" } );
@@ -480,7 +482,8 @@ bool SimpleIniBase::write( const std::string_view & section,
 	Tools::static_vector<std::string_view,10> sl;
 
 	if( !comment.empty() ) {
-		sl.insert( sl.end(), { "#\t", comment, "\n" } );
+		auto cs = get_comment_sign();
+		sl.insert( sl.end(), { cs, "\t", comment, "\n" } );
 	}
 
 	sl.insert( sl.end(), { "\t", key, " = ", value, "\n" } );
