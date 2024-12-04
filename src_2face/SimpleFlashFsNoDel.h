@@ -72,20 +72,33 @@ protected:
 	/**
 	 * reads inode, does no error correction, don't use the resulting
 	 * file handle for reading, or writing.
+	 *
+	 * returns:
+	 *    empty optional:      read error occurred
+	 *    empty file handle:   crc error occurred, free page
+	 *    a valid file handle: inode is used by a file
 	 */
-	typename base_t::FileHandle read_inode( std::size_t index )
+	std::optional<typename base_t::FileHandle> read_inode( std::size_t index )
 	{
 		if( this->mem->can_map_read() ) {
-			auto page = this->read_page_mapped( index, this->header.page_size, true );
-			if( !page ) {
-				return {};
+			typename base_t::ReadPageMappedReturn ret = this->read_page_mapped( index, this->header.page_size, true );
+			if( !ret ) {
+				if( ret.error == base_t::ReadError::ReadError ) {
+					return {}; // empty optional
+				}
+				return typename base_t::FileHandle{};
 			}
-			return this->get_inode( *page, false );
+			return this->get_inode( *ret.data, false );
 		}
 
 		typename base_t::config_t::page_type page( this->header.page_size );
-		if( !base_t::read_page( index, page, true ) ) {
-			return {};
+
+		typename base_t::ReadPageReturn ret = base_t::read_page( index, page, true );
+		if( !ret ) {
+			if( ret.error == base_t::ReadError::ReadError ) {
+				return {};
+			}
+			return typename base_t::FileHandle{};
 		}
 		return this->get_inode( page );
 	}
@@ -109,9 +122,18 @@ void SimpleFsNoDel<Config>::read_all_free_data_pages()
 
 	for( unsigned i = 0; i < base_t::header.max_inodes; i++ ) {
 
-		typename base_t::FileHandle inode = read_inode( i );
+		auto ret = read_inode( i );
+
+		if( !ret ) {
+			// empty optional, read error, remove from free data pages list
+			base_t::free_data_pages.erase(i);
+			continue;
+		}
+
+		typename base_t::FileHandle & inode = *ret;
 
 		if( !inode ) {
+			// free data page, do nothing it is already in the free_data_pages list
 			continue;
 		}
 

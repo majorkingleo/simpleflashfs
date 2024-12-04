@@ -332,6 +332,47 @@ protected:
 		}
 	};
 
+	enum class ReadError
+	{
+		ReadError,
+		CrcError
+	};
+
+	struct ReadPageReturn
+	{
+		std::optional<ReadError> error;
+
+		bool operator!() const {
+			return error.has_value();
+		}
+
+		operator bool() const {
+			return !error.has_value();
+		}
+	};
+
+	struct ReadPageMappedReturn
+	{
+		std::optional<ReadError> error;
+		std::optional<std::span<const std::byte>> data;
+
+		ReadPageMappedReturn( ReadError error_ )
+		: error( error_ )
+		{}
+
+		ReadPageMappedReturn( std::span<const std::byte> data_ )
+		: data( data_ )
+		{}
+
+		bool operator!() const {
+			return error.has_value();
+		}
+
+		operator bool() const {
+			return !error.has_value();
+		}
+	};
+
 protected:
 	header_t header {};
 	FlashMemoryInterface *mem;
@@ -432,13 +473,13 @@ protected:
 
 	uint32_t get_checksum_size() const;
 
-	bool read_page( std::size_t idx, Config::page_type & page, bool check_crc = false ) {
+	ReadPageReturn read_page( std::size_t idx, Config::page_type & page, bool check_crc = false ) {
 		return read_page( idx, page.data(), page.size(), check_crc );
 	}
 
-	bool read_page( std::size_t idx, std::byte *data, std::size_t size, bool check_crc = false );
+	ReadPageReturn read_page( std::size_t idx, std::byte *data, std::size_t size, bool check_crc = false );
 
-	std::optional<std::span<const std::byte>> read_page_mapped( std::size_t idx, std::size_t size, bool check_crc = false );
+	ReadPageMappedReturn read_page_mapped( std::size_t idx, std::size_t size, bool check_crc = false );
 
 	Config::page_type inode2page( const Inode<Config> & inode );
 
@@ -691,27 +732,27 @@ uint32_t SimpleFlashFsBase<Config>::get_checksum_size() const
 }
 
 template <class Config>
-bool SimpleFlashFsBase<Config>::read_page( std::size_t idx, std::byte *page, std::size_t size, bool check_crc )
+SimpleFlashFsBase<Config>::ReadPageReturn SimpleFlashFsBase<Config>::read_page( std::size_t idx, std::byte *page, std::size_t size, bool check_crc )
 {
 	std::size_t offset = header.page_size + idx * header.page_size;
 	if( std::size_t len_read; (len_read = mem->read(offset, page, size )) != size ) {
 		CPPDEBUG( "cannot read all data" );
 		CPPDEBUG( Tools::static_format<100>( "cannot read all data from page: %d size: %d len_read: %d offset: %d", idx, size, len_read, offset ) );
-		return false;
+		return { ReadError::ReadError };
 	}
 
 	if( check_crc ) {
 		if( get_page_checksum( page, size ) != calc_page_checksum(page, size) ) {
 			//CPPDEBUG( "checksum failed" );
-			return false;
+			return { ReadError::CrcError };
 		}
 	}
 
-	return true;
+	return {};
 }
 
 template <class Config>
-std::optional<std::span<const std::byte>> SimpleFlashFsBase<Config>::read_page_mapped( std::size_t idx, std::size_t size, bool check_crc )
+SimpleFlashFsBase<Config>::ReadPageMappedReturn SimpleFlashFsBase<Config>::read_page_mapped( std::size_t idx, std::size_t size, bool check_crc )
 {
 	std::size_t offset = header.page_size + idx * header.page_size;
 
@@ -719,13 +760,13 @@ std::optional<std::span<const std::byte>> SimpleFlashFsBase<Config>::read_page_m
 
 	if( addr == nullptr ) {
 		// CPPDEBUG( "cannot read all data" );
-		return {};
+		return { ReadError::ReadError };
 	}
 
 	if( check_crc ) {
 		if( get_page_checksum( addr, size ) != calc_page_checksum(addr, size) ) {
 			//CPPDEBUG( "checksum failed" );
-			return {};
+			return { ReadError::CrcError };
 		}
 	}
 
@@ -976,10 +1017,11 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::find_fil
 	// we have top do this, because only the last version of each
 	// inode has it's last valid name
 	for( unsigned i = 0; i < header.max_inodes; i++ ) {
-		auto page = read_page_mapped( i, header.page_size, true );
+		ReadPageMappedReturn ret = read_page_mapped( i, header.page_size, true );
 
-		if( page ) {
-			auto file_handle = get_inode( *page, false );
+		if( ret ) {
+			auto page = *ret.data;
+			auto file_handle = get_inode( page, false );
 			file_handle.page = i;
 
 			iv_storage.add(file_handle);
@@ -988,10 +1030,11 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::find_fil
 
 	for( auto & iv : iv_storage.get_data() ) {
 
-		auto page = read_page_mapped( iv.page, header.page_size, true );
+		ReadPageMappedReturn ret = read_page_mapped( iv.page, header.page_size, true );
 
-		if( page ) {
-			auto file_handle = get_inode( *page );
+		if( ret ) {
+			auto page = *ret.data;
+			auto file_handle = get_inode( page );
 			file_handle.page = iv.page;
 
 			// deleted file
@@ -1170,12 +1213,14 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::allocate
 
 		typename Config::page_type page(header.page_size);
 
-		if( !read_page( i, page, true ) ) {
+		ReadPageReturn ret = read_page( i, page, true );
+
+		if( !ret && *ret.error != ReadError::ReadError ) {
 			if( allocated_unwritten_pages.count(i) == 0 ) {
-				file_handle_t ret(this);
-				ret.page = i;
+				file_handle_t fh_ret(this);
+				fh_ret.page = i;
 				allocated_unwritten_pages.insert(i);
-				return ret;
+				return fh_ret;
 			}
 		}
 	}
@@ -1188,14 +1233,16 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::allocate
 {
 	for( unsigned i = 0; i < header.max_inodes; i++ ) {
 
-		auto page = read_page_mapped( i, header.page_size, true );
+		CPPDEBUG( Tools::static_format<100>( "Reading Page: %d", i ) );
 
-		if( !page ) {
+		ReadPageMappedReturn ret = read_page_mapped( i, header.page_size, true );
+
+		if( !ret && *ret.error != ReadError::ReadError ) {
 			if( allocated_unwritten_pages.count(i) == 0 ) {
-				file_handle_t ret(this);
-				ret.page = i;
+				file_handle_t fh_ret(this);
+				fh_ret.page = i;
 				allocated_unwritten_pages.insert(i);
-				return ret;
+				return fh_ret;
 			}
 		}
 	}
@@ -1298,7 +1345,9 @@ uint32_t SimpleFlashFsBase<Config>::allocate_free_inode_page_number_unmapped()
 		page.clear();
 		page.resize(header.page_size);
 
-		if( !read_page( i, page, true ) ) {
+		ReadPageReturn ret = read_page( i, page, true );
+
+		if( !ret && *ret.error != ReadError::ReadError ) {
 			if( allocated_unwritten_pages.count(i) == 0 ) {
 				allocated_unwritten_pages.insert(i);
 				return i;
@@ -1314,9 +1363,9 @@ uint32_t SimpleFlashFsBase<Config>::allocate_free_inode_page_number_mapped()
 {
 	for( unsigned i = 0; i < header.max_inodes; i++ ) {
 
-		auto page = read_page_mapped( i, header.page_size, true );
+		ReadPageMappedReturn ret = read_page_mapped( i, header.page_size, true );
 
-		if( !page ) {
+		if( !ret && *ret.error != ReadError::ReadError ) {
 			if( allocated_unwritten_pages.count(i) == 0 ) {
 				allocated_unwritten_pages.insert(i);
 				return i;
