@@ -417,9 +417,9 @@ bool SimpleIniBase::write( const std::string_view & section,
 		file.seek( start );
 
 		Tools::static_vector<std::string_view,10> sl;
+		auto cs = get_comment_sign();
 
 		if( !comment.empty() ) {
-			auto cs = get_comment_sign();
 			sl.insert( sl.end(), { cs, "\t", comment, "\n" } );
 		}
 
@@ -480,9 +480,9 @@ bool SimpleIniBase::write( const std::string_view & section,
 	}
 
 	Tools::static_vector<std::string_view,10> sl;
+	auto cs = get_comment_sign();
 
 	if( !comment.empty() ) {
-		auto cs = get_comment_sign();
 		sl.insert( sl.end(), { cs, "\t", comment, "\n" } );
 	}
 
