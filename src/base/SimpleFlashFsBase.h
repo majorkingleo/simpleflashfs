@@ -567,6 +567,11 @@ protected:
 
 	bool allocate_new_data_pages( std::size_t page_idx, file_handle_t* file );
 
+	/**
+	 * replaces the existing page at data_pages with a new allocated page
+	 */
+	bool allocate_new_data_page_at( std::size_t page_idx, file_handle_t* file );
+
 	/***
 	 * writes unwritten pages, filled with zeros
 	 * This can happen when seeking to > file size position in the file.
@@ -1528,6 +1533,21 @@ bool SimpleFlashFsBase<Config>::allocate_new_data_pages( std::size_t page_idx, f
 }
 
 template <class Config>
+bool SimpleFlashFsBase<Config>::allocate_new_data_page_at( std::size_t page_idx, file_handle_t* file )
+{
+	uint32_t new_page_idx = allocate_free_data_page(file);
+
+	if( new_page_idx == 0 ) {
+		CPPDEBUG( "no space left on device" );
+		return false;
+	}
+
+	file->inode.data_pages.at(page_idx) = { new_page_idx, true };
+
+	return true;
+}
+
+template <class Config>
 std::size_t SimpleFlashFsBase<Config>::write( file_handle_t* file, const std::byte *data, std::size_t size )
 {
 	std::size_t page_idx = file->pos / header.page_size;
@@ -1635,6 +1655,14 @@ std::size_t SimpleFlashFsBase<Config>::write( file_handle_t* file, const std::by
 		const std::size_t len = std::min( size, static_cast<size_t>(header.page_size - data_start_at_page) );
 		memcpy( &page[data_start_at_page], data, len );
 
+		if( !file->inode.data_pages.at(page_idx).unwritten ) {
+			CPPDEBUG( "heeeeeeeeeeeere" );
+			if( !allocate_new_data_page_at( page_idx, file ) ) {
+				return 0;
+			}
+		}
+
+
 		if( !write_page( file, page, file->inode.data_pages.at(page_idx) ) ) {
 			CPPDEBUG( "no space left on device" );
 			return 0;
@@ -1667,6 +1695,13 @@ std::size_t SimpleFlashFsBase<Config>::write( file_handle_t* file, const std::by
 
 			const std::size_t len = std::min( static_cast<uint32_t>(size - bytes_written), header.page_size );
 			memcpy( page.data(), data + bytes_written, len );
+
+			if( !page_meta.unwritten ) {
+				CPPDEBUG( "heeeeeeeeeeeere" );
+				if( !allocate_new_data_page_at( page_idx, file ) ) {
+					return 0;
+				}
+			}
 
 			if( !write_page( file, page, file->inode.data_pages.at(page_idx) ) ) {
 				CPPDEBUG( "no space left on device" );
