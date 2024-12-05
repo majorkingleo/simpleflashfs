@@ -62,7 +62,7 @@ public:
 
 	friend class base::FileHandle<Config,SimpleFlashFs>;
 
-	std::list<std::shared_ptr<FileHandle>> get_all_inodes();
+	std::list<std::shared_ptr<FileHandle>> get_all_inodes( bool do_error_corrections = true );
 
 protected:
 	void read_all_free_data_pages();

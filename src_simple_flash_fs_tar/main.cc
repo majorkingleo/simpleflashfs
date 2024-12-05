@@ -152,7 +152,7 @@ static void info_fs( SimpleFlashFs::dynamic::SimpleFlashFs & fs )
 		const int SIZE       = co.addCol("Size");
 		const int DATA_PAGES = co.addCol("Data pages");
 
-		for( auto inode : fs.get_all_inodes() ) {
+		for( auto inode : fs.get_all_inodes(false) ) {
 			co.addColData(INODE,      format( "%d,%d", inode->inode.inode_number, inode->inode.inode_version_number ));
 			co.addColData(PAGE,       x2s(inode->page));
 			co.addColData(FILENAME,   inode->inode.file_name);

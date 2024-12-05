@@ -132,7 +132,7 @@ void SimpleFlashFs::read_all_free_data_pages()
 
 
 
-std::list<std::shared_ptr<::SimpleFlashFs::dynamic::SimpleFlashFs::FileHandle>> SimpleFlashFs::get_all_inodes()
+std::list<std::shared_ptr<::SimpleFlashFs::dynamic::SimpleFlashFs::FileHandle>> SimpleFlashFs::get_all_inodes( bool do_error_corrections )
 {
 	std::list<std::shared_ptr<FileHandle>> ret;
 
@@ -142,7 +142,7 @@ std::list<std::shared_ptr<::SimpleFlashFs::dynamic::SimpleFlashFs::FileHandle>> 
 
 		if( read_page( i, page, true ) ) {
 
-			auto inode = get_inode( page );
+			auto inode = get_inode( page, do_error_corrections );
 			inode.page = i;
 
 			CPPDEBUG( format( "found inode %d,%d at page: %d (%s) attributes: %d",
