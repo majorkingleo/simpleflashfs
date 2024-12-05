@@ -38,7 +38,7 @@ std::size_t SimSTM32InternalFlashPc::write( std::size_t address, const std::byte
 															address, size, address + size, mem.size() ) );
 	}
 
-	CPPDEBUG( Tools::format( "writing page: %d", address / 512 ) );
+	CPPDEBUG( Tools::format( "writing raw page: %d", address / 512 ) );
 
 	for( unsigned i = 0; i < size; i++ ) {
 		if( mem_written[address+i] != std::byte(0) ) {
