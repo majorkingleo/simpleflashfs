@@ -90,8 +90,15 @@ struct Inode
 	static constexpr uint32_t data_pages_type_size = sizeof(data_pages_value_type);
 
 	struct data_page_t {
+		enum class State
+		{
+			New,
+			Stored,
+			Deleted
+		};
+
 		data_pages_value_type page_id;
-		bool                  unwritten = false;
+		State                 state = State::Stored;
 	};
 
 	// the index of data pages
@@ -101,6 +108,12 @@ struct Inode
 	// will only be filled if pages == 0, so data_pages is also
 	// zero and needs no space
 	Config::page_type inode_data;
+
+	std::size_t count_valid_data_pages() const {
+		return std::count_if( data_pages.begin(), data_pages.end(), []( auto & p ) {
+			return p.state != data_page_t::State::Deleted;
+		});
+	}
 };
 
 /**
@@ -268,6 +281,8 @@ public:
 	using config_t = Config;
 
 protected:
+	using data_page_t = Inode<Config>::data_page_t;
+
 	class InodeVersionStore
 	{
 	public:
@@ -558,7 +573,7 @@ protected:
 			const Config::page_type & page,
 			 uint32_t idx ) {
 
-		typename Inode<Config>::data_page_t page_meta { idx, true };
+		data_page_t page_meta { idx, data_page_t::State::New };
 
 		return write_page( file,
 				std::basic_string_view<std::byte>( page.data(), page.size() ),
@@ -1259,7 +1274,7 @@ template <class Config>
 bool SimpleFlashFsBase<Config>::write_zero_pages( file_handle_t* file )
 {
 	for( auto & p : file->inode.data_pages ) {
-		if( p.unwritten ) {
+		if( p.state == data_page_t::State::New ) {
 
 			typename Config::page_type page(header.page_size);
 
@@ -1268,7 +1283,7 @@ bool SimpleFlashFsBase<Config>::write_zero_pages( file_handle_t* file )
 				return false;
 			}
 
-			p.unwritten = false;
+			p.state = data_page_t::State::Stored;
 		}
 	}
 
@@ -1300,8 +1315,23 @@ bool SimpleFlashFsBase<Config>::flush( file_handle_t* file )
 		auto page = inode2page(file->inode);
 		add_page_checksum(page);
 
+		std::vector<unsigned> v;
+		for( auto & i : file->inode.data_pages ) {
+			v.push_back(i.page_id);
+		}
+
+		/*
+		CPPDEBUG( Tools::static_format<100>( "writing inode %d,%d page %d (%s),  data pages %s",
+				file->inode.inode_number,
+				file->inode.inode_version_number,
+				file->page,
+				file->inode.file_name,
+				Tools::IterableToCommaSeparatedString(v)));
+		*/
+
 		if( !write_meta_page(file, page, file->page ) ) {
-			CPPDEBUG( Tools::static_format<100>( "cannot write inode %d page %d", file->inode.inode_number, file->page ));
+			CPPDEBUG( Tools::static_format<100>( "cannot write inode %d page %d",
+					  file->inode.inode_number, file->page ) );
 			return false;
 		}
 		file->modified = false;
@@ -1389,9 +1419,12 @@ uint32_t SimpleFlashFsBase<Config>::allocate_free_data_page()
 		return 0;
 	}
 
+	// CPPDEBUG( Tools::format( ">>>>>>>>>>>> free Data pages: %s", Tools::IterableToCommaSeparatedString(free_data_pages.get_data()) ) );
+
 	auto it = free_data_pages.begin();
 	uint32_t ret = *it;
 	free_data_pages.erase(it);
+	// CPPDEBUG( Tools::static_format<100>("free data page: %d found", ret ) );
 
 	return ret;
 }
@@ -1475,11 +1508,11 @@ bool SimpleFlashFsBase<Config>::write_page( file_handle_t* file,
 		const std::basic_string_view<std::byte> & page,
 		typename Inode<Config>::data_page_t & page_meta )
 {
-	if( page_meta.unwritten ) {
+	if( page_meta.state == data_page_t::State::New ) {
 		std::size_t ret = mem->write( header.page_size + header.page_size * page_meta.page_id, page.data(), page.size() );
 
 		if( ret == page.size() ) {
-			page_meta.unwritten = false;
+			page_meta.state = data_page_t::State::Stored;
 			return true;
 		} else {
 			CPPDEBUG( "no space left on device" );
@@ -1502,7 +1535,7 @@ bool SimpleFlashFsBase<Config>::write_page( file_handle_t* file,
 			for( auto & p : file->inode.data_pages ) {
 				if( p.page_id == old_page_number ) {
 					p.page_id = new_page_number;
-					p.unwritten = false;
+					p.state = data_page_t::State::Stored;
 					break;
 				}
 			}
@@ -1518,15 +1551,18 @@ template <class Config>
 bool SimpleFlashFsBase<Config>::allocate_new_data_pages( std::size_t page_idx, file_handle_t* file )
 {
 	// allocate new pages, at least the initial one
-	while( page_idx >= file->inode.data_pages.size() ) {
-		uint32_t new_page_idx = allocate_free_data_page(file);
+	while( page_idx >= file->inode.count_valid_data_pages() ) {
+		uint32_t new_page_id = allocate_free_data_page(file);
 
-		if( new_page_idx == 0 ) {
+		if( new_page_id == 0 ) {
 			CPPDEBUG( "no space left on device" );
 			return false;
 		}
 
-		file->inode.data_pages.push_back( { new_page_idx, true } );
+		// insert at the last valid (not deleted element)
+		auto it = file->inode.data_pages.begin() + file->inode.count_valid_data_pages();
+
+		file->inode.data_pages.insert( it, { new_page_id, data_page_t::State::New } );
 	}
 
 	return true;
@@ -1535,14 +1571,23 @@ bool SimpleFlashFsBase<Config>::allocate_new_data_pages( std::size_t page_idx, f
 template <class Config>
 bool SimpleFlashFsBase<Config>::allocate_new_data_page_at( std::size_t page_idx, file_handle_t* file )
 {
-	uint32_t new_page_idx = allocate_free_data_page(file);
+	uint32_t new_page_id = allocate_free_data_page(file);
 
-	if( new_page_idx == 0 ) {
+	if( new_page_id == 0 ) {
 		CPPDEBUG( "no space left on device" );
 		return false;
 	}
 
-	file->inode.data_pages.at(page_idx) = { new_page_idx, true };
+	/**
+	 * Move the old data page to the end.
+	 * We have to store any written page into an inode, so we know
+	 * we are not allowed reusing it again.
+	 */
+	auto old_page_meta = file->inode.data_pages.at(page_idx);
+	old_page_meta.state = data_page_t::State::Deleted;
+	file->inode.data_pages.push_back( old_page_meta );
+
+	file->inode.data_pages.at(page_idx) = { new_page_id, data_page_t::State::New };
 
 	return true;
 }
@@ -1628,7 +1673,7 @@ std::size_t SimpleFlashFsBase<Config>::write( file_handle_t* file, const std::by
 		bool do_read_page = true;
 
 		if( page_idx < file->inode.data_pages.size() &&
-			file->inode.data_pages.at(page_idx).unwritten ) {
+			file->inode.data_pages.at(page_idx).state == data_page_t::State::New ) {
 
 			// do not read the page from disc.
 			// do nothing on page structure, so it will automaticalle inited with zeros
@@ -1655,7 +1700,7 @@ std::size_t SimpleFlashFsBase<Config>::write( file_handle_t* file, const std::by
 		const std::size_t len = std::min( size, static_cast<size_t>(header.page_size - data_start_at_page) );
 		memcpy( &page[data_start_at_page], data, len );
 
-		if( !file->inode.data_pages.at(page_idx).unwritten ) {
+		if( file->inode.data_pages.at(page_idx).state == data_page_t::State::Stored ) {
 			CPPDEBUG( "heeeeeeeeeeeere" );
 			if( !allocate_new_data_page_at( page_idx, file ) ) {
 				return 0;
@@ -1686,7 +1731,7 @@ std::size_t SimpleFlashFsBase<Config>::write( file_handle_t* file, const std::by
 
 			const auto & page_meta = file->inode.data_pages.at(page_idx);
 
-			if( !page_meta.unwritten ) {
+			if( page_meta.state == data_page_t::State::Stored ) {
 				if( !read_page( page_meta.page_id, page, false ) ) {
 					CPPDEBUG( Tools::static_format<100>( "reading from pos %d failed", page_meta.page_id * header.page_size ) );
 					return 0;
@@ -1696,13 +1741,14 @@ std::size_t SimpleFlashFsBase<Config>::write( file_handle_t* file, const std::by
 			const std::size_t len = std::min( static_cast<uint32_t>(size - bytes_written), header.page_size );
 			memcpy( page.data(), data + bytes_written, len );
 
-			if( !page_meta.unwritten ) {
+			if( page_meta.state == data_page_t::State::Stored ) {
 				CPPDEBUG( "heeeeeeeeeeeere" );
 				if( !allocate_new_data_page_at( page_idx, file ) ) {
 					return 0;
 				}
 			}
 
+			//CPPDEBUG( Tools::static_format<100>("writing at page: %d", file->inode.data_pages.at(page_idx).page_id ) );
 			if( !write_page( file, page, file->inode.data_pages.at(page_idx) ) ) {
 				CPPDEBUG( "no space left on device" );
 				return 0;
@@ -1783,7 +1829,7 @@ std::size_t SimpleFlashFsBase<Config>::read( file_handle_t* file, std::byte *dat
 		auto & page_meta = file->inode.data_pages.at(page_idx);
 		const std::size_t len = std::min( size, static_cast<size_t>(header.page_size - data_start_at_page) );
 
-		if( page_meta.unwritten ) {
+		if( page_meta.state == data_page_t::State::New ) {
 			// this page contains only zeros
 			memset( data + bytes_readen, 0, len );
 
@@ -1820,7 +1866,7 @@ std::size_t SimpleFlashFsBase<Config>::read( file_handle_t* file, std::byte *dat
 			typename Config::page_type page(header.page_size);
 
 			// if the page is unwritten, it contains only zeros
-			if( !page_meta.unwritten ) {
+			if( page_meta.state == data_page_t::State::Stored ) {
 				if( !read_page( page_meta.page_id, page, false ) ) {
 					CPPDEBUG( Tools::static_format<100>( "reading from pos %d failed", page_idx * header.page_size ) );
 					return bytes_readen;
@@ -1835,7 +1881,7 @@ std::size_t SimpleFlashFsBase<Config>::read( file_handle_t* file, std::byte *dat
 
 		} else {
 
-			if( page_meta.unwritten ) {
+			if( page_meta.state == data_page_t::State::New ) {
 				// if the page is unwritten, it contains only zeros
 				memset( data + bytes_readen, 0, header.page_size );
 			}
