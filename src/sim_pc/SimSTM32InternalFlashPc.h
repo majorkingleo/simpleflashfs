@@ -25,6 +25,7 @@ namespace SimPc {
 class SimSTM32InternalFlashPc : public SimFlashFsFlashMemory
 {
 	std::vector<std::byte> mem;
+	std::vector<std::byte> mem_written; // for double write check without erase before
 
 public:
 	// create a new file, if it does not exists.
@@ -45,14 +46,14 @@ public:
 	 * returns true if the flash memory is mapped into the address space,
 	 * so for reading we can simple get an address pointer
 	 */
-	virtual bool can_map_read() const {
+	bool can_map_read() const override {
 		return true;
 	}
 
 	/**
 	 * converts the address to a in memory mapped address
 	 */
-	virtual const std::byte* map_read( std::size_t address ) {
+	const std::byte* map_read( std::size_t address, std::size_t size ) override {
 		return &mem.at(address);
 	}
 

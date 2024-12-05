@@ -23,6 +23,7 @@ SimSTM32InternalFlashPc::SimSTM32InternalFlashPc( const std::string & filename_)
 void SimSTM32InternalFlashPc::init()
 {
 	mem.resize(file_size);
+	mem_written.resize(file_size);
 	file.read(reinterpret_cast<char*>(mem.data()), file_size);
 }
 
@@ -37,7 +38,17 @@ std::size_t SimSTM32InternalFlashPc::write( std::size_t address, const std::byte
 															address, size, address + size, mem.size() ) );
 	}
 
+	CPPDEBUG( Tools::format( "writing page: %d", address / 512 ) );
+
+	for( unsigned i = 0; i < size; i++ ) {
+		if( mem_written[address+i] != std::byte(0) ) {
+			throw STDERR_EXCEPTION(Tools::format("memory area %d already written", address+i));
+		}
+	}
+
 	std::memcpy( &mem[address], data, size );
+	std::memset( &mem_written[address], 0xFF, size );
+
 	return SimFlashFsFlashMemory::write( address, data, size );
 }
 
@@ -50,5 +61,6 @@ std::size_t SimSTM32InternalFlashPc::read( std::size_t address, std::byte *data,
 void SimSTM32InternalFlashPc::erase( std::size_t address, std::size_t size )
 {
 	std::memset( &mem.at(address), 0xFF, size );
+	std::memset( &mem_written.at(address), 0x00, size );
 	return SimFlashFsFlashMemory::erase( address, size );
 }
