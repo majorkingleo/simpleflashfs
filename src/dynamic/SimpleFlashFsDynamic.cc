@@ -90,7 +90,7 @@ void SimpleFlashFs::read_all_free_data_pages()
 					static_cast<unsigned>(page[6]),
 					static_cast<unsigned>(page[7]) ) );
 					*/
-			FileHandle inode = get_inode( page );
+			FileHandle inode = get_inode( page, false );
 			inode.page = i;
 			max_inode_number = std::max( max_inode_number, inode.inode.inode_number );
 			CPPDEBUG( format( "found inode %d,%d at page: %d (%s) attributes: %d",

@@ -100,7 +100,7 @@ protected:
 			}
 			return typename base_t::FileHandle{};
 		}
-		return this->get_inode( page );
+		return this->get_inode( page, false );
 	}
 };
 
