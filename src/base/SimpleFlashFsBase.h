@@ -1253,8 +1253,6 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::allocate
 {
 	for( unsigned i = 0; i < header.max_inodes; i++ ) {
 
-		CPPDEBUG( Tools::static_format<100>( "Reading Page: %d", i ) );
-
 		ReadPageMappedReturn ret = read_page_mapped( i, header.page_size, true );
 
 		if( !ret && *ret.error != ReadError::ReadError ) {
@@ -1423,12 +1421,9 @@ uint32_t SimpleFlashFsBase<Config>::allocate_free_data_page()
 		return 0;
 	}
 
-	// CPPDEBUG( Tools::format( ">>>>>>>>>>>> free Data pages: %s", Tools::IterableToCommaSeparatedString(free_data_pages.get_data()) ) );
-
 	auto it = free_data_pages.begin();
 	uint32_t ret = *it;
 	free_data_pages.erase(it);
-	// CPPDEBUG( Tools::static_format<100>("free data page: %d found", ret ) );
 
 	return ret;
 }
@@ -1705,7 +1700,6 @@ std::size_t SimpleFlashFsBase<Config>::write( file_handle_t* file, const std::by
 		memcpy( &page[data_start_at_page], data, len );
 
 		if( file->inode.data_pages.at(page_idx).state == data_page_t::State::Stored ) {
-			CPPDEBUG( "heeeeeeeeeeeere" );
 			if( !allocate_new_data_page_at( page_idx, file ) ) {
 				return 0;
 			}
@@ -1746,7 +1740,6 @@ std::size_t SimpleFlashFsBase<Config>::write( file_handle_t* file, const std::by
 			memcpy( page.data(), data + bytes_written, len );
 
 			if( page_meta.state == data_page_t::State::Stored ) {
-				CPPDEBUG( "heeeeeeeeeeeere" );
 				if( !allocate_new_data_page_at( page_idx, file ) ) {
 					return 0;
 				}
