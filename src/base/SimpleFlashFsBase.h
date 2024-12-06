@@ -1293,6 +1293,27 @@ bool SimpleFlashFsBase<Config>::write_zero_pages( file_handle_t* file )
 template <class Config>
 bool SimpleFlashFsBase<Config>::flush( file_handle_t* file )
 {
+/*
+	auto debug = []( file_handle_t* file ){
+		std::vector<unsigned> v_valid;
+		std::vector<unsigned> v_deleted;
+		for( auto & i : file->inode.data_pages ) {
+			if( i.state == data_page_t::State::Deleted ) {
+				v_deleted.push_back(i.page_id);
+			} else {
+				v_valid.push_back(i.page_id);
+			}
+		}
+
+		CPPDEBUG( Tools::static_format<100>( "writing inode %d,%d page %d (%s), data pages: %s, deleted pages: %s",
+				file->inode.inode_number,
+				file->inode.inode_version_number,
+				file->page,
+				file->inode.file_name,
+				Tools::IterableToCommaSeparatedString(v_valid),
+				Tools::IterableToCommaSeparatedString(v_deleted) ));
+	};
+*/
 	if( !file->modified ) {
 		return true;
 	}
@@ -1315,19 +1336,7 @@ bool SimpleFlashFsBase<Config>::flush( file_handle_t* file )
 		auto page = inode2page(file->inode);
 		add_page_checksum(page);
 
-		std::vector<unsigned> v;
-		for( auto & i : file->inode.data_pages ) {
-			v.push_back(i.page_id);
-		}
-
-		/*
-		CPPDEBUG( Tools::static_format<100>( "writing inode %d,%d page %d (%s),  data pages %s",
-				file->inode.inode_number,
-				file->inode.inode_version_number,
-				file->page,
-				file->inode.file_name,
-				Tools::IterableToCommaSeparatedString(v)));
-		*/
+		// debug(file);
 
 		if( !write_meta_page(file, page, file->page ) ) {
 			CPPDEBUG( Tools::static_format<100>( "cannot write inode %d page %d",
@@ -1350,13 +1359,8 @@ bool SimpleFlashFsBase<Config>::flush( file_handle_t* file )
 		CPPDEBUG( "failed flushing zero pages" );
 	}
 
-	/*
-	CPPDEBUG( Tools::static_format<100>( "writing inode %d,%d page %d (%s)",
-			file->inode.inode_number,
-			file->inode.inode_version_number,
-			file->page,
-			file->inode.file_name ));
-	*/
+	// debug(file);
+
 	if( !write_meta_page(file, page, file->page ) ) {
 		CPPDEBUG( Tools::static_format<100>( "cannot write inode %d,%d page %d",
 				file->inode.inode_number, file->inode.inode_version_number, file->page ));
