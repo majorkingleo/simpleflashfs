@@ -26,15 +26,16 @@ class SimSTM32InternalFlashPc : public SimFlashFsFlashMemory
 {
 	std::vector<std::byte> mem;
 	std::vector<std::byte> mem_written; // for double write check without erase before
+	bool do_mem_mapping;
 
 public:
 	// create a new file, if it does not exists.
 	// automatically resizes the file to the given size
-	SimSTM32InternalFlashPc( const std::string & filename_, std::size_t size );
+	SimSTM32InternalFlashPc( const std::string & filename_, std::size_t size, bool do_mem_mapping = true );
 
 	// opens a file
 	// size will be automatically detected
-	SimSTM32InternalFlashPc( const std::string & filename_);
+	SimSTM32InternalFlashPc( const std::string & filename_, bool do_mem_mapping = true );
 
 	std::size_t write( std::size_t address, const std::byte *data, std::size_t size ) override;
 	std::size_t read( std::size_t address, std::byte *data, std::size_t size ) override;
@@ -47,7 +48,7 @@ public:
 	 * so for reading we can simple get an address pointer
 	 */
 	bool can_map_read() const override {
-		return true;
+		return do_mem_mapping;
 	}
 
 	/**

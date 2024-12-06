@@ -8,14 +8,16 @@
 
 using namespace SimpleFlashFs::SimPc;
 
-SimSTM32InternalFlashPc::SimSTM32InternalFlashPc( const std::string & filename_, std::size_t size_ )
-: SimFlashFsFlashMemory( filename_, size_ )
+SimSTM32InternalFlashPc::SimSTM32InternalFlashPc( const std::string & filename_, std::size_t size_, bool do_mem_mapping_ )
+: SimFlashFsFlashMemory( filename_, size_ ),
+  do_mem_mapping( do_mem_mapping_ )
 {
 	init();
 }
 
-SimSTM32InternalFlashPc::SimSTM32InternalFlashPc( const std::string & filename_)
-: SimFlashFsFlashMemory( filename_ )
+SimSTM32InternalFlashPc::SimSTM32InternalFlashPc( const std::string & filename_, bool do_mem_mapping_ )
+: SimFlashFsFlashMemory( filename_ ),
+  do_mem_mapping( do_mem_mapping_ )
 {
 	init();
 }
