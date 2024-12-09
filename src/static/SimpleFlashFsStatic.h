@@ -88,7 +88,7 @@ public:
 			typename Config::page_type page(base_t::header.page_size);
 
 			if( base_t::read_page( i, page, true ) ) {
-				auto file_handle = base_t::get_inode( page );
+				auto file_handle = base_t::get_inode( page, false );
 				file_handle.page = i;
 				this->iv_storage.add( file_handle );
 			}
