@@ -327,7 +327,7 @@ bool SimpleIniBase::insert( std::size_t pos_in_file, const std::span<const std::
 		CPPDEBUG( Tools::format( "want to write : '%s' at pos: %d",
 				to_debug_string( std::string( s_buffer_origin1.data(), s_buffer_origin1.size() ) ),
 				pos_in_file ) );
-				*/
+*/
 	}
 
 	auto p_buffer_a = &s_buffer_origin2;
@@ -346,7 +346,7 @@ bool SimpleIniBase::insert( std::size_t pos_in_file, const std::span<const std::
 		file.read( readbuf );
 		p_buffer_a->resize(readbuf.size());
 
-		/*
+/*
 		CPPDEBUG( Tools::format( "readed from file: '%s'", to_debug_string( std::string( p_buffer_a->data(), p_buffer_a->size() ) ) ) );
 
 		CPPDEBUG( Tools::format( "wanted to write : '%s'{%d} at: %d file_size: %d",
@@ -354,7 +354,7 @@ bool SimpleIniBase::insert( std::size_t pos_in_file, const std::span<const std::
 				p_buffer_b->size(),
 				pos_before_read,
 				file.file_size() ) );
-		*/
+*/
 
 		file.seek(pos_before_read);
 		if( file.write( std::span<char>(p_buffer_b->data(), p_buffer_b->size()) ) != p_buffer_b->size() ) {
@@ -430,7 +430,8 @@ bool SimpleIniBase::write( const std::string_view & section,
 			len_to_write += sv.size();
 		}
 
-		const std::size_t size_to_overwrite = end - start + 1;
+		const std::size_t size_to_overwrite = end - start;
+
 
 		// fill with white spaces
 		if(  size_to_overwrite > len_to_write ) {
