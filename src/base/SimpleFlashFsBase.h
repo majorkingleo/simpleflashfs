@@ -780,17 +780,22 @@ SimpleFlashFsBase<Config>::ReadPageMappedReturn SimpleFlashFsBase<Config>::read_
 
 	if( addr == nullptr ) {
 		// CPPDEBUG( "cannot read all data" );
+		// CPPDEBUG( Tools::static_format<100>("cannot read all data at page: %d", idx ) );
 		return { ReadError::ReadError };
 	}
 
+	// pack data into the return value too, so additional verification might happens too
+	SimpleFlashFsBase<Config>::ReadPageMappedReturn ret( { addr, size } );
+
 	if( check_crc ) {
 		if( get_page_checksum( addr, size ) != calc_page_checksum(addr, size) ) {
-			//CPPDEBUG( "checksum failed" );
-			return { ReadError::CrcError };
+			/*
+			if( idx < 10 ) {
+				CPPDEBUG( Tools::static_format<100>("checksum failed at page: %d", idx ) );
+			}*/
+			ret.error = ReadError::CrcError;
 		}
 	}
-
-	std::span<const std::byte> ret( addr, size );
 
 	return ret;
 }
@@ -1515,6 +1520,7 @@ bool SimpleFlashFsBase<Config>::write_page( file_handle_t* file,
 			return true;
 		} else {
 			CPPDEBUG( "no space left on device" );
+			//CPPDEBUG( Tools::static_format<100>("no space left on device ret: %d", ret ) );
 			return false;
 		}
 

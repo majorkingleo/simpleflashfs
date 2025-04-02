@@ -31,10 +31,12 @@ public:
 
 protected:
 	Stat stat{};
+	bool do_debug = false;
 
 public:
-	SimpleFsNoDel( ::SimpleFlashFs::FlashMemoryInterface *mem_interface_ )
-	: base_t(mem_interface_)
+	SimpleFsNoDel( ::SimpleFlashFs::FlashMemoryInterface *mem_interface_, bool do_debug_ = false )
+	: base_t(mem_interface_),
+	  do_debug( do_debug_ )
 	{
 		crcInit();
 	}
@@ -84,9 +86,39 @@ protected:
 			typename base_t::ReadPageMappedReturn ret = this->read_page_mapped( index, this->header.page_size, true );
 			if( !ret ) {
 				if( ret.error == base_t::ReadError::ReadError ) {
+					if( do_debug ) {
+						CPPDEBUG("read_error");
+					}
 					return {}; // empty optional
 				}
-				return typename base_t::FileHandle{};
+
+				if( ret.error == base_t::ReadError::CrcError ) {
+					if( ret.data ) {
+						if( is_empty( ret.data->begin(), ret.data->end() ) ) {
+							return typename base_t::FileHandle{};
+						} else {
+							 auto inode = this->get_inode( *ret.data, false );
+
+							 if( do_debug ) {
+								CPPDEBUG( Tools::static_format<100>( "not empty: found inode %d,%d at page: %d name: '%s'",
+										inode.inode.inode_number, inode.inode.inode_version_number, index, inode.inode.file_name ) );
+
+								uint32_t c_page = this->get_page_checksum( ret.data->data(), this->header.page_size );
+								uint32_t c_calc = this->calc_page_checksum(ret.data->data(), this->header.page_size );
+
+								CPPDEBUG( Tools::static_format<100>( "chksum: 0x%X calculated chksum: 0x%X %s",
+										c_page, c_calc, c_page == c_calc ? "no diff" : "crcsum error " ) );
+
+								CPPDEBUG( Tools::static_format<100>( "page size: %d start_address: 0x%X crcsum at: 0x%X",
+										this->header.page_size,
+										(uintptr_t)ret.data->data(),
+										(uintptr_t)(ret.data->data() + this->header.page_size - sizeof(uint32_t) )) );
+							 }
+						}
+					}
+				}
+
+				return {}; // empty optional
 			}
 			return this->get_inode( *ret.data, false );
 		}
@@ -96,11 +128,31 @@ protected:
 		typename base_t::ReadPageReturn ret = base_t::read_page( index, page, true );
 		if( !ret ) {
 			if( ret.error == base_t::ReadError::ReadError ) {
+				if( do_debug ) {
+					CPPDEBUG("read_error");
+				}
 				return {};
 			}
-			return typename base_t::FileHandle{};
+
+			if( ret.error == base_t::ReadError::CrcError ) {
+				if( is_empty( page.begin(), page.end() ) ) {
+					return typename base_t::FileHandle{};
+				}
+			}
+
+			return {};
 		}
 		return this->get_inode( page, false );
+	}
+
+	bool is_empty( auto it_begin, auto it_end ) const {
+		const auto it_ret = std::find_if_not( it_begin, it_end, []( auto b ) { return b == std::byte(0xFF); } );
+
+		if( it_ret == it_end ) {
+			return true;
+		}
+
+		return false;
 	}
 };
 
@@ -126,6 +178,9 @@ void SimpleFsNoDel<Config>::read_all_free_data_pages()
 
 		if( !ret ) {
 			// empty optional, read error, remove from free data pages list
+			if( do_debug ) {
+				CPPDEBUG( Tools::static_format<100>( "read error at page: %d", i ) );
+			}
 			base_t::free_data_pages.erase(i);
 			continue;
 		}
@@ -133,6 +188,9 @@ void SimpleFsNoDel<Config>::read_all_free_data_pages()
 		typename base_t::FileHandle & inode = *ret;
 
 		if( !inode ) {
+			if( do_debug && i < 10) {
+				CPPDEBUG( Tools::static_format<100>( "no inode at page: %d", i ) );
+			}
 			// free data page, do nothing it is already in the free_data_pages list
 			continue;
 		}
@@ -140,10 +198,11 @@ void SimpleFsNoDel<Config>::read_all_free_data_pages()
 		inode.page = i;
 		base_t::max_inode_number = std::max( base_t::max_inode_number, inode.inode.inode_number );
 
-/*
-		CPPDEBUG( Tools::format( "found inode %d,%d at page: %d name: '%s'",
-				inode.inode.inode_number, inode.inode.inode_version_number, i, inode.inode.file_name ) );
-*/
+		if( do_debug ) {
+			CPPDEBUG( Tools::static_format<100>( "found inode %d,%d at page: %d name: '%s'",
+					inode.inode.inode_number, inode.inode.inode_version_number, i, inode.inode.file_name ) );
+		}
+
 
 		if( this->iv_storage.add( inode ) == base_t::InodeVersionStore::add_ret_t::replaced ) {
 			stat.trash_inodes++;
