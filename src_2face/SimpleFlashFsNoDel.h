@@ -102,7 +102,7 @@ protected:
 							 if( do_debug ) {
 								CPPDEBUG( Tools::static_format<100>( "not empty: found inode %d,%d at page: %d name: '%s'",
 										inode.inode.inode_number, inode.inode.inode_version_number, index, inode.inode.file_name ) );
-
+/*
 								uint32_t c_page = this->get_page_checksum( ret.data->data(), this->header.page_size );
 								uint32_t c_calc = this->calc_page_checksum(ret.data->data(), this->header.page_size );
 
@@ -113,6 +113,7 @@ protected:
 										this->header.page_size,
 										(uintptr_t)ret.data->data(),
 										(uintptr_t)(ret.data->data() + this->header.page_size - sizeof(uint32_t) )) );
+*/
 							 }
 						}
 					}
