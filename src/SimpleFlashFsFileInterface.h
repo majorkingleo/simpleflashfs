@@ -21,6 +21,10 @@ public:
 
 	virtual std::size_t write( const std::byte *data, std::size_t size ) = 0;
 
+	std::size_t write( const std::span<const std::byte> & data ) {
+		return write( data.data(), data.size() );
+	}
+
 	virtual std::size_t read( std::byte *data, std::size_t size ) = 0;
 
 	virtual bool flush() = 0;
