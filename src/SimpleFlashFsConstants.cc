@@ -8,9 +8,9 @@ namespace SimpleFlashFs {
 
 const char * MAGICK_STRING = "SimpleFlashFs";
 
-const char * ENDIANESS_LE = "LE";
-const char * ENDIANESS_BE = "BE";
-const std::size_t ENDIANESS_LEN = 2;
+const char * ENDIANNESS_LE = "LE";
+const char * ENDIANNESS_BE = "BE";
+const std::size_t ENDIANNESS_LEN = 2;
 
 } // namespace SimpleFlashFs
 

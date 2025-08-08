@@ -131,9 +131,10 @@ bool FileBuffer::discard_buffer()
 bool FileBuffer::flush_buffer()
 {
 	if( current_buffer_modified ) {
+		/*
 		CPPDEBUG( static_format<100>( "flushing buffer: current_buffer_start: %d pos: %d size: %d",
 				current_buffer_start, pos, current_buffer.size() ) );
-
+		*/
 		file.seek(current_buffer_start);
 		if( file.write(current_buffer.data(),current_buffer.size())  != current_buffer.size() ) {
 			return false;

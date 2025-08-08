@@ -18,9 +18,9 @@ namespace SimpleFlashFs {
 extern const char * MAGICK_STRING;
 constexpr std::size_t MAGICK_STRING_LEN = 13;
 
-extern const char * ENDIANESS_LE;
-extern const char * ENDIANESS_BE;
-extern const std::size_t ENDIANESS_LEN;
+extern const char * ENDIANNESS_LE;
+extern const char * ENDIANNESS_BE;
+extern const std::size_t ENDIANNESS_LEN;
 
 constexpr std::size_t MIN_PAGE_SIZE = 37;
 
