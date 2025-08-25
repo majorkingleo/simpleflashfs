@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <string>
 #include <fstream>
+#include <span>
 
 namespace SimpleFlashFs {
 
