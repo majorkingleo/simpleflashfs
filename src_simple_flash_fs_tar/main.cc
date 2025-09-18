@@ -26,14 +26,14 @@ using namespace SimpleFlashFs::dynamic;
 using namespace SimpleFlashFs::SimPc;
 
 namespace std {
-	std::ostream & operator<<( std::ostream & out, SimpleFlashFs::dynamic::SimpleFlashFs::Header::ENDIANESS en )
+	std::ostream & operator<<( std::ostream & out, SimpleFlashFs::dynamic::SimpleFlashFs::Header::ENDIANNESS en )
 	{
 		using Header = SimpleFlashFs::dynamic::SimpleFlashFs::Header;
 
 		switch( en )
 		{
-		case Header::ENDIANESS::BE: return out << ENDIANESS_BE;
-		case Header::ENDIANESS::LE: return out << ENDIANESS_LE;
+		case Header::ENDIANNESS::BE: return out << ENDIANNESS_BE;
+		case Header::ENDIANNESS::LE: return out << ENDIANNESS_LE;
 		}
 
 		return out;
@@ -79,8 +79,8 @@ static void info_fs( SimpleFlashFs::dynamic::SimpleFlashFs & fs )
 
 		co.addColData(BYTES, "13 - 14" );
 		co.addColData(TITLE, "Endianess");
-		co.addColData(LEN,   x2s(ENDIANESS_LEN) );
-		co.addColData(DATA,  x2s(header.endianess) );
+		co.addColData(LEN,   x2s(ENDIANNESS_LEN) );
+		co.addColData(DATA,  x2s(header.endianness) );
 		co.addColData(UNIT,  "" );
 
 		co.addColData(BYTES, "15 - 16" );
