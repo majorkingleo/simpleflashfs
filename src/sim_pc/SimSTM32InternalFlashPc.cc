@@ -8,15 +8,17 @@
 
 using namespace SimpleFlashFs::SimPc;
 
-SimSTM32InternalFlashPc::SimSTM32InternalFlashPc( const std::string & filename_, std::size_t size_, bool do_mem_mapping_ )
+SimSTM32InternalFlashPc::SimSTM32InternalFlashPc( const std::string & filename_, const unsigned PAGE_SIZE_, std::size_t size_, bool do_mem_mapping_ )
 : SimFlashFsFlashMemory( filename_, size_ ),
+  PAGE_SIZE( PAGE_SIZE_ ),
   do_mem_mapping( do_mem_mapping_ )
 {
 	init();
 }
 
-SimSTM32InternalFlashPc::SimSTM32InternalFlashPc( const std::string & filename_, bool do_mem_mapping_ )
+SimSTM32InternalFlashPc::SimSTM32InternalFlashPc( const std::string & filename_, const unsigned PAGE_SIZE_, bool do_mem_mapping_ )
 : SimFlashFsFlashMemory( filename_ ),
+  PAGE_SIZE( PAGE_SIZE_ ),
   do_mem_mapping( do_mem_mapping_ )
 {
 	init();
@@ -40,11 +42,11 @@ std::size_t SimSTM32InternalFlashPc::write( std::size_t address, const std::byte
 															address, size, address + size, mem.size() ) );
 	}
 
-	CPPDEBUG( Tools::format( "writing raw page: %d", address / 512 ) );
+	CPPDEBUG( Tools::format( "writing raw page: %d", address / PAGE_SIZE ) );
 
 	for( unsigned i = 0; i < size; i++ ) {
 		if( mem_written[address+i] != std::byte(0) ) {
-			throw STDERR_EXCEPTION(Tools::format("memory area %d already written", address+i));
+			throw STDERR_EXCEPTION(Tools::format("memory area %d page %d width: %d already written", address+i, (address / PAGE_SIZE), size ));
 		}
 	}
 
