@@ -279,6 +279,8 @@ public:
 	using inode_t = Inode<Config>;
 	using file_handle_t = FileHandle<Config,SimpleFlashFsBase<Config>>;
 	using config_t = Config;
+	using inode_number_t  = decltype(Inode<Config>::inode_version_number);
+	using inode_version_number_t = decltype(Inode<Config>::inode_version_number);
 
 protected:
 	using data_page_t = Inode<Config>::data_page_t;
@@ -295,9 +297,9 @@ protected:
 
 		struct InodeVersion
 		{
-			uint32_t inode = 0;
+			inode_number_t inode = 0;
 			uint32_t page = 0;
-			uint32_t version = 0;
+			inode_version_number_t version = 0;
 
 			InodeVersion() = default;
 			InodeVersion( const file_handle_t & file )
@@ -322,10 +324,15 @@ protected:
 
 	public:
 
-		add_ret_t add( const file_handle_t & file )
+		using cont_t = std::pair<inode_number_t,inode_version_number_t>;
+
+		add_ret_t add( const file_handle_t & file, cont_t & previous_data )
 		{
 			for( auto & iv : data ) {
 				if( iv.inode == file.inode.inode_number ) {
+					previous_data.first = iv.inode;
+					previous_data.second = iv.version;
+
 					if( file.inode.inode_version_number > iv.version ) {
 						iv.version = file.inode.inode_version_number;
 						iv.page = file.page;
@@ -334,8 +341,14 @@ protected:
 				}
 			}
 
-			data.push_back( InodeVersion( file ) );
+			data.emplace_back( file );
 			return add_ret_t::inserted;
+		}
+
+		add_ret_t add( const file_handle_t & file )
+		{
+			cont_t dummy;
+			return add( file, dummy );
 		}
 
 		const typename Config::template vector_type<InodeVersion> & get_data() const {
@@ -1481,13 +1494,13 @@ template <class Config>
 void SimpleFlashFsBase<Config>::erase_inode_and_unused_pages( file_handle_t & inode_to_erase,
 		file_handle_t & next_inode_version )
 {
-	/*
+/*
 	CPPDEBUG( Tools::static_format<100>( "cleaning up inode %d,%d comparing with %d,%d",
 			inode_to_erase.inode.inode_number,
 			inode_to_erase.inode.inode_version_number,
 			next_inode_version.inode.inode_number,
 			next_inode_version.inode.inode_version_number));
-	*/
+*/
 
 	// all pages, that are used by the next inode are still in use
 	auto & dp = inode_to_erase.inode.data_pages;
