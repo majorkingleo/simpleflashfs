@@ -1000,7 +1000,7 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::open( co
 			return {};
 		}
 
-		CPPDEBUG( Tools::static_format<100>( "opening file: '%s' truncating it using inode at page: %d", name, new_handle.page ) );
+		// CPPDEBUG( Tools::static_format<100>( "opening file: '%s' truncating it using inode at page: %d", name, new_handle.page ) );
 
 		new_handle.inode = handle.inode;
 		new_handle.inode.file_len = 0;
@@ -1536,7 +1536,7 @@ void SimpleFlashFsBase<Config>::erase_inode_and_unused_pages( file_handle_t & in
 	pages_to_erase.insert(inode_to_erase.page);
 
 	for( auto page : pages_to_erase.get_data() ) {
-		CPPDEBUG( Tools::static_format<100>( "erasing page: %d", page ) );
+		// CPPDEBUG( Tools::static_format<100>( "erasing page: %d", page ) );
 
 		std::size_t address = header.page_size + page * header.page_size;
 		mem->erase(address, header.page_size );
