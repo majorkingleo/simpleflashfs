@@ -196,6 +196,11 @@ static void add_file( SimpleFlashFs::dynamic::SimpleFlashFs & fs, const std::str
 {
 	auto data = read_file( file );
 	auto handle = fs.open( file, std::ios_base::in | std::ios_base::out | std::ios_base::trunc );
+
+	if( !handle ) {
+		throw STDERR_EXCEPTION( Tools::format("cannot create or open file '%s' in archive", file ) );
+	}
+
 	handle.write( data.data(), data.size() );
 }
 

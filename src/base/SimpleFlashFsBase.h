@@ -970,6 +970,11 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::open( co
 			return {};
 		}
 
+		if( name.size() > header.max_path_len ) {
+			CPPDEBUG( "path name too long" );
+			return {};
+		}
+
 		handle.inode.file_name = name;
 		handle.inode.file_name_len = name.size();
 		handle.modified = true;
