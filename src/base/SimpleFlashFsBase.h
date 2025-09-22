@@ -541,18 +541,18 @@ protected:
 		allocated_unwritten_pages.erase(page);
 	}
 
-	uint32_t allocate_free_inode_page_number() {
+	std::optional<uint32_t> allocate_free_inode_page_number() {
 		if( mem->can_map_read() ) {
 			return allocate_free_inode_page_number_mapped();
 		}
 		return allocate_free_inode_page_number_unmapped();
 	}
 
-	uint32_t allocate_free_inode_page_number_mapped();
-	uint32_t allocate_free_inode_page_number_unmapped();
+	std::optional<uint32_t> allocate_free_inode_page_number_mapped();
+	std::optional<uint32_t> allocate_free_inode_page_number_unmapped();
 
-	uint32_t allocate_free_data_page();
-	uint32_t allocate_free_data_page( const file_handle_t *file );
+	std::optional<uint32_t> allocate_free_data_page();
+	std::optional<uint32_t> allocate_free_data_page( const file_handle_t *file );
 
 	/**
 	 * returns the maximum size of data, that fits inside an spacific inode
@@ -1000,6 +1000,8 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::open( co
 			return {};
 		}
 
+		CPPDEBUG( Tools::static_format<100>( "opening file: '%s' truncating it using inode at page: %d", name, new_handle.page ) );
+
 		new_handle.inode = handle.inode;
 		new_handle.inode.file_len = 0;
 		new_handle.inode.pages = 0;
@@ -1380,7 +1382,14 @@ bool SimpleFlashFsBase<Config>::flush( file_handle_t* file )
 
 	FileHandle old_file = file->get_disconnected_copy();
 
-	file->page = allocate_free_inode_page_number();
+	auto o_page = allocate_free_inode_page_number();
+
+	if( !o_page ) {
+		CPPDEBUG( "cannot allocate new inode page" );
+		return false;
+	}
+
+	file->page = *o_page;
 	file->inode.inode_version_number++;
 
 	auto page = inode2page(file->inode);
@@ -1408,9 +1417,9 @@ bool SimpleFlashFsBase<Config>::flush( file_handle_t* file )
 }
 
 template <class Config>
-uint32_t SimpleFlashFsBase<Config>::allocate_free_inode_page_number_unmapped()
+std::optional<uint32_t> SimpleFlashFsBase<Config>::allocate_free_inode_page_number_unmapped()
 {
-	typename Config::page_type page;
+	typename Config::page_type page{};
 	page.reserve(header.page_size);
 
 	for( unsigned i = 0; i < header.max_inodes; i++ ) {
@@ -1418,6 +1427,7 @@ uint32_t SimpleFlashFsBase<Config>::allocate_free_inode_page_number_unmapped()
 		page.resize(header.page_size);
 
 		ReadPageReturn ret = read_page( i, page, true );
+
 
 		if( !ret && *ret.error != ReadError::ReadError ) {
 			if( allocated_unwritten_pages.count(i) == 0 ) {
@@ -1431,7 +1441,7 @@ uint32_t SimpleFlashFsBase<Config>::allocate_free_inode_page_number_unmapped()
 }
 
 template <class Config>
-uint32_t SimpleFlashFsBase<Config>::allocate_free_inode_page_number_mapped()
+std::optional<uint32_t> SimpleFlashFsBase<Config>::allocate_free_inode_page_number_mapped()
 {
 	for( unsigned i = 0; i < header.max_inodes; i++ ) {
 
@@ -1449,11 +1459,11 @@ uint32_t SimpleFlashFsBase<Config>::allocate_free_inode_page_number_mapped()
 }
 
 template <class Config>
-uint32_t SimpleFlashFsBase<Config>::allocate_free_data_page()
+std::optional<uint32_t> SimpleFlashFsBase<Config>::allocate_free_data_page()
 {
 	if( free_data_pages.empty() ) {
 		CPPDEBUG( "no free data pages left" );
-		return 0;
+		return {};
 	}
 
 	auto it = free_data_pages.begin();
@@ -1464,13 +1474,13 @@ uint32_t SimpleFlashFsBase<Config>::allocate_free_data_page()
 }
 
 template <class Config>
-uint32_t SimpleFlashFsBase<Config>::allocate_free_data_page( const file_handle_t *file )
+std::optional<uint32_t> SimpleFlashFsBase<Config>::allocate_free_data_page( const file_handle_t *file )
 {
 	std::size_t max_pages = get_max_inode_data_pages( file );
 
 	if( file->inode.data_pages.size() + 1 >= max_pages ) {
 		// no space left
-		return 0;
+		return {};
 	}
 
 	return allocate_free_data_page();
@@ -1526,7 +1536,7 @@ void SimpleFlashFsBase<Config>::erase_inode_and_unused_pages( file_handle_t & in
 	pages_to_erase.insert(inode_to_erase.page);
 
 	for( auto page : pages_to_erase.get_data() ) {
-		// CPPDEBUG( Tools::static_format<100>( "erasing page: %d", page ) );
+		CPPDEBUG( Tools::static_format<100>( "erasing page: %d", page ) );
 
 		std::size_t address = header.page_size + page * header.page_size;
 		mem->erase(address, header.page_size );
@@ -1557,14 +1567,15 @@ bool SimpleFlashFsBase<Config>::write_page( file_handle_t* file,
 		}
 
 	} else {
-		uint32_t new_page_number = base::SimpleFlashFsBase<Config>::allocate_free_data_page();
+		const auto o_new_page_number = base::SimpleFlashFsBase<Config>::allocate_free_data_page();
 
-		if( new_page_number == 0 ) {
+		if( !o_new_page_number ) {
 			CPPDEBUG( "no space left on device" );
 			return false;
 		}
 
-		uint32_t old_page_number = page_meta.page_id;
+		const uint32_t old_page_number = page_meta.page_id;
+		const uint32_t new_page_number = *o_new_page_number;
 
 		std::size_t ret = mem->write( header.page_size + header.page_size * new_page_number, page.data(), page.size() );
 
@@ -1589,9 +1600,9 @@ bool SimpleFlashFsBase<Config>::allocate_new_data_pages( std::size_t page_idx, f
 {
 	// allocate new pages, at least the initial one
 	while( page_idx >= file->inode.count_valid_data_pages() ) {
-		uint32_t new_page_id = allocate_free_data_page(file);
+		const auto o_new_page_id = allocate_free_data_page(file);
 
-		if( new_page_id == 0 ) {
+		if( !o_new_page_id ) {
 			CPPDEBUG( "no space left on device" );
 			return false;
 		}
@@ -1599,7 +1610,7 @@ bool SimpleFlashFsBase<Config>::allocate_new_data_pages( std::size_t page_idx, f
 		// insert at the last valid (not deleted element)
 		auto it = file->inode.data_pages.begin() + file->inode.count_valid_data_pages();
 
-		file->inode.data_pages.insert( it, { new_page_id, data_page_t::State::New } );
+		file->inode.data_pages.insert( it, { *o_new_page_id, data_page_t::State::New } );
 	}
 
 	return true;
@@ -1608,9 +1619,9 @@ bool SimpleFlashFsBase<Config>::allocate_new_data_pages( std::size_t page_idx, f
 template <class Config>
 bool SimpleFlashFsBase<Config>::allocate_new_data_page_at( std::size_t page_idx, file_handle_t* file )
 {
-	uint32_t new_page_id = allocate_free_data_page(file);
+	const auto o_new_page_id = allocate_free_data_page(file);
 
-	if( new_page_id == 0 ) {
+	if( !o_new_page_id ) {
 		CPPDEBUG( "no space left on device" );
 		return false;
 	}
@@ -1624,7 +1635,7 @@ bool SimpleFlashFsBase<Config>::allocate_new_data_page_at( std::size_t page_idx,
 	old_page_meta.state = data_page_t::State::Deleted;
 	file->inode.data_pages.push_back( old_page_meta );
 
-	file->inode.data_pages.at(page_idx) = { new_page_id, data_page_t::State::New };
+	file->inode.data_pages.at(page_idx) = { *o_new_page_id, data_page_t::State::New };
 
 	return true;
 }
