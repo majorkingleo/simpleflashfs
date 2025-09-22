@@ -204,6 +204,17 @@ static void add_file( SimpleFlashFs::dynamic::SimpleFlashFs & fs, const std::str
 	handle.write( data.data(), data.size() );
 }
 
+static void del_file( SimpleFlashFs::dynamic::SimpleFlashFs & fs, const std::string & file )
+{
+	auto handle = fs.open( file, std::ios_base::in | std::ios_base::out | std::ios_base::trunc );
+
+	if( !handle ) {
+		throw STDERR_EXCEPTION( Tools::format("cannot create or open file '%s' in archive", file ) );
+	}
+
+	handle.delete_file();
+}
+
 static bool extract_file( SimpleFlashFs::dynamic::SimpleFlashFs & fs, const std::string & file )
 {
 	auto handle = fs.open( file, std::ios_base::in );
@@ -285,6 +296,12 @@ int main( int argc, char **argv )
 	o_fs_add.setRequired(false);
 	arg.addOptionR( &o_fs_add );
 
+	Arg::StringOption o_fs_del("del");
+	o_fs_del.addName( "delete" );
+	o_fs_del.setDescription("delete file");
+	o_fs_del.setRequired(false);
+	arg.addOptionR( &o_fs_del );
+
 	Arg::FlagOption o_tar_list("t");
 	o_tar_list.addName( "list" );
 	o_tar_list.setDescription("list files in archive");
@@ -365,6 +382,23 @@ int main( int argc, char **argv )
 
 			for( unsigned i = 1; i < values->size(); i++ ) {
 				add_file( fs, values->at(i) );
+			}
+		}
+
+		if( o_fs_del.isSet() ) {
+			auto values = o_fs_del.getValues();
+
+			std::string file = values->at(0);
+
+			SimFlashFsFlashMemory mem(file);
+			SimpleFlashFs::dynamic::SimpleFlashFs fs(&mem);
+
+			if( !fs.init() ) {
+				throw STDERR_EXCEPTION( "init failed" );
+			}
+
+			for( unsigned i = 1; i < values->size(); i++ ) {
+				del_file( fs, values->at(i) );
 			}
 		}
 
