@@ -29,6 +29,7 @@ private:
 	bool unshrinked = false;
 
 public:
+
 	template< class InputIt >
 	void unordered_insert( InputIt first, InputIt last ) {
 		data.insert( data.end(), first, last );
@@ -98,6 +99,7 @@ public:
 				  it != data.end(); ++it ) {
 			if( *it == value ) {
 				*it = NO_DATA;
+				unshrinked = true;
 				return 1;
 			}
 
