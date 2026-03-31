@@ -45,6 +45,7 @@ std::size_t SimFlashFsFlashMemory::write( std::size_t address, const std::byte *
 {
 	file.seekg(address);
 	file.write(reinterpret_cast<const char*>(data), size);
+  file.flush(); // to simplify external debugging
 	return size;
 }
 

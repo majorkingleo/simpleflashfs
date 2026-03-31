@@ -508,7 +508,7 @@ bool SimpleIniBase::write(  const std::string_view & section,
 							const uint32_t value,
 							const std::string_view & comment )
 {
-	auto s = static_format<50>( "%d", value );
+	auto s = static_format<100>( "%d", value );
 	return write( section, key, s, comment );
 }
 
@@ -517,7 +517,7 @@ bool SimpleIniBase::write(  const std::string_view & section,
 							const int32_t value,
 							const std::string_view & comment )
 {
-	auto s = static_format<50>( "%d", value );
+	auto s = static_format<100>( "%d", value );
 	return write( section, key, s, comment );
 }
 
@@ -526,7 +526,7 @@ bool SimpleIniBase::write(  const std::string_view & section,
 							const uint64_t value,
 							const std::string_view & comment )
 {
-	auto s = static_format<50>( "%d", value );
+	auto s = static_format<100>( "%d", value );
 	return write( section, key, s, comment );
 }
 
@@ -535,7 +535,7 @@ bool SimpleIniBase::write(  const std::string_view & section,
 							const int64_t value,
 							const std::string_view & comment )
 {
-	auto s = static_format<50>( "%d", value );
+	auto s = static_format<100>( "%d", value );
 	return write( section, key, s, comment );
 }
 
@@ -544,7 +544,7 @@ bool SimpleIniBase::write(  const std::string_view & section,
 							const char value,
 							const std::string_view & comment )
 {
-	auto s = static_format<50>( "0x%X", static_cast<int>(value) );
+	auto s = static_format<100>( "0x%X", static_cast<int>(value) );
 	static_string<10> sc;
 
 	switch( value ) {
@@ -557,7 +557,7 @@ bool SimpleIniBase::write(  const std::string_view & section,
 			break;
 	}
 
-	auto c = static_format<50>( "%s%s(%s)", comment, comment.empty() ? "" : " ", sc );
+	auto c = static_format<100>( "%s%s(%s)", comment, comment.empty() ? "" : " ", sc );
 	return write( section, key, s, c );
 }
 
@@ -577,8 +577,8 @@ bool SimpleIniBase::write(  const std::string_view & section,
 
 	f.f = value;
 
-	auto s = static_format<50>( "0x%X", f.i );
-	auto c = static_format<50>( "%s%s(%f)", comment, comment.empty() ? "" : " ", f.f );
+	auto s = static_format<100>( "0x%X", f.i );
+	auto c = static_format<100>( "%s%s(%f)", comment, comment.empty() ? "" : " ", f.f );
 
 	return write( section, key, s, c );
 }
@@ -599,7 +599,7 @@ bool SimpleIniBase::write(  const std::string_view & section,
 
 	f.f = value;
 
-	auto s = static_format<50>( "0x%X", f.i );
+	auto s = static_format<100>( "0x%X", f.i );
 	auto c = static_format<100>( "%s%s(%f)", comment, comment.empty() ? "" : " ", f.f );
 
 	return write( section, key, s, c );
