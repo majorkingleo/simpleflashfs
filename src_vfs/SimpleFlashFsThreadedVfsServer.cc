@@ -78,6 +78,7 @@ public:
 } // namespace
 
 SimpleFlashFsThreadedVfsServer::SimpleFlashFsThreadedVfsServer()
+: SimpleFlashFsThreadedVfsServer::VfsServerInterface()
 {
 }
 
@@ -141,4 +142,25 @@ std::string_view SimpleFlashFsThreadedVfsServer::get_drive_name( const std::stri
         return path.substr( 0, pos );
     }
     return path;
+}
+
+std::vector<std::string_view> SimpleFlashFsThreadedVfsServer::get_drive_names() const
+{
+    auto lock = std::scoped_lock(m_mutex);
+    std::vector<std::string_view> drive_names;
+    for( auto & drive : m_drives ) {
+        drive_names.push_back( drive->get_drive_name() );
+    }
+    return drive_names;
+}
+
+bool SimpleFlashFsThreadedVfsServer::list_files( std::function<bool(const std::string_view &, std::size_t size )> callback )
+{
+    auto lock = std::scoped_lock(m_mutex);
+    for( auto & drive : m_drives ) {
+        if( !drive->list_files( callback ) ) {
+            return false;
+        }
+    }
+    return true;
 }

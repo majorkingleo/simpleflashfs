@@ -13,7 +13,7 @@ class SimpleFlashFsThreadedVfsServer : public VfsServerInterface
 {
 private:
     std::thread                                     m_server_thread;
-    std::mutex                                      m_mutex;
+    mutable std::mutex                              m_mutex;
     std::atomic<bool>                               m_running {false};
     std::list<std::shared_ptr<VfsDriveInterface>>   m_drives {};        
 
