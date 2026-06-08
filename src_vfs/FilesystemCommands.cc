@@ -241,4 +241,26 @@ Use 'help <command>' for more details on a specific command.
     return {true, "OK", help_text};
 }
 
+
+// ============================================================================
+// FormatCommand
+// ============================================================================
+
+CommandResult FormatCommand::execute(const std::vector<std::string>& args)
+{
+    if (args.size() < 2) {
+        return {false, "format: missing drive argument", ""};
+    }
+
+    std::string drive = args[1];
+
+    try {
+        m_vfs->create(drive);
+        
+        return {true, "Drive formatted: " + drive, ""};
+    } catch (const std::exception& e) {
+        return {false, "format: " + std::string(e.what()), ""};
+    }
+}
+
 } // namespace SimpleFlashFs::Vfs

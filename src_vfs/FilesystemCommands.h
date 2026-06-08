@@ -120,4 +120,17 @@ public:
     std::string get_usage() const override { return "help, ?  - Show this help message"; }
 };
 
+/**
+ * @brief Create/format drive
+ */
+class FormatCommand : public FilesystemCommand
+{
+public:
+    using FilesystemCommand::FilesystemCommand;
+
+    CommandResult execute(const std::vector<std::string>& args) override;
+    std::string get_description() const override { return "Format drive"; }
+    std::string get_usage() const override { return "format <drive>  - Format drive"; }
+};
+
 } // namespace SimpleFlashFs::Vfs

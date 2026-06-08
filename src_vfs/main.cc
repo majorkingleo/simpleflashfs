@@ -130,29 +130,25 @@ int main( int argc, char **argv )
 		parser->register_command("rm", std::make_shared<Vfs::RemoveCommand>(vfs));
 		parser->register_command("touch", std::make_shared<Vfs::TouchCommand>(vfs));
 		parser->register_command("help", std::make_shared<Vfs::HelpCommand>(parser), "?");
+        parser->register_command("format", std::make_shared<Vfs::FormatCommand>(vfs));
 
-		// If arguments were provided for filesystem commands, execute them
-		if (argc > 1) {
-			auto result = parser->execute_command(argc, argv);
-			std::cout << result.output;
-			if (!result.success) {
-				std::cerr << "Error: " << result.message << std::endl;
-				vfs->stop();
-				return 1;
-			}
-		} else {
-            std::cout << "SimpleFlashFS VFS Server is running. Enter commands (type 'help' for available commands):" << std::endl;
-            
-            // Interactive command loop
-            std::string line;
-            while( std::getline( std::cin, line ) ) {
+        std::cout << "SimpleFlashFS VFS Server is running. Enter commands (type 'help' for available commands):" << std::endl;
+        
+        // Interactive command loop
+        std::string line;
+        while( std::getline( std::cin, line ) ) {
+            try {
                 auto result = parser->execute_command_string(line);
                 std::cout << result.output;
                 if (!result.success) {
                     std::cerr << "Error: " << result.message << std::endl;
                 }
-            }			
-		}		vfs->stop();
+            } catch( const std::exception &error ) {
+                std::cerr << "Error executing command: " << error.what() << std::endl;
+            }		
+        }
+		
+        vfs->stop();
 
     } catch( const std::exception &error ) {
 		std::cerr << "Error: " << error.what() << std::endl;
