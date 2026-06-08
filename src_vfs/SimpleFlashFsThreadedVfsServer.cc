@@ -164,3 +164,14 @@ bool SimpleFlashFsThreadedVfsServer::list_files( std::function<bool(const std::s
     }
     return true;
 }
+
+void SimpleFlashFsThreadedVfsServer::create( const std::string_view & drive_name )
+{
+    auto lock = std::scoped_lock(m_mutex);
+    for( auto & drive : m_drives ) {
+        if( drive->get_drive_name() == drive_name ) {
+            drive->create();
+            return;
+        }
+    }
+}

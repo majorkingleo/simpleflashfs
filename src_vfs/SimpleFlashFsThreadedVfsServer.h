@@ -30,6 +30,8 @@ public:
     bool list_files( std::function<bool(const std::string_view &, std::size_t size )> callback ) override;
     std::vector<std::string_view> get_drive_names() const override;
 
+    void create( const std::string_view & drive_name ) override;
+
 private:
     std::string_view get_drive_name( const std::string_view & path ) const;
 };
