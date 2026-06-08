@@ -40,7 +40,7 @@ SIMPLE_FLASH_FS_DYNAMIC_FILE* SimpleFlashFs_dynamic_fopen( const char *path, con
 	std::shared_ptr<SimpleFlashFs::dynamic::SimpleFlashFs> fs = InstanceHandler::instance().get(default_instance_name);
 
 	if( !fs ) {
-		CPPDEBUG( format( "no fs with name '%s' found", default_instance_name ) );
+		CPPDEBUG( Tools::format( "no fs with name '%s' found", default_instance_name ) );
 		return nullptr;
 	}
 

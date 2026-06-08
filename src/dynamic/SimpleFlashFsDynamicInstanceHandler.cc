@@ -28,7 +28,7 @@ std::shared_ptr<SimpleFlashFs> InstanceHandler::get( const std::string & name ) 
 	auto ret = instances.find(name);
 
 	if( ret == instances.end() ) {
-		CPPDEBUG( format( "%p no instance with name: '%s'", this, name ) );
+		CPPDEBUG( Tools::format( "%p no instance with name: '%s'", this, name ) );
 		return {};
 	}
 

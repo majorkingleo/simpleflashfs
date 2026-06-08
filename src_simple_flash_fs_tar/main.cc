@@ -153,7 +153,7 @@ static void info_fs( SimpleFlashFs::dynamic::SimpleFlashFs & fs )
 		const int DATA_PAGES = co.addCol("Data pages");
 
 		for( auto inode : fs.get_all_inodes(false) ) {
-			co.addColData(INODE,      format( "%d,%d", inode->inode.inode_number, inode->inode.inode_version_number ));
+			co.addColData(INODE,      Tools::format( "%d,%d", inode->inode.inode_number, inode->inode.inode_version_number ));
 			co.addColData(PAGE,       x2s(inode->page));
 			co.addColData(FILENAME,   inode->inode.file_name);
 			co.addColData(SIZE,       x2s(inode->inode.file_len));
@@ -182,7 +182,7 @@ static std::vector<std::byte> read_file( const std::string & file )
 {
 	std::ifstream in( file, std::ios_base::in | std::ios_base::binary );
 	if( !in ) {
-		throw STDERR_EXCEPTION( format( "cannot open file '%s'", file ) );
+		throw STDERR_EXCEPTION( Tools::format( "cannot open file '%s'", file ) );
 	}
 
 	std::vector<std::byte> data( std::filesystem::file_size(file) );
@@ -350,7 +350,7 @@ int main( int argc, char **argv )
 			const std::size_t page_size = 528;
 
 			if( !fs.create(fs.create_default_header(page_size, size/page_size)) ) {
-				throw STDERR_EXCEPTION( format( "cannot create %s", file ) );
+				throw STDERR_EXCEPTION( Tools::format( "cannot create %s", file ) );
 			}
 		}
 
@@ -448,7 +448,7 @@ int main( int argc, char **argv )
 				}
 
 				if( !extract_file(fs,file_name) ) {
-					throw STDERR_EXCEPTION( format( "Cannot extract file: %s", file_name ) );
+					throw STDERR_EXCEPTION( Tools::format( "Cannot extract file: %s", file_name ) );
 				}
 
 				count++;
