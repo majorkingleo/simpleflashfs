@@ -20,6 +20,8 @@ using namespace SimpleFlashFs;
 using namespace SimpleFlashFs::dynamic;
 using namespace SimpleFlashFs::SimPc;
 
+constexpr uint32_t DRIVE_A_FM_25_W_256_SIZE = 0x00007FFF + 1;
+constexpr uint32_t DRIVE_A_FM_25_W_256_PAGE_SIZE = 256;
 
 class FramFsDriveA : public FramFsImplDetail
 {
@@ -30,23 +32,16 @@ public:
 
     void create() override {
 
-        static constexpr const std::size_t FRAMFS_FILE_NAME_MAX = 30;
-        static constexpr const std::size_t FRAMFS_PAGE_SIZE = 256;
-        static constexpr const std::size_t FRAMFS_MAX_SIZE = 30*1024;
-        static constexpr const std::size_t FRAMFS_MAX_NUMBER_OF_FILES = FRAMFS_MAX_SIZE / FRAMFS_PAGE_SIZE / 10 * 2;
-
-        // SFF_MAX_SIZE / SFF_PAGE_SIZE is the maximum file size that fits on a H7internal flash page
-        // so 128*1024/512 = 256 is a good value.
-        // sizeof(FileHandle) ~ SFF_MAX_PAGES * uint32_t(4) + SFF_FILE_NAME_MAX + SFF_PAGE_SIZE
-        static constexpr const std::size_t FRAMFS_MAX_PAGES = 256;
-
-        auto header = ::SimpleFlashFs::dynamic::SimpleFlashFs::create_default_header(FRAMFS_PAGE_SIZE, FRAMFS_MAX_SIZE / FRAMFS_PAGE_SIZE );
+        auto header = ::SimpleFlashFs::dynamic::SimpleFlashFs::create_default_header(DRIVE_A_FM_25_W_256_SIZE, DRIVE_A_FM_25_W_256_SIZE / DRIVE_A_FM_25_W_256_PAGE_SIZE );
 
         if( !::SimpleFlashFs::dynamic::SimpleFlashFs::create(header) ) {
             throw STDERR_EXCEPTION( "cannot create drive a" );
         }
     }
 };
+
+constexpr uint32_t DRIVE_B_AT45_DB321E_SIZE         = 32'000'000/8;
+constexpr uint32_t DRIVE_B_AT45_DB321E_PAGE_SIZE    = 528;
 
 class FramFsDriveB : public FramFsImplDetail
 {
@@ -56,18 +51,17 @@ public:
     {}
 
     void create() override {
-        const std::size_t size = 100*1024;
-        const std::size_t page_size = 528;
+        auto header = ::SimpleFlashFs::dynamic::SimpleFlashFs::create_default_header(DRIVE_B_AT45_DB321E_SIZE, DRIVE_B_AT45_DB321E_SIZE / DRIVE_B_AT45_DB321E_PAGE_SIZE );
 
-        if( !::SimpleFlashFs::dynamic::SimpleFlashFs::create(::SimpleFlashFs::dynamic::SimpleFlashFs::create_default_header(page_size, size/page_size)) ) {
-            throw STDERR_EXCEPTION( "cannot create drive a" );
+        if( !::SimpleFlashFs::dynamic::SimpleFlashFs::create(header) ) {
+            throw STDERR_EXCEPTION( "cannot create drive b" );
         }
     }
 };
 
-std::shared_ptr<Vfs::VfsServerInterface>    vfs         = std::make_shared<Vfs::SimpleFlashFsThreadedVfsServer>();
-std::shared_ptr<::SimpleFlashFs::FlashMemoryInterface>      mem_drive_a = std::make_shared<SimFlashFsFlashMemory>(".drive_a", 1024*1024);
-std::shared_ptr<::SimpleFlashFs::FlashMemoryInterface>      mem_drive_b = std::make_shared<SimFlashFsFlashMemory>(".drive_b", 1024*1024);
+std::shared_ptr<Vfs::VfsServerInterface>                vfs         = std::make_shared<Vfs::SimpleFlashFsThreadedVfsServer>();
+std::shared_ptr<::SimpleFlashFs::FlashMemoryInterface>  mem_drive_a = std::make_shared<SimFlashFsFlashMemory>(".drive_a", DRIVE_A_FM_25_W_256_SIZE);
+std::shared_ptr<::SimpleFlashFs::FlashMemoryInterface>  mem_drive_b = std::make_shared<SimFlashFsFlashMemory>(".drive_b", DRIVE_B_AT45_DB321E_SIZE);
 
 int main( int argc, char **argv )
 {
