@@ -14,6 +14,8 @@
 #include "../src/sim_pc/SimFlashMemoryPc.h"
 #include "FramFsImplDetail.h"
 #include "SimpleFlashFsThreadedVfsServer.h"
+#include "CommandParser.h"
+#include "FilesystemCommands.h"
 
 using namespace Tools;
 using namespace SimpleFlashFs;
@@ -113,6 +115,44 @@ int main( int argc, char **argv )
         
         vfs->register_drive( std::make_shared<FramFsDriveA>(mem_drive_a.get()) );
         vfs->register_drive( std::make_shared<FramFsDriveB>(mem_drive_b.get()) );
+
+		vfs->start();
+
+		// Create command parser for filesystem commands
+		auto parser = std::make_shared<Vfs::CommandParser>(vfs);
+
+		// Register built-in commands
+		parser->register_command("ls", std::make_shared<Vfs::ListCommand>(vfs));
+		parser->register_command("dir", std::make_shared<Vfs::ListCommand>(vfs), "");
+		parser->register_command("cat", std::make_shared<Vfs::CatCommand>(vfs));
+		parser->register_command("cp", std::make_shared<Vfs::CopyCommand>(vfs));
+		parser->register_command("mv", std::make_shared<Vfs::MoveCommand>(vfs));
+		parser->register_command("rm", std::make_shared<Vfs::RemoveCommand>(vfs));
+		parser->register_command("touch", std::make_shared<Vfs::TouchCommand>(vfs));
+		parser->register_command("help", std::make_shared<Vfs::HelpCommand>(parser), "?");
+
+		// If arguments were provided for filesystem commands, execute them
+		if (argc > 1) {
+			auto result = parser->execute_command(argc, argv);
+			std::cout << result.output;
+			if (!result.success) {
+				std::cerr << "Error: " << result.message << std::endl;
+				vfs->stop();
+				return 1;
+			}
+		} else {
+            std::cout << "SimpleFlashFS VFS Server is running. Enter commands (type 'help' for available commands):" << std::endl;
+            
+            // Interactive command loop
+            std::string line;
+            while( std::getline( std::cin, line ) ) {
+                auto result = parser->execute_command_string(line);
+                std::cout << result.output;
+                if (!result.success) {
+                    std::cerr << "Error: " << result.message << std::endl;
+                }
+            }			
+		}		vfs->stop();
 
     } catch( const std::exception &error ) {
 		std::cerr << "Error: " << error.what() << std::endl;
