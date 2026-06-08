@@ -34,7 +34,7 @@ public:
 
     void create() override {
 
-        auto header = ::SimpleFlashFs::dynamic::SimpleFlashFs::create_default_header(DRIVE_A_FM_25_W_256_SIZE, DRIVE_A_FM_25_W_256_SIZE / DRIVE_A_FM_25_W_256_PAGE_SIZE );
+        auto header = ::SimpleFlashFs::dynamic::SimpleFlashFs::create_default_header(DRIVE_A_FM_25_W_256_PAGE_SIZE, DRIVE_A_FM_25_W_256_SIZE / DRIVE_A_FM_25_W_256_PAGE_SIZE );
 
         if( !::SimpleFlashFs::dynamic::SimpleFlashFs::create(header) ) {
             throw STDERR_EXCEPTION( "cannot create drive a" );
@@ -53,7 +53,7 @@ public:
     {}
 
     void create() override {
-        auto header = ::SimpleFlashFs::dynamic::SimpleFlashFs::create_default_header(DRIVE_B_AT45_DB321E_SIZE, DRIVE_B_AT45_DB321E_SIZE / DRIVE_B_AT45_DB321E_PAGE_SIZE );
+        auto header = ::SimpleFlashFs::dynamic::SimpleFlashFs::create_default_header(DRIVE_B_AT45_DB321E_PAGE_SIZE, DRIVE_B_AT45_DB321E_SIZE / DRIVE_B_AT45_DB321E_PAGE_SIZE );
 
         if( !::SimpleFlashFs::dynamic::SimpleFlashFs::create(header) ) {
             throw STDERR_EXCEPTION( "cannot create drive b" );
