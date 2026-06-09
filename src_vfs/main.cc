@@ -108,11 +108,11 @@ int main( int argc, char **argv )
 	o_debug.setRequired(false);
 	arg.addOptionR( &o_debug );
 
-	Arg::StringOption o_create("c");
-	o_create.addName( "create" );
-	o_create.setDescription("create new filesystem");
-	o_create.setRequired(false);
-	arg.addOptionR( &o_create );    
+	Arg::StringOption o_cmd("c");
+	o_cmd.addName( "cmd" );
+	o_cmd.setDescription("execute cmd (splitted by ;)");
+	o_cmd.setRequired(false);
+	arg.addOptionR( &o_cmd );
 
 	try {
 
@@ -156,25 +156,52 @@ int main( int argc, char **argv )
 		parser->register_command("a:", std::make_shared<Vfs::DOSChangeDriveCommand>(vfs, "a"));
 		parser->register_command("b:", std::make_shared<Vfs::DOSChangeDriveCommand>(vfs, "b"));
 
+		bool continue_interactive = true;
 
-        std::cout << "SimpleFlashFS VFS Server is running. Enter commands (type 'help' for available commands):" << std::endl;
-        
-        // Interactive command loop
-        std::string line;
-        while( std::getline( std::cin, line ) ) {
-            try {
-                auto result = parser->execute_command_string(line);
-                std::cout << result.output;
-                if (!result.success) {
-                    std::cerr << "Error: " << result.message << std::endl;
-                }
+		if( o_cmd.isSet() ) {
+			std::vector<std::string_view> commands;
+
+			for( const auto & cmd : *o_cmd.getValues() ) {
+				auto cmds = Tools::split_string_view( cmd, ";" );
+				for( const auto & c : cmds ) {
+					commands.push_back(c);
+				}
+			}
+
+			for( const auto & cmd : commands ) {
+				auto result = parser->execute_command_string(std::string(cmd));
+				std::cout << result.output;
+				if (!result.success) {
+					std::cerr << "Error: " << result.message << std::endl;
+				}
 				if( result.stop_execution ) {
+					continue_interactive = false;
 					break;
 				}
-            } catch( const std::exception &error ) {
-                std::cerr << "Error executing command: " << error.what() << std::endl;
-            }		
-        }
+			}
+		}
+
+
+		if( continue_interactive ) {
+			std::cout << "SimpleFlashFS VFS Server is running. Enter commands (type 'help' for available commands):" << std::endl;
+
+			// Interactive command loop
+			std::string line;
+			while( std::getline( std::cin, line ) ) {
+				try {
+					auto result = parser->execute_command_string(line);
+					std::cout << result.output;
+					if (!result.success) {
+						std::cerr << "Error: " << result.message << std::endl;
+					}
+					if( result.stop_execution ) {
+						break;
+					}
+				} catch( const std::exception &error ) {
+					std::cerr << "Error executing command: " << error.what() << std::endl;
+				}		
+			}
+		}
 		
         vfs->stop();
 
