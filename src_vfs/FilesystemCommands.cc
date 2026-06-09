@@ -7,6 +7,20 @@ namespace SimpleFlashFs::Vfs
 {
 
 // ============================================================================
+// FilesystemCommand
+// ============================================================================    
+
+std::string FilesystemCommand::get_absolute_path(const std::string_view& path) const
+{
+    std::string absolute_path = std::string(path);
+
+    if( !absolute_path.starts_with('/') ) {
+        absolute_path = Tools::format( "/%s/%s", m_vfs->get_current_drive(), absolute_path );
+    }
+    return absolute_path;
+}
+
+// ============================================================================
 // ListCommand
 // ============================================================================
 
@@ -24,11 +38,13 @@ CommandResult ListCommand::execute(const std::vector<std::string>& args)
         return {true, "OK", output};
     }
 
-   
-    bool list_success = m_vfs->list_files([&output](const std::string_view& name, std::size_t size) {
+    auto list_file = [&output](const std::string_view& name, std::size_t size) {
         output += std::string(name) + " (" + std::to_string(size) + " bytes)\n";
         return true;
-    }, m_vfs->get_current_drive() );
+    };
+
+   
+    bool list_success = m_vfs->list_files(list_file, m_vfs->get_current_drive() );
 
     if (!list_success) {
         return {false, "Failed to list files", ""};
@@ -55,7 +71,7 @@ CommandResult CatCommand::execute(const std::vector<std::string>& args)
     std::string content;
 
     try {
-        auto handle = m_vfs->open(filename, std::ios::in | std::ios::binary);
+        auto handle = m_vfs->open( get_absolute_path(filename), std::ios::in | std::ios::binary);
         if (!handle || !handle->valid()) {
             return {false, "cat: cannot open file: " + filename, ""};
         }
@@ -89,12 +105,12 @@ CommandResult CopyCommand::execute(const std::vector<std::string>& args)
     std::string dest = args[2];
 
     try {
-        auto source_handle = m_vfs->open(source, std::ios::in | std::ios::binary);
+        auto source_handle = m_vfs->open( get_absolute_path(source), std::ios::in | std::ios::binary);
         if (!source_handle || !source_handle->valid()) {
             return {false, "cp: cannot open source file: " + source, ""};
         }
 
-        auto dest_handle = m_vfs->open(dest, std::ios::out | std::ios::binary);
+        auto dest_handle = m_vfs->open( get_absolute_path(dest), std::ios::out | std::ios::binary);
         if (!dest_handle || !dest_handle->valid()) {
             return {false, "cp: cannot create destination file: " + dest, ""};
         }
@@ -152,13 +168,13 @@ CommandResult MoveCommand::execute(const std::vector<std::string>& args)
     std::string dest = args[2];
 
     try {
-        auto source_handle = m_vfs->open(source, std::ios::in | std::ios::binary);
+        auto source_handle = m_vfs->open( get_absolute_path(source), std::ios::in | std::ios::binary);
         if (!source_handle || !source_handle->valid()) {
             return {false, "mv: cannot open source file: " + source, ""};
         }
 
         // Try to use rename_file method
-        if (source_handle->rename_file(dest)) {
+        if (source_handle->rename_file(get_absolute_path(dest))) {
             return {true, "File moved: " + source + " -> " + dest, ""};
         } else {
             // Fall back to copy + remove
@@ -182,7 +198,7 @@ CommandResult RemoveCommand::execute(const std::vector<std::string>& args)
     std::string filename = args[1];
 
     try {
-        auto handle = m_vfs->open(filename, std::ios::in);
+        auto handle = m_vfs->open( get_absolute_path(filename), std::ios::in);
         if (!handle || !handle->valid()) {
             return {false, "rm: cannot open file: " + filename, ""};
         }
@@ -208,15 +224,10 @@ CommandResult TouchCommand::execute(const std::vector<std::string>& args)
     }
 
     std::string filename = args[1];
-    std::string absolute_path = filename;
-
-    if( !absolute_path.starts_with('/') ) {
-        absolute_path = Tools::format( "/%s/%s", m_vfs->get_current_drive(), absolute_path );
-    }
 
     try {
-        CPPDEBUG( Tools::format( "opening file for touch: %s", absolute_path ) );
-        auto handle = m_vfs->open(absolute_path, std::ios::out | std::ios::app);
+
+        auto handle = m_vfs->open( get_absolute_path(filename), std::ios::out | std::ios::app);
         if (!handle || !handle->valid()) {
             return {false, "touch: cannot create file: " + filename, ""};
         }

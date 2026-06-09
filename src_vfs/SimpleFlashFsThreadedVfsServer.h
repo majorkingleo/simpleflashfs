@@ -38,6 +38,7 @@ public:
 
 private:
     std::string_view get_drive_name( const std::string_view & path ) const;
+    std::string_view parse_drive_name( std::string_view & path ) const;
 };
 
 } // namespace SimpleFlashFs::Vfs

@@ -17,6 +17,9 @@ protected:
 public:
     FilesystemCommand(std::shared_ptr<VfsServerInterface> vfs) : m_vfs(vfs) {}
     virtual ~FilesystemCommand() = default;
+
+protected:
+    std::string get_absolute_path(const std::string_view& path) const;
 };
 
 // ============================================================================

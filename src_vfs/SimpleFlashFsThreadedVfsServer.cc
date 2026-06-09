@@ -117,10 +117,10 @@ bool SimpleFlashFsThreadedVfsServer::register_drive( std::shared_ptr<VfsDriveInt
 
 file_handle_t SimpleFlashFsThreadedVfsServer::open( const std::string_view & path, std::ios_base::openmode mode )
 {    
-    const auto drive_name = get_drive_name( path );
-    const auto file_path = path.substr( drive_name.size() );
+    std::string_view file_path = path;
+    const auto drive_name = parse_drive_name( file_path );
 
-    CPPDEBUG( Tools::format( "open file: %s at drive: %s", path, drive_name ) );
+    CPPDEBUG( Tools::format( "open file: %s at drive: %s", file_path, drive_name ) );
 
     auto lock = std::scoped_lock(m_mutex);
 
@@ -165,6 +165,30 @@ std::string_view SimpleFlashFsThreadedVfsServer::get_drive_name( const std::stri
     const auto pos = drive_name.find( '/' );
 
     if( pos != std::string_view::npos ) {
+        return drive_name.substr( 0, pos );
+    }
+    return drive_name;
+}
+
+std::string_view SimpleFlashFsThreadedVfsServer::parse_drive_name( std::string_view & path ) const
+{
+    std::string_view            drive_name = path;
+    std::string_view::size_type file_name_start_pos = 0;
+
+    if( drive_name.starts_with('/') ) {
+        drive_name.remove_prefix(1);
+        file_name_start_pos++;
+    }
+
+    const auto pos = drive_name.find( '/' );
+
+    if( pos != std::string_view::npos ) {
+        path.remove_prefix(pos + file_name_start_pos);
+
+        if( path.starts_with('/') ) {
+            path.remove_prefix(1);
+        }
+
         return drive_name.substr( 0, pos );
     }
     return drive_name;
