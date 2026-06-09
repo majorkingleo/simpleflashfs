@@ -133,4 +133,39 @@ public:
     std::string get_usage() const override { return "format <drive>  - Format drive"; }
 };
 
+/**
+ * @brief Change directory/drive (cd)
+ * 
+ * Usage:
+ *   cd [drive]  - Change to specified drive (e.g., "a", "b", "/a", "/b", "a:", "b:")
+ *   cd          - List all available drives when no argument given
+ */
+class ChangeDirectoryCommand : public FilesystemCommand
+{
+public:
+    using FilesystemCommand::FilesystemCommand;
+
+    CommandResult execute(const std::vector<std::string>& args) override;
+    std::string get_description() const override { return "Change current drive"; }
+    std::string get_usage() const override { return "cd [drive]  - Change drive (a, b, /a, /b, a:, b:) or show all drives"; }
+
+private:
+    std::string normalize_drive_name(const std::string_view& arg) const;
+};
+
+/**
+ * @brief Print working directory (pwd)
+ * 
+ * Shows the current drive.
+ */
+class PrintWorkingDirectoryCommand : public FilesystemCommand
+{
+public:
+    using FilesystemCommand::FilesystemCommand;
+
+    CommandResult execute(const std::vector<std::string>& args) override;
+    std::string get_description() const override { return "Print current working drive"; }
+    std::string get_usage() const override { return "pwd  - Print current working drive"; }
+};
+
 } // namespace SimpleFlashFs::Vfs

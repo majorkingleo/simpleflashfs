@@ -15,7 +15,8 @@ private:
     std::thread                                     m_server_thread;
     mutable std::mutex                              m_mutex;
     std::atomic<bool>                               m_running {false};
-    std::list<std::shared_ptr<VfsDriveInterface>>   m_drives {};        
+    std::list<std::shared_ptr<VfsDriveInterface>>   m_drives {};
+    std::string                                     m_current_drive {};
 
 public:
     SimpleFlashFsThreadedVfsServer();
@@ -31,6 +32,9 @@ public:
     std::vector<std::string_view> get_drive_names() const override;
 
     void create( const std::string_view & drive_name ) override;
+
+    std::string_view get_current_drive() const override;
+    bool set_current_drive( const std::string_view & drive_name ) override;
 
 private:
     std::string_view get_drive_name( const std::string_view & path ) const;

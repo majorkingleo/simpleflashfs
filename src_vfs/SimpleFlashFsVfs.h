@@ -34,6 +34,19 @@ namespace SimpleFlashFs::Vfs
         virtual std::vector<std::string_view> get_drive_names() const = 0;
 
         virtual void create( const std::string_view & drive_name ) = 0;
+
+        /**
+         * @brief Get the current working drive
+         * @return the name of the current drive
+         */
+        virtual std::string_view get_current_drive() const = 0;
+
+        /**
+         * @brief Set the current working drive
+         * @param drive_name the name of the drive to set as current
+         * @return true if successful, false if drive not found
+         */
+        virtual bool set_current_drive( const std::string_view & drive_name ) = 0;
     };
 
 } // namespace SimpleFlashFs::Vfs

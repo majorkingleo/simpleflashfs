@@ -131,6 +131,8 @@ int main( int argc, char **argv )
 		parser->register_command("touch", std::make_shared<Vfs::TouchCommand>(vfs));
 		parser->register_command("help", std::make_shared<Vfs::HelpCommand>(parser), "?");
         parser->register_command("format", std::make_shared<Vfs::FormatCommand>(vfs));
+        parser->register_command("cd", std::make_shared<Vfs::ChangeDirectoryCommand>(vfs));
+        parser->register_command("pwd", std::make_shared<Vfs::PrintWorkingDirectoryCommand>(vfs));
 
         std::cout << "SimpleFlashFS VFS Server is running. Enter commands (type 'help' for available commands):" << std::endl;
         

@@ -263,4 +263,86 @@ CommandResult FormatCommand::execute(const std::vector<std::string>& args)
     }
 }
 
+// ============================================================================
+// ChangeDirectoryCommand
+// ============================================================================
+
+std::string ChangeDirectoryCommand::normalize_drive_name(const std::string_view& arg) const
+{
+    std::string normalized = std::string(arg);
+    
+    // Remove trailing colon (DOS style: a: -> a)
+    if (!normalized.empty() && normalized.back() == ':') {
+        normalized.pop_back();
+    }
+    
+    // Remove leading slash (Unix style: /a -> a)
+    if (!normalized.empty() && normalized.front() == '/') {
+        normalized = normalized.substr(1);
+    }
+    
+    return normalized;
+}
+
+CommandResult ChangeDirectoryCommand::execute(const std::vector<std::string>& args)
+{
+    // If no arguments, list all available drives
+    if (args.size() < 2) {
+        auto drive_names = m_vfs->get_drive_names();
+        
+        if (drive_names.empty()) {
+            return {false, "No drives registered", ""};
+        }
+        
+        std::string output = "Available drives:\n";
+        for (const auto& drive : drive_names) {
+            std::string current = (drive == m_vfs->get_current_drive()) ? " <- current" : "";
+            output += "  " + std::string(drive) + current + "\n";
+        }
+        
+        output += "\nUsage: cd <drive>  (e.g., cd a, cd /b, cd a:, cd b:)\n";
+        return {true, "OK", output};
+    }
+    
+    // Normalize the drive name
+    std::string drive_name = normalize_drive_name(args[1]);
+    
+    // Check if drive exists and set it as current
+    auto drive_names = m_vfs->get_drive_names();
+    bool drive_found = false;
+    for (const auto& drive : drive_names) {
+        if (drive == drive_name) {
+            drive_found = true;
+            break;
+        }
+    }
+    
+    if (!drive_found) {
+        return {false, "cd: drive not found: " + drive_name, ""};
+    }
+    
+    if (m_vfs->set_current_drive(drive_name)) {
+        return {true, "OK", "Changed to drive: " + drive_name + "\n"};
+    } else {
+        return {false, "cd: failed to change drive: " + drive_name, ""};
+    }
+}
+
+// ============================================================================
+// PrintWorkingDirectoryCommand
+// ============================================================================
+
+CommandResult PrintWorkingDirectoryCommand::execute(const std::vector<std::string>& args)
+{
+    auto current_drive = m_vfs->get_current_drive();
+    
+    if (current_drive.empty()) {
+        return {false, "pwd: no current drive set", ""};
+    }
+    
+    // Unix style output: /<drive>/
+    std::string output = "/" + std::string(current_drive) + "/\n";
+    return {true, "OK", output};
+}
+
 } // namespace SimpleFlashFs::Vfs

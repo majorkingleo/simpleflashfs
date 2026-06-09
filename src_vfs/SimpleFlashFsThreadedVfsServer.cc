@@ -175,3 +175,24 @@ void SimpleFlashFsThreadedVfsServer::create( const std::string_view & drive_name
         }
     }
 }
+
+std::string_view SimpleFlashFsThreadedVfsServer::get_current_drive() const
+{
+    auto lock = std::scoped_lock(m_mutex);
+    return m_current_drive;
+}
+
+bool SimpleFlashFsThreadedVfsServer::set_current_drive( const std::string_view & drive_name )
+{
+    auto lock = std::scoped_lock(m_mutex);
+    
+    // Check if the drive exists
+    for( auto & drive : m_drives ) {
+        if( drive->get_drive_name() == drive_name ) {
+            m_current_drive = std::string(drive_name);
+            return true;
+        }
+    }
+    
+    return false;
+}
