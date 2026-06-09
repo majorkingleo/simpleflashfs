@@ -28,7 +28,7 @@ public:
     bool register_drive( std::shared_ptr<VfsDriveInterface> drive ) override;
 
     file_handle_t open( const std::string_view & path, std::ios_base::openmode mode ) override;
-    bool list_files( std::function<bool(const std::string_view &, std::size_t size )> callback ) override;
+    bool list_files( list_files_callback_t callback, const std::string_view & drive_name ) override;
     std::vector<std::string_view> get_drive_names() const override;
 
     void create( const std::string_view & drive_name ) override;

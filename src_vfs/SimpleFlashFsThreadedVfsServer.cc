@@ -180,10 +180,14 @@ std::vector<std::string_view> SimpleFlashFsThreadedVfsServer::get_drive_names() 
     return drive_names;
 }
 
-bool SimpleFlashFsThreadedVfsServer::list_files( std::function<bool(const std::string_view &, std::size_t size )> callback )
+bool SimpleFlashFsThreadedVfsServer::list_files( list_files_callback_t callback, const std::string_view & drive_name )
 {
     auto lock = std::scoped_lock(m_mutex);
     for( auto & drive : m_drives ) {
+
+        if( !drive_name.empty() && drive->get_drive_name() != drive_name ) {
+            continue;
+        }
 
         if( !drive->initialized() ) {
             if( !drive->init() ) {

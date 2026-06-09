@@ -28,7 +28,7 @@ CommandResult ListCommand::execute(const std::vector<std::string>& args)
     bool list_success = m_vfs->list_files([&output](const std::string_view& name, std::size_t size) {
         output += std::string(name) + " (" + std::to_string(size) + " bytes)\n";
         return true;
-    });
+    }, m_vfs->get_current_drive() );
 
     if (!list_success) {
         return {false, "Failed to list files", ""};
