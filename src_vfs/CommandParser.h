@@ -18,6 +18,7 @@ struct CommandResult
     bool success;
     std::string message;
     std::string output;
+    bool stop_execution = false;
 };
 
 /**

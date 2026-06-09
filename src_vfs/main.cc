@@ -61,6 +61,23 @@ public:
     }
 };
 
+class CommandQuit : public SimpleFlashFs::Vfs::Command
+{
+public:
+	SimpleFlashFs::Vfs::CommandResult execute(const std::vector<std::string>& args) override {
+		return {true, "OK", "Exiting...\n", true};			
+	}
+
+		
+	std::string get_description() const override {
+		return "Quit the program";
+	}	
+
+	std::string get_usage() const override {
+		return "quit  - Exit the program";
+	}
+};
+
 std::shared_ptr<Vfs::VfsServerInterface>                vfs         = std::make_shared<Vfs::SimpleFlashFsThreadedVfsServer>();
 std::shared_ptr<::SimpleFlashFs::FlashMemoryInterface>  mem_drive_a = std::make_shared<SimFlashFsFlashMemory>(".drive_a", DRIVE_A_FM_25_W_256_SIZE);
 std::shared_ptr<::SimpleFlashFs::FlashMemoryInterface>  mem_drive_b = std::make_shared<SimFlashFsFlashMemory>(".drive_b", DRIVE_B_AT45_DB321E_SIZE);
@@ -133,6 +150,7 @@ int main( int argc, char **argv )
         parser->register_command("format", std::make_shared<Vfs::FormatCommand>(vfs));
         parser->register_command("cd", std::make_shared<Vfs::ChangeDirectoryCommand>(vfs));
         parser->register_command("pwd", std::make_shared<Vfs::PrintWorkingDirectoryCommand>(vfs));
+		parser->register_command("quit", std::make_shared<CommandQuit>());
 
         std::cout << "SimpleFlashFS VFS Server is running. Enter commands (type 'help' for available commands):" << std::endl;
         
@@ -145,6 +163,9 @@ int main( int argc, char **argv )
                 if (!result.success) {
                     std::cerr << "Error: " << result.message << std::endl;
                 }
+				if( result.stop_execution ) {
+					break;
+				}
             } catch( const std::exception &error ) {
                 std::cerr << "Error executing command: " << error.what() << std::endl;
             }		
