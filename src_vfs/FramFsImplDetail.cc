@@ -78,11 +78,11 @@ bool FramFsImplDetail::is_empty( auto it_begin, auto it_end ) const
 
 	return false;
 }
-
+/*
 void FramFsImplDetail::read_all_free_data_pages()
 {
 	free_data_pages.clear();
-	stat = {};
+	m_stat = {};
 
 	for( unsigned i = base_t::header.max_inodes;
 		i < base_t::header.filesystem_size - 1; // -1 ... one page for the header itself
@@ -146,22 +146,22 @@ void FramFsImplDetail::read_all_free_data_pages()
 			Trash::Entry & entry = trash.add( previous_version.first, previous_version.second, {} );
 			entry.add( inode.inode.inode_version_number, inode.page );
 
-			stat.trash_inodes++;
-			stat.trash_size += header.page_size * inode.inode.data_pages.size();
+			m_stat.trash_inodes++;
+			m_stat.trash_size += header.page_size * inode.inode.data_pages.size();
 
 
 		} else if( inode.inode.file_name.empty() ) {
 			// deleted file with only one version
 			trash.add( inode.inode.inode_number, inode.inode.inode_version_number, inode.page );
 
-			stat.trash_inodes++;
-			stat.trash_size += header.page_size * inode.inode.data_pages.size();
+			m_stat.trash_inodes++;
+			m_stat.trash_size += header.page_size * inode.inode.data_pages.size();
 
 		} else {
-			stat.used_inodes++;
+			m_stat.used_inodes++;
 		}
 
-		stat.largest_file_size = std::max( stat.largest_file_size, inode.file_size() );
+		m_stat.largest_file_size = std::max( m_stat.largest_file_size, inode.file_size() );
 
 		// remove used pages from free_data_pages list
 		for( auto page : inode.inode.data_pages ) {
@@ -171,22 +171,22 @@ void FramFsImplDetail::read_all_free_data_pages()
 
 	// CPPDEBUG( Tools::format( "max_inodes: %d", base_t::header.max_inodes ) );
 
-	stat.free_inodes = header.max_inodes - stat.used_inodes - stat.trash_inodes;
+	m_stat.free_inodes = header.max_inodes - m_stat.used_inodes - m_stat.trash_inodes;
 
 #ifdef DO_DEBUG
 	// CPPDEBUG( Tools::format( "free Data pages: %s", Tools::IterableToCommaSeparatedString(base_t::free_data_pages.get_data()) ) );
 	CPPDEBUG( static_format<100>( "free Data pages: %d", base_t::free_data_pages.size() ) );
-	CPPDEBUG( static_format<100>( "largest file size: %dB", stat.largest_file_size ) );
-	CPPDEBUG( static_format<100>( "trash size size: %dB", stat.trash_size ) );
+	CPPDEBUG( static_format<100>( "largest file size: %dB", m_stat.largest_file_size ) );
+	CPPDEBUG( static_format<100>( "trash size size: %dB", m_stat.trash_size ) );
 	CPPDEBUG( static_format<100>( "used inodes: %d trash inodes: %d free inodes: %d",
-			stat.used_inodes,
-			stat.trash_inodes,
-			stat.free_inodes ));
+			m_stat.used_inodes,
+			m_stat.trash_inodes,
+			m_stat.free_inodes ));
 #endif
 	// cleanup trash
 	cleanup( trash );
 }
-
+*/
 void FramFsImplDetail::cleanup( Trash & trash )
 {
 	auto find_inode = [this]( inode_number_t inode_number, inode_version_number_t inode_version_number, std::optional<uint32_t> at_page ) -> std::optional<FileHandle>

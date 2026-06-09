@@ -17,6 +17,8 @@ namespace SimpleFlashFs::Vfs
         virtual bool list_files( std::function<bool(const std::string_view &, std::size_t size )> callback ) = 0;
         virtual std::string_view get_drive_name() const = 0;
         virtual void create() = 0;
+        virtual bool init() = 0;
+        virtual bool initialized() const = 0;
     };
 
     class VfsServerInterface

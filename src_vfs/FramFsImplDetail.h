@@ -85,8 +85,9 @@ private:
 	};
 
 protected:
-	Stat stat{};
+	Stat 		m_stat{};
 	std::string m_drive_name;
+	bool 		m_initialized = false;
 
 public:
 	FramFsImplDetail( ::SimpleFlashFs::FlashMemoryInterface *mem_interface_, const std::string_view & drive_name_ )
@@ -94,18 +95,22 @@ public:
 	{}
 
 	const Stat & get_stat() const {
-		return stat;
+		return m_stat;
 	}
 
 	// read the fs the memory interface points to
 	// starting at offset 0
-	bool init() {
+	bool init() override {
 		if( !base_t::init() ) {
+			m_initialized = false;
 			return false;
 		}
-
-		read_all_free_data_pages();
+		m_initialized = true;
 		return true;
+	}
+
+	bool initialized() const override {
+		return m_initialized;
 	}
 
 	// override VfsDriveInterface::open
@@ -120,9 +125,10 @@ public:
 private:
 	// bring base_t::open into scope (hides the VfsDriveInterface version for direct calls)
 	using base_t::open;
+	using base_t::init;
 
 protected:
-	void read_all_free_data_pages();
+	//void read_all_free_data_pages();
 	bool is_empty( auto it_begin, auto it_end ) const;
 	std::optional<FileHandle> read_inode( std::size_t index );
 	void cleanup( Trash & trash );

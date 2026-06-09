@@ -1,4 +1,6 @@
 #include "SimpleFlashFsThreadedVfsServer.h"
+#include <CpputilsDebug.h>
+#include <format.h>
 
 using namespace SimpleFlashFs::Vfs;
 
@@ -114,15 +116,27 @@ bool SimpleFlashFsThreadedVfsServer::register_drive( std::shared_ptr<VfsDriveInt
 }
 
 file_handle_t SimpleFlashFsThreadedVfsServer::open( const std::string_view & path, std::ios_base::openmode mode )
-{
+{    
     const auto drive_name = get_drive_name( path );
     const auto file_path = path.substr( drive_name.size() );
 
+    CPPDEBUG( Tools::format( "open file: %s at drive: %s", path, drive_name ) );
+
     auto lock = std::scoped_lock(m_mutex);
+
+    bool drive_found = false;
 
     for( auto & drive : m_drives ) {
         if( drive->get_drive_name() != drive_name ) {
             continue;
+        }
+
+        drive_found = true;
+
+        if( !drive->initialized() ) {
+            if( !drive->init() ) {
+                return {};
+            }
         }
 
         auto file = drive->open( file_path, mode );
@@ -131,17 +145,29 @@ file_handle_t SimpleFlashFsThreadedVfsServer::open( const std::string_view & pat
         }
     }
 
+    if( !drive_found ) {
+        CPPDEBUG( Tools::format( "drive not found: %s", drive_name ) );
+    } else {
+        CPPDEBUG( Tools::format( "file not found: %s at drive: %s", file_path, drive_name ) );
+    }
+
     return {};
 }
 
 std::string_view SimpleFlashFsThreadedVfsServer::get_drive_name( const std::string_view & path ) const
 {
-    const auto pos = path.find( '/' );
+    std::string_view drive_name = path;
+
+    if( drive_name.starts_with('/') ) {
+        drive_name.remove_prefix(1);
+    }
+
+    const auto pos = drive_name.find( '/' );
 
     if( pos != std::string_view::npos ) {
-        return path.substr( 0, pos );
+        return drive_name.substr( 0, pos );
     }
-    return path;
+    return drive_name;
 }
 
 std::vector<std::string_view> SimpleFlashFsThreadedVfsServer::get_drive_names() const
@@ -158,6 +184,13 @@ bool SimpleFlashFsThreadedVfsServer::list_files( std::function<bool(const std::s
 {
     auto lock = std::scoped_lock(m_mutex);
     for( auto & drive : m_drives ) {
+
+        if( !drive->initialized() ) {
+            if( !drive->init() ) {
+                continue;
+            }
+        }
+
         if( !drive->list_files( callback ) ) {
             return false;
         }
@@ -190,6 +223,13 @@ bool SimpleFlashFsThreadedVfsServer::set_current_drive( const std::string_view &
     for( auto & drive : m_drives ) {
         if( drive->get_drive_name() == drive_name ) {
             m_current_drive = std::string(drive_name);
+
+            if( !drive->initialized() ) {
+                if( !drive->init() ) {
+                    return false;
+                }
+            }
+
             return true;
         }
     }

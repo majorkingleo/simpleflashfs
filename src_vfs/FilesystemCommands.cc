@@ -1,6 +1,7 @@
 #include "FilesystemCommands.h"
 #include <sstream>
 #include <format.h>
+#include <CpputilsDebug.h>
 
 namespace SimpleFlashFs::Vfs
 {
@@ -207,9 +208,15 @@ CommandResult TouchCommand::execute(const std::vector<std::string>& args)
     }
 
     std::string filename = args[1];
+    std::string absolute_path = filename;
+
+    if( !absolute_path.starts_with('/') ) {
+        absolute_path = Tools::format( "/%s/%s", m_vfs->get_current_drive(), absolute_path );
+    }
 
     try {
-        auto handle = m_vfs->open(filename, std::ios::out | std::ios::app);
+        CPPDEBUG( Tools::format( "opening file for touch: %s", absolute_path ) );
+        auto handle = m_vfs->open(absolute_path, std::ios::out | std::ios::app);
         if (!handle || !handle->valid()) {
             return {false, "touch: cannot create file: " + filename, ""};
         }
