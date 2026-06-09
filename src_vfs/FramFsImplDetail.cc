@@ -322,6 +322,11 @@ bool FramFsImplDetail::list_files( std::function<bool(const std::string_view &, 
 			continue;
 		}
 
+		// deleted file, ignore
+		if( inode->inode.file_name.empty() ) {
+			continue;
+		}
+
 		if( !callback( inode->inode.file_name, inode->file_size() ) ) {
 			return true;
 		}
