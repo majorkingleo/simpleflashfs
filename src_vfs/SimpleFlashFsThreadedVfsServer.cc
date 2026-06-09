@@ -93,9 +93,20 @@ void SimpleFlashFsThreadedVfsServer::start()
 {
     m_running = true;
     m_server_thread = std::thread( [this] () {
+       
+        auto cleanup_deadline = std::chrono::steady_clock::now() + m_cleanup_interval.load();
+
         while( m_running ) {
             std::this_thread::sleep_for( std::chrono::milliseconds(100) );
-        }        
+
+            if( (m_cleanup_interval.load() > std::chrono::seconds(0)) && (std::chrono::steady_clock::now() >= cleanup_deadline ) ) {
+                auto lock = std::scoped_lock(m_mutex);
+                for( auto & drive : m_drives ) {
+                    drive->cleanup();
+                }
+                cleanup_deadline = std::chrono::steady_clock::now() + m_cleanup_interval.load();
+            }
+        }
     } ); 
 }
 
@@ -263,4 +274,12 @@ bool SimpleFlashFsThreadedVfsServer::set_current_drive( const std::string_view &
     }
     
     return false;
+}
+
+void SimpleFlashFsThreadedVfsServer::cleanup()
+{
+    auto lock = std::scoped_lock(m_mutex);
+    for( auto & drive : m_drives ) {
+        drive->cleanup();
+    }
 }

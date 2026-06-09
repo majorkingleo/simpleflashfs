@@ -5,7 +5,7 @@ using namespace Tools;
 
 // #define DO_DEBUG
 
-
+#if 0
 void FramFsImplDetail::Trash::Entry::add( inode_version_t version, std::optional<uint32_t> page )
 {
 	vector_t::iterator it = std::find_if( inode_versions.begin(), inode_versions.end(), [version]( const data_t & data ) {
@@ -34,6 +34,7 @@ FramFsImplDetail::Trash::Entry & FramFsImplDetail::Trash::add( inode_t inode_num
 	trash.add( version, page );
 	return trash;
 }
+#endif
 
 /**
  * reads inode, does no error correction, don't use the resulting
@@ -187,6 +188,7 @@ void FramFsImplDetail::read_all_free_data_pages()
 	cleanup( trash );
 }
 */
+#if 0
 void FramFsImplDetail::cleanup( Trash & trash )
 {
 	auto find_inode = [this]( inode_number_t inode_number, inode_version_number_t inode_version_number, std::optional<uint32_t> at_page ) -> std::optional<FileHandle>
@@ -302,6 +304,7 @@ void FramFsImplDetail::cleanup( Trash & trash )
 
 	} // for
 }
+#endif
 
 
 ::SimpleFlashFs::Vfs::file_handle_t FramFsImplDetail::open( const std::string_view & path, std::ios_base::openmode mode )
@@ -333,4 +336,17 @@ bool FramFsImplDetail::list_files( std::function<bool(const std::string_view &, 
 	}
 
 	return true;
+}
+
+void FramFsImplDetail::cleanup()
+{
+	for( auto inode : get_all_inodes() ) {
+		if( !inode ) {
+			continue;
+		}
+		
+		if( inode->inode.file_name.empty() ) {
+			mem->erase( header.page_size + inode->page * header.page_size, header.page_size );
+		}
+	}
 }

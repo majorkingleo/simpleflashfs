@@ -17,6 +17,7 @@ private:
     std::atomic<bool>                               m_running {false};
     std::list<std::shared_ptr<VfsDriveInterface>>   m_drives {};
     std::string                                     m_current_drive {};
+    std::atomic<std::chrono::seconds>               m_cleanup_interval {std::chrono::seconds(0)}; // 0 = disabled
 
 public:
     SimpleFlashFsThreadedVfsServer();
@@ -35,6 +36,12 @@ public:
 
     std::string_view get_current_drive() const override;
     bool set_current_drive( const std::string_view & drive_name ) override;
+
+    void cleanup() override;
+
+    void set_cleanup_interval(std::chrono::seconds interval) {
+        m_cleanup_interval = interval;
+    }
 
 private:
     std::string_view get_drive_name( const std::string_view & path ) const;

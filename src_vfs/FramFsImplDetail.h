@@ -19,7 +19,7 @@ public:
 	};
 
 private:
-
+#if 0
 	class Trash
 	{
 		using inode_t = decltype(FramFsImplDetail::Inode::inode_number);
@@ -83,7 +83,7 @@ private:
 			return trash_inodes;
 		}
 	};
-
+#endif
 protected:
 	Stat 		m_stat{};
 	std::string m_drive_name;
@@ -122,6 +122,8 @@ public:
 		return m_drive_name;
 	}
 
+	void cleanup() override;
+
 private:
 	// bring base_t::open into scope (hides the VfsDriveInterface version for direct calls)
 	using base_t::open;
@@ -131,5 +133,5 @@ protected:
 	//void read_all_free_data_pages();
 	bool is_empty( auto it_begin, auto it_end ) const;
 	std::optional<FileHandle> read_inode( std::size_t index );
-	void cleanup( Trash & trash );
+	// void cleanup( Trash & trash );
 };

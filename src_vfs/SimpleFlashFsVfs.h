@@ -19,13 +19,14 @@ namespace SimpleFlashFs::Vfs
         virtual void create() = 0;
         virtual bool init() = 0;
         virtual bool initialized() const = 0;
+        virtual void cleanup() = 0;
     };
 
     class VfsServerInterface
     {
     public:
         using list_files_callback_t = std::function<bool(const std::string_view &, std::size_t size )>;
-        
+
     public:
         virtual ~VfsServerInterface() = default;
 
@@ -52,6 +53,8 @@ namespace SimpleFlashFs::Vfs
          * @return true if successful, false if drive not found
          */
         virtual bool set_current_drive( const std::string_view & drive_name ) = 0;
+
+        virtual void cleanup() = 0;
     };
 
 } // namespace SimpleFlashFs::Vfs

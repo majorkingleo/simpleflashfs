@@ -79,6 +79,25 @@ public:
 };
 
 
+class CommandCleanup : public SimpleFlashFs::Vfs::FilesystemCommand
+{
+public:
+	using FilesystemCommand::FilesystemCommand;
+
+	SimpleFlashFs::Vfs::CommandResult execute(const std::vector<std::string>& args) override {
+		m_vfs->cleanup();
+		return {true, "OK", "Cleanup completed.\n"};
+	}
+
+	std::string get_description() const override {
+		return "Perform cleanup operations";
+	}
+
+	std::string get_usage() const override {
+		return "cleanup  - Perform cleanup operations";
+	}
+};
+
 
 std::shared_ptr<Vfs::VfsServerInterface>                vfs         = std::make_shared<Vfs::SimpleFlashFsThreadedVfsServer>();
 std::shared_ptr<::SimpleFlashFs::FlashMemoryInterface>  mem_drive_a = std::make_shared<SimFlashFsFlashMemory>(".drive_a", DRIVE_A_FM_25_W_256_SIZE);
@@ -155,6 +174,7 @@ int main( int argc, char **argv )
 		parser->register_command("quit", std::make_shared<CommandQuit>());
 		parser->register_command("a:", std::make_shared<Vfs::DOSChangeDriveCommand>(vfs, "a"));
 		parser->register_command("b:", std::make_shared<Vfs::DOSChangeDriveCommand>(vfs, "b"));
+		parser->register_command("cleanup", std::make_shared<CommandCleanup>(vfs));
 
 		bool continue_interactive = true;
 
