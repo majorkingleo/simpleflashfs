@@ -12,6 +12,18 @@ namespace SimpleFlashFs::Vfs
 CommandResult ListCommand::execute(const std::vector<std::string>& args)
 {
     std::string output;
+
+    if( m_vfs->get_current_drive().empty() ) {
+        for( const auto & drive_name : m_vfs->get_drive_names() ) {
+            output += '/' + std::string(drive_name) + "\n";
+        }
+        if( output.empty() ) {
+            output = "(no drives registered)\n";
+        }
+        return {true, "OK", output};
+    }
+
+   
     bool list_success = m_vfs->list_files([&output](const std::string_view& name, std::size_t size) {
         output += std::string(name) + " (" + std::to_string(size) + " bytes)\n";
         return true;
@@ -338,7 +350,7 @@ CommandResult PrintWorkingDirectoryCommand::execute(const std::vector<std::strin
     auto current_drive = m_vfs->get_current_drive();
     
     if (current_drive.empty()) {
-        return {false, "pwd: no current drive set", ""};
+        return {true, "", "/\n"};
     }
     
     // Unix style output: /<drive>/
@@ -359,7 +371,9 @@ DOSChangeDriveCommand::DOSChangeDriveCommand(std::shared_ptr<SimpleFlashFs::Vfs:
 
 SimpleFlashFs::Vfs::CommandResult DOSChangeDriveCommand::execute(const std::vector<std::string>& args)
 {		
-    m_vfs->set_current_drive( m_name );
+    if( !m_vfs->set_current_drive( m_name ) ) {
+        return {false, "cd: failed to change drive: " + m_name, ""};
+    }
     return {true, "OK", "Drive changed to " + m_name + "\n", false};
 }
 

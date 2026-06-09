@@ -153,8 +153,8 @@ int main( int argc, char **argv )
         parser->register_command("cd", std::make_shared<Vfs::ChangeDirectoryCommand>(vfs));
         parser->register_command("pwd", std::make_shared<Vfs::PrintWorkingDirectoryCommand>(vfs));
 		parser->register_command("quit", std::make_shared<CommandQuit>());
-		parser->register_command("a:", std::make_shared<Vfs::DOSChangeDriveCommand>(vfs, "a:"));
-		parser->register_command("b:", std::make_shared<Vfs::DOSChangeDriveCommand>(vfs, "b:"));
+		parser->register_command("a:", std::make_shared<Vfs::DOSChangeDriveCommand>(vfs, "a"));
+		parser->register_command("b:", std::make_shared<Vfs::DOSChangeDriveCommand>(vfs, "b"));
 
 
         std::cout << "SimpleFlashFS VFS Server is running. Enter commands (type 'help' for available commands):" << std::endl;
