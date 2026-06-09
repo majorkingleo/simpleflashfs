@@ -127,7 +127,10 @@ void SimpleFlashFs::read_all_free_data_pages()
 		}
 	}
 
-	CPPDEBUG( Tools::format( "free Data pages: %s", IterableToCommaSeparatedString(free_data_pages.get_sorted_data()) ) );
+	std::size_t mem_footprint = free_data_pages.size() * sizeof(uint32_t) + sizeof(decltype(free_data_pages));
+
+	CPPDEBUG( Tools::format( "%d free Data pages mem footprint  %d kb", free_data_pages.size(), mem_footprint / 1024) );
+	//CPPDEBUG( Tools::format( "free Data pages: %s", IterableToCommaSeparatedString(free_data_pages.get_sorted_data()) ) );
 }
 
 
