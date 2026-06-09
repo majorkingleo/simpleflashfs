@@ -1,5 +1,6 @@
 #include "FilesystemCommands.h"
 #include <sstream>
+#include <format.h>
 
 namespace SimpleFlashFs::Vfs
 {
@@ -344,5 +345,31 @@ CommandResult PrintWorkingDirectoryCommand::execute(const std::vector<std::strin
     std::string output = "/" + std::string(current_drive) + "/\n";
     return {true, "OK", output};
 }
+
+// ============================================================================
+// DOSChangeDriveCommand
+// ============================================================================
+
+DOSChangeDriveCommand::DOSChangeDriveCommand(std::shared_ptr<SimpleFlashFs::Vfs::VfsServerInterface> vfs, const std::string & name ) 
+: FilesystemCommand(vfs), 
+    m_name(name)
+{
+
+}
+
+SimpleFlashFs::Vfs::CommandResult DOSChangeDriveCommand::execute(const std::vector<std::string>& args)
+{		
+    m_vfs->set_current_drive( m_name );
+    return {true, "OK", "Drive changed to " + m_name + "\n", false};
+}
+
+std::string DOSChangeDriveCommand::get_description() const { 
+    return Tools::format( "Change current drive to %s", m_name ); 
+}
+
+std::string DOSChangeDriveCommand::get_usage() const { 
+    return Tools::format( "%s: <drive>  - Change current drive (e.g., cd a, cd /b, cd a:, cd b:)", m_name ); 
+}
+
 
 } // namespace SimpleFlashFs::Vfs

@@ -168,4 +168,22 @@ public:
     std::string get_usage() const override { return "pwd  - Print current working drive"; }
 };
 
+/**
+ * @brief Change drive DOS style(a:, b:)
+ * 
+ */
+class DOSChangeDriveCommand : public FilesystemCommand
+{
+protected:
+	std::string 							 m_name;
+
+public:
+	DOSChangeDriveCommand(std::shared_ptr<SimpleFlashFs::Vfs::VfsServerInterface> vfs, const std::string & name );
+
+	CommandResult execute(const std::vector<std::string>& args) override;
+
+	std::string get_description() const override;
+	std::string get_usage() const override;
+};
+
 } // namespace SimpleFlashFs::Vfs

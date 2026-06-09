@@ -78,6 +78,8 @@ public:
 	}
 };
 
+
+
 std::shared_ptr<Vfs::VfsServerInterface>                vfs         = std::make_shared<Vfs::SimpleFlashFsThreadedVfsServer>();
 std::shared_ptr<::SimpleFlashFs::FlashMemoryInterface>  mem_drive_a = std::make_shared<SimFlashFsFlashMemory>(".drive_a", DRIVE_A_FM_25_W_256_SIZE);
 std::shared_ptr<::SimpleFlashFs::FlashMemoryInterface>  mem_drive_b = std::make_shared<SimFlashFsFlashMemory>(".drive_b", DRIVE_B_AT45_DB321E_SIZE);
@@ -151,6 +153,9 @@ int main( int argc, char **argv )
         parser->register_command("cd", std::make_shared<Vfs::ChangeDirectoryCommand>(vfs));
         parser->register_command("pwd", std::make_shared<Vfs::PrintWorkingDirectoryCommand>(vfs));
 		parser->register_command("quit", std::make_shared<CommandQuit>());
+		parser->register_command("a:", std::make_shared<Vfs::DOSChangeDriveCommand>(vfs, "a:"));
+		parser->register_command("b:", std::make_shared<Vfs::DOSChangeDriveCommand>(vfs, "b:"));
+
 
         std::cout << "SimpleFlashFS VFS Server is running. Enter commands (type 'help' for available commands):" << std::endl;
         
