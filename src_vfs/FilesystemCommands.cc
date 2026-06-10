@@ -2,6 +2,7 @@
 #include <sstream>
 #include <format.h>
 #include <CpputilsDebug.h>
+#include <algorithm>
 
 namespace SimpleFlashFs::Vfs
 {
@@ -286,9 +287,19 @@ CommandResult FormatCommand::execute(const std::vector<std::string>& args)
     std::string drive = args[1];
 
     try {
+        if( drive.ends_with(':') ) {
+            drive.pop_back();
+        }
+
+        auto drives = m_vfs->get_drive_names();
+
+        if( std::find( drives.begin(), drives.end(), drive ) == drives.end() ) {
+            return {false, "drive not found: " + drive, ""};
+        }
+
         m_vfs->create(drive);
         
-        return {true, "Drive formatted: " + drive, ""};
+        return {true, "Ok", "Drive formatted: " + drive + "\n"};
     } catch (const std::exception& e) {
         return {false, "format: " + std::string(e.what()), ""};
     }
