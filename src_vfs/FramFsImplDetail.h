@@ -18,72 +18,6 @@ public:
 		std::size_t free_inodes = 0;
 	};
 
-private:
-#if 0
-	class Trash
-	{
-		using inode_t = decltype(FramFsImplDetail::Inode::inode_number);
-		using inode_version_t = decltype(FramFsImplDetail::Inode::inode_version_number);
-
-	public:
-		class Entry
-		{
-		public:
-			struct data_t
-			{
-				inode_version_t 			inode_version_number;
-				std::optional<uint32_t> 	page;
-
-				bool operator<( const data_t & other ) const {
-					return inode_version_number < other.inode_version_number;
-				}
-			};
-
-			using vector_t = std::vector<data_t>;
-
-		protected:
-
-			vector_t 		inode_versions;
-			inode_version_t max_version = 0;
-			inode_t 		inode_number = 0;
-
-		public:
-			Entry( inode_t inode_number_ )
-			: inode_number( inode_number_ )
-			{
-			}
-
-			void add( inode_version_t version, std::optional<uint32_t> page );
-
-			const vector_t & get_inode_versions_to_delete()
-			{
-				std::sort( inode_versions.begin(), inode_versions.end() );
-				return inode_versions;
-			}
-
-			inode_version_t get_max_version() const {
-				return max_version;
-			}
-
-			inode_t get_inode_number() const {
-				return inode_number;
-			}
-		};
-
-		using trash_inodes_t = std::vector<Entry>;
-
-	private:
-		trash_inodes_t trash_inodes;
-
-	public:
-
-		Entry & add( inode_t inode_number, inode_version_t version, std::optional<uint32_t> page );
-
-		trash_inodes_t & get_trash_inodes() {
-			return trash_inodes;
-		}
-	};
-#endif
 protected:
 	Stat 		m_stat{};
 	std::string m_drive_name;
@@ -130,8 +64,5 @@ private:
 	using base_t::init;
 
 protected:
-	//void read_all_free_data_pages();
-	bool is_empty( auto it_begin, auto it_end ) const;
-	std::optional<FileHandle> read_inode( std::size_t index );
-	// void cleanup( Trash & trash );
+
 };
