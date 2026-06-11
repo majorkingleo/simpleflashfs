@@ -956,6 +956,18 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::open( co
 {
 	auto handle = find_file( name );
 
+	auto handle_append_mode = [mode]( auto & handle ) {
+		if( mode & std::ios_base::app ) {
+			handle.append = true;
+		}
+
+		if( mode & std::ios_base::ate ) {
+			if( handle.inode.file_len > 0 ) {
+				handle.pos = handle.inode.file_len - 1;
+			}
+		}
+	};
+
 	if( !handle ) {
 		// file does not exists
 		if( !(mode & std::ios_base::out) && !(mode & std::ios_base::app)) {
@@ -979,15 +991,7 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::open( co
 		handle.inode.file_name_len = name.size();
 		handle.modified = true;
 
-		if( mode & std::ios_base::app ) {
-			handle.append = true;
-		}
-
-		if( mode & std::ios_base::ate ) {
-			if( handle.inode.file_len > 0 ) {
-				handle.pos = handle.inode.file_len - 1;
-			}
-		}
+		handle_append_mode( handle );
 
 		return handle;
 	}
@@ -1010,6 +1014,8 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::open( co
 
 		return new_handle;
 	}
+
+	handle_append_mode( handle );
 
 	return handle;
 }
