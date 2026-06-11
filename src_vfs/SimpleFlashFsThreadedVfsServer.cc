@@ -131,7 +131,7 @@ file_handle_t SimpleFlashFsThreadedVfsServer::open( const std::string_view & pat
     std::string_view file_path = path;
     const auto drive_name = parse_drive_name( file_path );
 
-    CPPDEBUG( Tools::format( "open file: %s at drive: %s", file_path, drive_name ) );
+    // CPPDEBUG( Tools::format( "open file: %s at drive: %s", file_path, drive_name ) );
 
     auto lock = std::scoped_lock(m_mutex);
 
