@@ -158,26 +158,47 @@ int SimpleFlashFs_dynamic_fgetc( SIMPLE_FLASH_FS_DYNAMIC_FILE *stream )
 	return SIMPLE_FLASH_FS_DYNAMIC_EOF;
 }
 
+// AI genereted by GitHub Copilot Claude Opus 4.7 START
 char *SimpleFlashFs_dynamic_fgets(char *s, int size, SIMPLE_FLASH_FS_DYNAMIC_FILE *stream)
 {
+	if( size <= 0 ) {
+		return nullptr;
+	}
+
+	if( size == 1 ) {
+		// Standard fgets behaviour: only space for terminator.
+		s[0] = '\0';
+		return s;
+	}
+
+	// Standard fgets reads at most size-1 chars and adds a terminating '\0'.
+	const int max_chars = size - 1;
+
 	auto current_pos = stream->handle->tellg();
-	auto len_read = stream->handle->read( reinterpret_cast<std::byte*>(s), size );
+	auto len_read = stream->handle->read( reinterpret_cast<std::byte*>(s), max_chars );
 
 	if( len_read == 0 ) {
 		return nullptr;
 	}
 
-	for( int i = 0; i < len_read; i++ ) {
+	for( int i = 0; i < static_cast<int>(len_read); i++ ) {
 		if( s[i] == '\n' ) {
 			s[i+1] = '\0';
-			stream->handle->seek(current_pos+i);
+			// Rewind read position to the byte directly AFTER the newline,
+			// so the next fgets() call starts on the next line.
+			// Previously this was seek(current_pos + i) which re-read the '\n'
+			// on every subsequent call, producing empty lines.
+			stream->handle->seek(current_pos + i + 1);
 			return s;
 		}
 	}
 
-	s[size] = '\0';
+	// No newline found in the chunk we read; terminate at the end of the
+	// returned data (never past the buffer bounds).
+	s[len_read] = '\0';
 	return s;
 }
+// AI genereted by GitHub Copilot Claude Opus 4.7 END
 
 int SimpleFlashFs_dynamic_fputc(int c, SIMPLE_FLASH_FS_DYNAMIC_FILE *stream)
 {
