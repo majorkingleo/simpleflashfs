@@ -46,3 +46,39 @@ void FramFsImplDetail::cleanup()
 		}
 	}
 }
+
+std::optional<uint32_t> FramFsImplDetail::allocate_free_data_page()
+{
+	if( free_data_pages.empty() ) {
+		CPPDEBUG( "no free data pages left" );
+		return {};
+	}
+
+	std::uniform_int_distribution<std::mt19937::result_type> dist(0,free_data_pages.size()-1);
+	int target_index = dist(m_rng);
+
+	for( auto it = free_data_pages.begin(); it != free_data_pages.end(); ++it, --target_index )
+	{
+		if( target_index == 0 ) {
+			uint32_t ret = *it;
+			free_data_pages.erase(it);
+			return ret;
+		}
+	}
+	
+	return {};
+}
+
+bool FramFsImplDetail::init() 
+{
+	if( !base_t::init() ) {
+		m_initialized = false;
+		return false;
+	}
+
+	m_header_inode_range.reinit( header );
+	header_inode_range = &m_header_inode_range;
+
+	m_initialized = true;
+	return true;
+}

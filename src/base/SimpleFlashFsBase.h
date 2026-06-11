@@ -13,6 +13,7 @@
 #include "../SimpleFlashFsFlashMemoryInterface.h"
 #include "../SimpleFlashFsFileInterface.h"
 #include "SimpleFlashFsPageSet.h"
+#include "SimpleFlashFsHeaderInodeRange.h"
 #include <CpputilsDebug.h>
 #include <static_format.h>
 #include <string_utils.h>
@@ -272,6 +273,44 @@ public:
 
 
 template <class Config>
+class DefaultHeaderInodeRange : public HeaderInodeRangeInterface<Config>
+{
+	
+public:
+	using base_t = HeaderInodeRangeInterface<Config>;
+
+protected:
+	uint32_t m_max;
+	uint32_t m_current {};
+
+public:
+	DefaultHeaderInodeRange( const Header<Config> & header )
+	: m_max( header.max_inodes )
+	{
+	}
+
+	DefaultHeaderInodeRange( const DefaultHeaderInodeRange & other ) = default;
+
+	void reset() override {
+		m_current = 0;
+	}
+
+	bool has_next() const override {
+		return m_current < m_max;
+	}
+
+	uint32_t next() override {
+		return m_current++;
+	}
+
+	uint32_t start() override {
+		reset();
+		return next();
+	}
+};
+
+
+template <class Config>
 class SimpleFlashFsBase
 {
 public:
@@ -415,6 +454,9 @@ protected:
 	// stack of the function, because it can be really large.
 	InodeVersionStore iv_storage;
 
+	DefaultHeaderInodeRange<Config> default_header_inode_range{header};
+	HeaderInodeRangeInterface<Config>* header_inode_range = &default_header_inode_range;
+
 public:
 	SimpleFlashFsBase( FlashMemoryInterface *mem_interface_ )
 	: mem(mem_interface_)
@@ -468,7 +510,7 @@ public:
 
 	// read the fs that the memory interface points to
 	// starting at offset 0
-	virtual bool init();
+	virtual bool init();	
 
 	std::size_t get_max_file_size() const {
 		 return (header.page_size * (header.filesystem_size - 1)) - (header.max_inodes * header.page_size);
@@ -551,7 +593,15 @@ protected:
 	std::optional<uint32_t> allocate_free_inode_page_number_mapped();
 	std::optional<uint32_t> allocate_free_inode_page_number_unmapped();
 
-	std::optional<uint32_t> allocate_free_data_page();
+	/**
+	 * chooses a free data page from free_data_pages and removes it from the set. 
+	 * Returns nullopt if no free page is available.
+	 * 
+	 * Overloead this function if you want to implement wear leveling or something like that. 
+	 * The default implementation just returns the first element from the free_data_pages set,
+	 * which is the lowest page number.
+	 */
+	virtual std::optional<uint32_t> allocate_free_data_page();
 	std::optional<uint32_t> allocate_free_data_page( const file_handle_t *file );
 
 	/**
@@ -948,6 +998,8 @@ bool SimpleFlashFsBase<Config>::init()
 
 	header = h;
 
+	default_header_inode_range = DefaultHeaderInodeRange<Config>( header );
+
 	return true;
  }
 
@@ -1028,7 +1080,7 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::find_fil
 	// find the latest version of all inodes
 	// we have top do this, because only the last version of each
 	// inode has it's last valid name
-	for( unsigned i = 0; i < header.max_inodes; i++ ) {
+	for( uint32_t i = 0; i < header.max_inodes; i++ ) {
 
 		typename Config::page_type page(header.page_size);
 
@@ -1268,7 +1320,7 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::get_inod
 template <class Config>
 FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::allocate_free_inode_page_unmapped()
 {
-	for( unsigned i = 0; i < header.max_inodes; i++ ) {
+	for( auto i = header_inode_range->start(); header_inode_range->has_next(); i = header_inode_range->next() ) {
 
 		typename Config::page_type page(header.page_size);
 
@@ -1290,7 +1342,7 @@ FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::allocate
 template <class Config>
 FileHandle<Config,SimpleFlashFsBase<Config>> SimpleFlashFsBase<Config>::allocate_free_inode_page_mapped()
 {
-	for( unsigned i = 0; i < header.max_inodes; i++ ) {
+	for( auto i = header_inode_range->start(); header_inode_range->has_next(); i = header_inode_range->next() ) {
 
 		ReadPageMappedReturn ret = read_page_mapped( i, header.page_size, true );
 
@@ -1428,7 +1480,7 @@ std::optional<uint32_t> SimpleFlashFsBase<Config>::allocate_free_inode_page_numb
 	typename Config::page_type page{};
 	page.reserve(header.page_size);
 
-	for( unsigned i = 0; i < header.max_inodes; i++ ) {
+	for( auto i = header_inode_range->start(); header_inode_range->has_next(); i = header_inode_range->next() ) {
 		page.clear();
 		page.resize(header.page_size);
 
@@ -1449,7 +1501,7 @@ std::optional<uint32_t> SimpleFlashFsBase<Config>::allocate_free_inode_page_numb
 template <class Config>
 std::optional<uint32_t> SimpleFlashFsBase<Config>::allocate_free_inode_page_number_mapped()
 {
-	for( unsigned i = 0; i < header.max_inodes; i++ ) {
+	for( auto i = header_inode_range->start(); header_inode_range->has_next(); i = header_inode_range->next() ) {
 
 		ReadPageMappedReturn ret = read_page_mapped( i, header.page_size, true );
 

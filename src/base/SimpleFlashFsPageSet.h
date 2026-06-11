@@ -206,6 +206,10 @@ public:
 	const_iterator begin() const {
 		return data.cbegin();
 	}
+
+	const_iterator end() const {
+		return data.cend();
+	}
 };
 
 } // namespace SimpleFlashFs::base

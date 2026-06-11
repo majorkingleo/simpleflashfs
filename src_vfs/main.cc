@@ -16,6 +16,7 @@
 #include "SimpleFlashFsThreadedVfsServer.h"
 #include "CommandParser.h"
 #include "FilesystemCommands.h"
+#include "TestCommands.h"
 
 using namespace Tools;
 using namespace SimpleFlashFs;
@@ -175,6 +176,7 @@ int main( int argc, char **argv )
 		parser->register_command("a:", std::make_shared<Vfs::DOSChangeDriveCommand>(vfs, "a"));
 		parser->register_command("b:", std::make_shared<Vfs::DOSChangeDriveCommand>(vfs, "b"));
 		parser->register_command("cleanup", std::make_shared<CommandCleanup>(vfs));
+		parser->register_command("test_count", std::make_shared<Vfs::TestCount>(vfs));
 
 		bool continue_interactive = true;
 
