@@ -30,9 +30,6 @@ namespace SimpleFlashFs::Vfs
     public:
         virtual ~VfsServerInterface() = default;
 
-        virtual void start() = 0;
-        virtual void stop() = 0;
-
         virtual bool register_drive( std::shared_ptr<VfsDriveInterface> drive ) = 0;
 
         virtual file_handle_t open( const std::string_view & path, std::ios_base::openmode mode ) = 0;

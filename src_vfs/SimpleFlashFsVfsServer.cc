@@ -1,4 +1,4 @@
-#include "SimpleFlashFsThreadedVfsServer.h"
+#include "SimpleFlashFsVfsServer.h"
 #include <CpputilsDebug.h>
 #include <format.h>
 
@@ -12,7 +12,7 @@ using namespace SimpleFlashFs::Vfs;
 // Defined out-of-line (rather than as a nested type in the header)
 // so the header stays lightweight. The class declaration in the
 // header only forward-declares this type.
-struct SimpleFlashFs::Vfs::SimpleFlashFsThreadedVfsServer::OpenFile
+struct SimpleFlashFs::Vfs::SimpleFlashFsVfsServer::OpenFile
 {
     SimpleFlashFs::Vfs::file_handle_t   handle;
     mutable std::mutex                  mutex;
@@ -47,7 +47,7 @@ namespace {
 class ThreadedFileHandle : public SimpleFlashFs::FileInterface
 {
 private:
-    using OpenFile = SimpleFlashFs::Vfs::SimpleFlashFsThreadedVfsServer::OpenFile;
+    using OpenFile = SimpleFlashFs::Vfs::SimpleFlashFsVfsServer::OpenFile;
 
     std::shared_ptr<OpenFile>   m_entry;
     std::size_t                 m_pos    = 0;
@@ -195,54 +195,24 @@ public:
 
 } // namespace
 
-SimpleFlashFsThreadedVfsServer::SimpleFlashFsThreadedVfsServer()
-: SimpleFlashFsThreadedVfsServer::VfsServerInterface()
+SimpleFlashFsVfsServer::SimpleFlashFsVfsServer()
+: SimpleFlashFsVfsServer::VfsServerInterface()
 {
 }
 
-SimpleFlashFsThreadedVfsServer::~SimpleFlashFsThreadedVfsServer()
+SimpleFlashFsVfsServer::~SimpleFlashFsVfsServer()
 {
-    stop();
+
 }
 
-void SimpleFlashFsThreadedVfsServer::start()
-{
-    m_running = true;
-    m_server_thread = std::thread( [this] () {
-       
-        auto cleanup_deadline = std::chrono::steady_clock::now() + m_cleanup_interval.load();
-
-        while( m_running ) {
-            std::this_thread::sleep_for( std::chrono::milliseconds(100) );
-
-            if( (m_cleanup_interval.load() > std::chrono::seconds(0)) && (std::chrono::steady_clock::now() >= cleanup_deadline ) ) {
-                auto lock = std::scoped_lock(m_mutex);
-                for( auto & drive : m_drives ) {
-                    drive->cleanup();
-                }
-                cleanup_deadline = std::chrono::steady_clock::now() + m_cleanup_interval.load();
-            }
-        }
-    } ); 
-}
-
-void SimpleFlashFsThreadedVfsServer::stop()
-{    
-    m_running = false;
-    std::this_thread::yield();
-    if( m_server_thread.joinable() ) {
-        m_server_thread.join();        
-    }
-}
-
-bool SimpleFlashFsThreadedVfsServer::register_drive( std::shared_ptr<VfsDriveInterface> drive )
+bool SimpleFlashFsVfsServer::register_drive( std::shared_ptr<VfsDriveInterface> drive )
 {
     auto lock = std::scoped_lock(m_mutex);
     m_drives.push_back( drive );
     return true;
 }
 
-file_handle_t SimpleFlashFsThreadedVfsServer::open( const std::string_view & path, std::ios_base::openmode mode )
+file_handle_t SimpleFlashFsVfsServer::open( const std::string_view & path, std::ios_base::openmode mode )
 {
     std::string_view file_path = path;
     const auto drive_name = parse_drive_name( file_path );
@@ -317,7 +287,7 @@ file_handle_t SimpleFlashFsThreadedVfsServer::open( const std::string_view & pat
     return {};
 }
 
-std::string_view SimpleFlashFsThreadedVfsServer::get_drive_name( const std::string_view & path ) const
+std::string_view SimpleFlashFsVfsServer::get_drive_name( const std::string_view & path ) const
 {
     std::string_view drive_name = path;
 
@@ -333,7 +303,7 @@ std::string_view SimpleFlashFsThreadedVfsServer::get_drive_name( const std::stri
     return drive_name;
 }
 
-std::string_view SimpleFlashFsThreadedVfsServer::parse_drive_name( std::string_view & path ) const
+std::string_view SimpleFlashFsVfsServer::parse_drive_name( std::string_view & path ) const
 {
     std::string_view            drive_name = path;
     std::string_view::size_type file_name_start_pos = 0;
@@ -357,7 +327,7 @@ std::string_view SimpleFlashFsThreadedVfsServer::parse_drive_name( std::string_v
     return drive_name;
 }
 
-std::vector<std::string_view> SimpleFlashFsThreadedVfsServer::get_drive_names() const
+std::vector<std::string_view> SimpleFlashFsVfsServer::get_drive_names() const
 {
     auto lock = std::scoped_lock(m_mutex);
     std::vector<std::string_view> drive_names;
@@ -367,7 +337,7 @@ std::vector<std::string_view> SimpleFlashFsThreadedVfsServer::get_drive_names() 
     return drive_names;
 }
 
-bool SimpleFlashFsThreadedVfsServer::list_files( list_files_callback_t callback, const std::string_view & drive_name )
+bool SimpleFlashFsVfsServer::list_files( list_files_callback_t callback, const std::string_view & drive_name )
 {
     auto lock = std::scoped_lock(m_mutex);
     for( auto & drive : m_drives ) {
@@ -389,7 +359,7 @@ bool SimpleFlashFsThreadedVfsServer::list_files( list_files_callback_t callback,
     return true;
 }
 
-void SimpleFlashFsThreadedVfsServer::create( const std::string_view & drive_name )
+void SimpleFlashFsVfsServer::create( const std::string_view & drive_name )
 {
     auto lock = std::scoped_lock(m_mutex);
     for( auto & drive : m_drives ) {
@@ -400,13 +370,13 @@ void SimpleFlashFsThreadedVfsServer::create( const std::string_view & drive_name
     }
 }
 
-std::string_view SimpleFlashFsThreadedVfsServer::get_current_drive() const
+std::string_view SimpleFlashFsVfsServer::get_current_drive() const
 {
     auto lock = std::scoped_lock(m_mutex);
     return m_current_drive;
 }
 
-bool SimpleFlashFsThreadedVfsServer::set_current_drive( const std::string_view & drive_name )
+bool SimpleFlashFsVfsServer::set_current_drive( const std::string_view & drive_name )
 {
     auto lock = std::scoped_lock(m_mutex);
     
@@ -428,7 +398,7 @@ bool SimpleFlashFsThreadedVfsServer::set_current_drive( const std::string_view &
     return false;
 }
 
-void SimpleFlashFsThreadedVfsServer::cleanup()
+void SimpleFlashFsVfsServer::cleanup()
 {
     auto lock = std::scoped_lock(m_mutex);
     for( auto & drive : m_drives ) {
@@ -443,7 +413,7 @@ void SimpleFlashFsThreadedVfsServer::cleanup()
 }
 
 // AI generated by GitHub Copilot Claude Opus 4.7 START
-void SimpleFlashFsThreadedVfsServer::purge_expired_open_files()
+void SimpleFlashFsVfsServer::purge_expired_open_files()
 {
     // Caller must already hold m_mutex.
     for( auto it = m_open_files.begin(); it != m_open_files.end(); ) {
