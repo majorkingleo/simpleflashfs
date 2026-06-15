@@ -13,7 +13,7 @@
 #include <set>
 #include "../src/sim_pc/SimFlashMemoryPc.h"
 #include "FramFsImplDetail.h"
-#include "SimpleFlashFsThreadedVfsServer.h"
+#include "SimpleFlashFsVfsServer.h"
 #include "CommandParser.h"
 #include "FilesystemCommands.h"
 #include "TestCommands.h"
@@ -100,7 +100,7 @@ public:
 };
 
 
-std::shared_ptr<Vfs::VfsServerInterface>                vfs         = std::make_shared<Vfs::SimpleFlashFsThreadedVfsServer>();
+std::shared_ptr<Vfs::VfsServerInterface>                vfs         = std::make_shared<Vfs::SimpleFlashFsVfsServer>();
 std::shared_ptr<::SimpleFlashFs::FlashMemoryInterface>  mem_drive_a = std::make_shared<SimFlashFsFlashMemory>(".drive_a", DRIVE_A_FM_25_W_256_SIZE);
 std::shared_ptr<::SimpleFlashFs::FlashMemoryInterface>  mem_drive_b = std::make_shared<SimFlashFsFlashMemory>(".drive_b", DRIVE_B_AT45_DB321E_SIZE);
 
@@ -154,8 +154,6 @@ int main( int argc, char **argv )
         
         vfs->register_drive( std::make_shared<FramFsDriveA>(mem_drive_a.get()) );
         vfs->register_drive( std::make_shared<FramFsDriveB>(mem_drive_b.get()) );
-
-		vfs->start();
 
 		// Create command parser for filesystem commands
 		auto parser = std::make_shared<Vfs::CommandParser>(vfs);
@@ -223,9 +221,7 @@ int main( int argc, char **argv )
 					std::cerr << "Error executing command: " << error.what() << std::endl;
 				}		
 			}
-		}
-		
-        vfs->stop();
+		}	        
 
     } catch( const std::exception &error ) {
 		std::cerr << "Error: " << error.what() << std::endl;
