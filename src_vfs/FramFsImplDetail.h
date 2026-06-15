@@ -1,6 +1,6 @@
 #pragma once
 
-#include <SimpleFlashFsDynamic.h>
+#include "../src/dynamic/SimpleFlashFsDynamic.h"
 #include "SimpleFlashFsVfs.h"
 #include <functional>
 #include <random>

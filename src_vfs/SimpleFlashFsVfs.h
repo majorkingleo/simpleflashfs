@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include <SimpleFlashFsFileInterface.h>
+#include "../src/SimpleFlashFsFileInterface.h"
 #include <functional>
 
 namespace SimpleFlashFs::Vfs
