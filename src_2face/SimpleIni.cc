@@ -641,7 +641,7 @@ bool SimpleIniBase::write(  const std::string_view & section,
 			break;
 	}
 
-	auto c = static_format<100>( "%s%s(%s)", comment, comment.empty() ? "" : " ", sc );
+	auto c = static_format<100>( "%s%s(%s)", comment, comment.empty() ? "" : " ", sc.c_str() );
 	return write( section, key, s, c );
 }
 
