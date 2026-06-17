@@ -7,6 +7,7 @@
 #include <list>
 #include <map>
 #include <string>
+#include <expected>
 
 namespace SimpleFlashFs::Vfs
 {
@@ -70,6 +71,8 @@ public:
     bool set_current_drive( const std::string_view & drive_name ) override;
 
     void cleanup() override;
+
+    std::expected<bool, std::string_view> is_drive_initialized( const std::string_view & drive_name ) const override;
 
 private:
     std::string_view get_drive_name( const std::string_view & path ) const;

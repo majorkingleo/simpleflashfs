@@ -3,6 +3,7 @@
 #include <memory>
 #include "../src/SimpleFlashFsFileInterface.h"
 #include <functional>
+#include <expected>
 
 namespace SimpleFlashFs::Vfs
 {
@@ -52,6 +53,8 @@ namespace SimpleFlashFs::Vfs
         virtual bool set_current_drive( const std::string_view & drive_name ) = 0;
 
         virtual void cleanup() = 0;
+
+        virtual std::expected<bool, std::string_view> is_drive_initialized( const std::string_view & drive_name ) const = 0;
     };
 
 } // namespace SimpleFlashFs::Vfs
