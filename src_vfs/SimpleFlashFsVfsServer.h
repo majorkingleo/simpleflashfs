@@ -66,7 +66,7 @@ public:
 
     void create( const std::string_view & drive_name ) override;
 
-    std::string_view get_current_drive() const override;
+    std::string get_current_drive() const override;
     bool set_current_drive( const std::string_view & drive_name ) override;
 
     void cleanup() override;

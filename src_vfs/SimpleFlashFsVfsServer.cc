@@ -370,7 +370,7 @@ void SimpleFlashFsVfsServer::create( const std::string_view & drive_name )
     }
 }
 
-std::string_view SimpleFlashFsVfsServer::get_current_drive() const
+std::string SimpleFlashFsVfsServer::get_current_drive() const
 {
     auto lock = std::scoped_lock(m_mutex);
     return m_current_drive;

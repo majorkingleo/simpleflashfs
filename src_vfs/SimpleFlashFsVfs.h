@@ -42,7 +42,7 @@ namespace SimpleFlashFs::Vfs
          * @brief Get the current working drive
          * @return the name of the current drive
          */
-        virtual std::string_view get_current_drive() const = 0;
+        virtual std::string get_current_drive() const = 0;
 
         /**
          * @brief Set the current working drive
